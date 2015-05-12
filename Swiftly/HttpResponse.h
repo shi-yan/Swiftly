@@ -19,6 +19,7 @@ class HttpResponse:public QObject
     int statusCode;
     QMap<QString, QVariant> cookies;
     QString sessionId;
+    bool hasFinished;
 
 public:
 

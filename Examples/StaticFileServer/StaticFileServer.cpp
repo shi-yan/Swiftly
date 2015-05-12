@@ -8,9 +8,9 @@ void StaticFileServer::registerPathHandlers()
 
 void StaticFileServer::handleFileGet(HttpRequest &request, HttpResponse &response)
 {
-    qDebug() << "-----------" << request.getHeader().getPath();
+    qDebug() << "-----------%%%" << request.getHeader().getPath();
 
-    QFile file(QString(".").append(request.getHeader().getPath()));
+    QFile file(QString("/home/shiyan/nebulaclient").append(request.getHeader().getPath()));
     if (file.exists())
     {
         if (file.open(QFile::ReadOnly))
