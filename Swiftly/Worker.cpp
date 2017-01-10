@@ -253,7 +253,7 @@ void Worker::readClient()
             else
             {
                 qDebug()<<"not get and post"<<socket->atEnd()<<socket->bytesAvailable()<<socket->ConnectedState;
-                socket->close();
+                //socket->close();
                 return;
             }
 /*
@@ -313,6 +313,7 @@ void Worker::readClient()
                         if(th->invoke(socket->getRequest(),socket->getResponse()))
                         {
                             socket->getResponse().finish();
+
                             qDebug()<<"invoke successful!";
                         }
                         else
@@ -334,7 +335,7 @@ void Worker::readClient()
                     socket->getResponse().setStatusCode(404);
                     socket->getResponse().finish();
                 }
-
+                socket->waitForBytesWritten();
                 socket->close();
             }
         }

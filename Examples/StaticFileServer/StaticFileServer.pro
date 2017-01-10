@@ -4,14 +4,16 @@
 #
 #-------------------------------------------------
 
-QT       += network
+QT       += network websockets
 
 QT       -= gui
 
 TARGET = StaticFileServer
 TEMPLATE = app
 
-HEADERS += StaticFileServer.h
+HEADERS += StaticFileServer.h \
+    WebsocketServer.h \
+    Session.h
 
 unix {
     target.path = /usr/lib
@@ -19,7 +21,9 @@ unix {
 }
 
 SOURCES += main.cpp \
-    StaticFileServer.cpp
+    StaticFileServer.cpp \
+    WebsocketServer.cpp \
+    Session.cpp
 
 
 win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../../Swiftly/release/ -lSwiftly
