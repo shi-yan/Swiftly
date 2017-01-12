@@ -202,8 +202,7 @@ Intel(R) Core(TM) i7-5600U CPU @ 2.60GHz, 8GB memory, Ubuntu 15.04
 
 3. Python one liner: python -m SimpleHTTPServer 8000:
     
-    > Transactions:              17530 hits
-
+    > Transactions:              17530 hits  
     > Availability:             100.00 %
 
     Elapsed time:               9.84 secs
@@ -234,7 +233,7 @@ Knowing these basic ideas, implementing a HelloWorld web app is as simple as def
 
 First, let's define a web app class "HelloWorld":
 
-    ```cpp
+    ```
     #include "WebApp.h"
 
     class HelloWorld : public WebApp
@@ -253,7 +252,7 @@ This class has two functions to implement. One is a function called registerPath
 
 All you need to do here is calling addGetHandler, telling it for which path (in this case "/"), call which function to handle it (in this case "handleHelloWorldGet").
 
-    ```C++
+    ```
     void HelloWorld::registerPathHandlers()
     {
         addGetHandler("/", "handleHelloWorldGet");
