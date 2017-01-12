@@ -10,40 +10,25 @@ Intel(R) Core(TM) i7-5600U CPU @ 2.60GHz, 8GB memory, Ubuntu 15.04
 
 ### Benchmark of Serving hello world:
 
-    ** SIEGE 3.0.8
-
-    ** Preparing 200 concurrent users for battle.
-
-    The server is now under siege...
-
-    Lifting the server siege...      done.
+    > ** SIEGE 3.0.8  
+    > ** Preparing 200 concurrent users for battle.  
+    > The server is now under siege...  
+    > Lifting the server siege...      done.
 
 1. Swiftly:
-    
 
-    Transactions:             206348 hits
-
-    Availability:             100.00 %
-
-    Elapsed time:               9.24 secs
-
-    Data transferred:           2.56 MB
-
-    Response time:              0.01 secs
-
-    Transaction rate:       22332.04 trans/sec
-
-    Throughput:             0.28 MB/sec
-
-    Concurrency:              189.73
-
-    Successful transactions:      206348
-
-    Failed transactions:               0
-
-    Longest transaction:            1.03
-
-    Shortest transaction:           0.00
+    > Transactions:             206348 hits  
+    > Availability:             100.00 %  
+    > Elapsed time:               9.24 secs  
+    > Data transferred:           2.56 MB  
+    > Response time:              0.01 secs  
+    > Transaction rate:       22332.04 trans/sec  
+    > Throughput:             0.28 MB/sec  
+    > Concurrency:              189.73  
+    > Successful transactions:      206348  
+    > Failed transactions:               0  
+    > Longest transaction:            1.03  
+    > Shortest transaction:           0.00
 
 2. nodejs:
 
@@ -64,29 +49,18 @@ Intel(R) Core(TM) i7-5600U CPU @ 2.60GHz, 8GB memory, Ubuntu 15.04
     console.log("Server running at http://127.0.0.1:8000/");
     ```
     
-    Transactions:              89739 hits
-
-    Availability:             100.00 %
-
-    Elapsed time:               9.32 secs
-
-    Data transferred:           1.03 MB
-
-    Response time:              0.02 secs
-
-    Transaction rate:        9628.65 trans/sec
-
-    Throughput:             0.11 MB/sec
-
-    Concurrency:              198.66
-
-    Successful transactions:       89739
-
-    Failed transactions:               0
-
-    Longest transaction:            3.02
-
-    Shortest transaction:           0.00
+    > Transactions:              89739 hits  
+    > Availability:             100.00 %  
+    > Elapsed time:               9.32 secs  
+    > Data transferred:           1.03 MB  
+    > Response time:              0.02 secs  
+    > Transaction rate:        9628.65 trans/sec  
+    > Throughput:             0.11 MB/sec  
+    > Concurrency:              198.66  
+    > Successful transactions:       89739  
+    > Failed transactions:               0  
+    > Longest transaction:            3.02  
+    > Shortest transaction:           0.00
 
 
 3. Python
@@ -120,29 +94,18 @@ Intel(R) Core(TM) i7-5600U CPU @ 2.60GHz, 8GB memory, Ubuntu 15.04
         main()
     ```
 
-    Transactions:              39163 hits
-
-    Availability:             100.00 %
-    
-    Elapsed time:               9.72 secs
-    
-    Data transferred:           0.41 MB
-    
-    Response time:              0.00 secs
-    
-    Transaction rate:        4029.12 trans/sec
-    
-    Throughput:             0.04 MB/sec
-    
-    Concurrency:               13.34
-    
-    Successful transactions:       39163
-    
-    Failed transactions:               0
-    
-    Longest transaction:            7.02
-    
-    Shortest transaction:           0.00
+    > Transactions:              39163 hits  
+    > Availability:             100.00 %  
+    > Elapsed time:               9.72 secs  
+    > Data transferred:           0.41 MB  
+    > Response time:              0.00 secs  
+    > Transaction rate:        4029.12 trans/sec  
+    > Throughput:             0.04 MB/sec  
+    > Concurrency:               13.34  
+    > Successful transactions:       39163  
+    > Failed transactions:               0  
+    > Longest transaction:            7.02  
+    > Shortest transaction:           0.00
 
 ### Benchmark of Serving 1080p jpg image:
 
@@ -150,80 +113,48 @@ Intel(R) Core(TM) i7-5600U CPU @ 2.60GHz, 8GB memory, Ubuntu 15.04
 
 1. Swiftly (without memory cache):
     
-    Transactions:              10861 hits
-
-    Availability:             100.00 %
-
-    Elapsed time:               9.77 secs
-
-    Data transferred:        1850.29 MB
-
-    Response time:              0.17 secs
-
-    Transaction rate:        1111.67 trans/sec
-
-    Throughput:           189.38 MB/sec
-
-    Concurrency:              192.31
-
-    Successful transactions:       10861
-
-    Failed transactions:               0
-
-    Longest transaction:            1.31
-
-    Shortest transaction:           0.00
+    > Transactions:              10861 hits  
+    > Availability:             100.00 %  
+    > Elapsed time:               9.77 secs  
+    > Data transferred:        1850.29 MB  
+    > Response time:              0.17 secs  
+    > Transaction rate:        1111.67 trans/sec  
+    > Throughput:           189.38 MB/sec  
+    > Concurrency:              192.31  
+    > Successful transactions:       10861  
+    > Failed transactions:               0  
+    > Longest transaction:            1.31  
+    > Shortest transaction:           0.00
 
 2. nodejs static file server: http-server:
     
-    Transactions:               9890 hits
-
-    Availability:             100.00 %
-
-    Elapsed time:               9.09 secs
-
-    Data transferred:        2182.24 MB
-
-    Response time:              0.18 secs
-
-    Transaction rate:        1088.01 trans/sec
-
-    Throughput:           240.07 MB/sec
-
-    Concurrency:              197.34
-
-    Successful transactions:        9890
-
-    Failed transactions:               0
-
-    Longest transaction:            1.33
-
-    Shortest transaction:           0.10
+    > Transactions:               9890 hits  
+    > Availability:             100.00 %  
+    > Elapsed time:               9.09 secs  
+    > Data transferred:        2182.24 MB  
+    > Response time:              0.18 secs  
+    > Transaction rate:        1088.01 trans/sec  
+    > Throughput:           240.07 MB/sec  
+    > Concurrency:              197.34  
+    > Successful transactions:        9890  
+    > Failed transactions:               0  
+    > Longest transaction:            1.33  
+    > Shortest transaction:           0.10
 
 3. Python one liner: python -m SimpleHTTPServer 8000:
     
     > Transactions:              17530 hits  
-    > Availability:             100.00 %
-
-    Elapsed time:               9.84 secs
-
-    Data transferred:        3868.01 MB
-
-    Response time:              0.01 secs
-
-    Transaction rate:        1781.50 trans/sec
-
-    Throughput:           393.09 MB/sec
-
-    Concurrency:                9.34
-
-    Successful transactions:       17530
-
-    Failed transactions:               0
-
-    Longest transaction:            9.45
-
-    Shortest transaction:           0.00
+    > Availability:             100.00 %  
+    > Elapsed time:               9.84 secs  
+    > Data transferred:        3868.01 MB  
+    > Response time:              0.01 secs  
+    > Transaction rate:        1781.50 trans/sec  
+    > Throughput:           393.09 MB/sec  
+    > Concurrency:                9.34  
+    > Successful transactions:       17530  
+    > Failed transactions:               0  
+    > Longest transaction:            9.45  
+    > Shortest transaction:           0.00
 
 ## A HelloWorld Example
 
@@ -261,7 +192,7 @@ All you need to do here is calling addGetHandler, telling it for which path (in 
 
 The second function is the actual path handler which does the actual work, i.e return "Hello World" to the user.
 
-    ```c
+    ```
     void HelloWorld::handleHelloWorldGet(HttpRequest &request, HttpResponse &response)
     {
         response << "hello world from Swiftly!\n";
@@ -270,7 +201,7 @@ The second function is the actual path handler which does the actual work, i.e r
 
 That's it! Oh, don't forget writing a main function:
 
-    ```c++
+    ```
     #include <QCoreApplication>
     #include <QThread>
     #include "Swiftly.h"
