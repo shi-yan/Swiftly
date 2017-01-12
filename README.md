@@ -10,10 +10,10 @@ Intel(R) Core(TM) i7-5600U CPU @ 2.60GHz, 8GB memory, Ubuntu 15.04
 
 ### Benchmark of Serving hello world:
 
-    > ** SIEGE 3.0.8  
-    > ** Preparing 200 concurrent users for battle.  
-    > The server is now under siege...  
-    > Lifting the server siege...      done.
+> ** SIEGE 3.0.8  
+> ** Preparing 200 concurrent users for battle.  
+> The server is now under siege...  
+> Lifting the server siege...      done.
 
 1. Swiftly:
 
@@ -164,56 +164,56 @@ Knowing these basic ideas, implementing a HelloWorld web app is as simple as def
 
 First, let's define a web app class "HelloWorld":
 
-    ```
-    #include "WebApp.h"
+```cpp
+#include "WebApp.h"
 
-    class HelloWorld : public WebApp
-    {
-        Q_OBJECT
+class HelloWorld : public WebApp
+{
+    Q_OBJECT
 
     public:
         void registerPathHandlers();
 
     public slots:
         void handleHelloWorldGet(HttpRequest &,HttpResponse &);
-    };
-    ```
+};
+```
 
 This class has two functions to implement. One is a function called registerPathHandlers(). Swiftly calls this function to let the web app to register path handlers.
 
 All you need to do here is calling addGetHandler, telling it for which path (in this case "/"), call which function to handle it (in this case "handleHelloWorldGet").
 
-    ```
-    void HelloWorld::registerPathHandlers()
-    {
-        addGetHandler("/", "handleHelloWorldGet");
-    }
-    ```
+```cpp
+void HelloWorld::registerPathHandlers()
+{
+    addGetHandler("/", "handleHelloWorldGet");
+}
+```
 
 The second function is the actual path handler which does the actual work, i.e return "Hello World" to the user.
 
-    ```
-    void HelloWorld::handleHelloWorldGet(HttpRequest &request, HttpResponse &response)
-    {
-        response << "hello world from Swiftly!\n";
-    }
-    ```
+```cpp
+void HelloWorld::handleHelloWorldGet(HttpRequest &request, HttpResponse &response)
+{
+    response << "hello world from Swiftly!\n";
+}
+```
 
 That's it! Oh, don't forget writing a main function:
 
-    ```
-    #include <QCoreApplication>
-    #include <QThread>
-    #include "Swiftly.h"
-    #include "HelloWorld.h"
+```cpp
+#include <QCoreApplication>
+#include <QThread>
+#include "Swiftly.h"
+#include "HelloWorld.h"
 
-    int main(int argc, char *argv[])
-    {
-        QCoreApplication a(argc, argv);
-        REGISTER_WEBAPP(HelloWorld);
-        HttpServer::getSingleton().start(QThread::idealThreadCount(), 8080);
-        return a.exec();
-    }
-    ```
+int main(int argc, char *argv[])
+{
+    QCoreApplication a(argc, argv);
+    REGISTER_WEBAPP(HelloWorld);
+    HttpServer::getSingleton().start(QThread::idealThreadCount(), 8080);
+    return a.exec();
+}
+```
 
 The main function is also very simple. There are two things you need to do. First, call REGISTER_WEBAPP with the name of your web app class. This will tell Swiftly that we will need to run this web app. Second, call HttpServer::getSingleton().start(QThread::idealThreadCount(), 8080). This launches the web server on port 8080. So if you go to a web browser and type http://localhost:8080, you should be able to see "hello world from Swiftly!"
