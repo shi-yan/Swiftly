@@ -14,8 +14,9 @@ CONFIG += staticlib
 
 # SOURCES += Swiftly.cpp
 
+INCLUDEPATH += ../http-parser
+
 HEADERS += Swiftly.h \
-    http_parser.h \
     HttpHeader.h \
     HttpRequest.h \
     HttpResponse.h \
@@ -45,4 +46,4 @@ SOURCES += \
     TcpSocket.cpp \
     WebApp.cpp \
     Worker.cpp \
-    http_parser.c
+    ../http-parser/http_parser.c
