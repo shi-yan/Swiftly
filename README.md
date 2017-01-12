@@ -1,9 +1,11 @@
 # Swiftly
+
 Swiftly is an easy to use Qt/C++ web framework. The goal is to provide Qt programmers a way to implement web apps with their beloved framework. Swiftly emphasizes the implementation conciseness as well as speed.
 
 ## Performance
 
 Benchmark setup:
+
 Intel(R) Core(TM) i7-5600U CPU @ 2.60GHz, 8GB memory, Ubuntu 15.04
 
 ### Benchmark of Serving hello world:
@@ -11,25 +13,41 @@ Intel(R) Core(TM) i7-5600U CPU @ 2.60GHz, 8GB memory, Ubuntu 15.04
 1. Swiftly:
 
     ** SIEGE 3.0.8
+
     ** Preparing 200 concurrent users for battle.
+
     The server is now under siege...
+
     Lifting the server siege...      done.
     
+
     Transactions:             206348 hits
+
     Availability:             100.00 %
+
     Elapsed time:               9.24 secs
+
     Data transferred:           2.56 MB
+
     Response time:              0.01 secs
+
     Transaction rate:       22332.04 trans/sec
+
     Throughput:             0.28 MB/sec
+
     Concurrency:              189.73
+
     Successful transactions:      206348
+
     Failed transactions:               0
+
     Longest transaction:            1.03
+
     Shortest transaction:           0.00
 
 2. nodejs:
 
+    ```javascript
     // Load the http module to create an http server.
     var http = require('http');
     
@@ -44,27 +62,45 @@ Intel(R) Core(TM) i7-5600U CPU @ 2.60GHz, 8GB memory, Ubuntu 15.04
     
     // Put a friendly message on the terminal
     console.log("Server running at http://127.0.0.1:8000/");
+    ```
 
     ** SIEGE 3.0.8
+
     ** Preparing 200 concurrent users for battle.
+
     The server is now under siege...
+
     Lifting the server siege...      done.
+
     
     Transactions:              89739 hits
+
     Availability:             100.00 %
+
     Elapsed time:               9.32 secs
+
     Data transferred:           1.03 MB
+
     Response time:              0.02 secs
+
     Transaction rate:        9628.65 trans/sec
+
     Throughput:             0.11 MB/sec
+
     Concurrency:              198.66
+
     Successful transactions:       89739
+
     Failed transactions:               0
+
     Longest transaction:            3.02
+
     Shortest transaction:           0.00
+
 
 3. Python
 
+    ```python
     from os import curdir, sep
     from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
     
@@ -91,6 +127,7 @@ Intel(R) Core(TM) i7-5600U CPU @ 2.60GHz, 8GB memory, Ubuntu 15.04
     
     if __name__ == '__main__':
         main()
+    ```
 
     Transactions:              39163 hits
     Availability:             100.00 %
