@@ -203,6 +203,7 @@ Intel(R) Core(TM) i7-5600U CPU @ 2.60GHz, 8GB memory, Ubuntu 15.04
 3. Python one liner: python -m SimpleHTTPServer 8000:
     
     > Transactions:              17530 hits
+    
     > Availability:             100.00 %
 
     Elapsed time:               9.84 secs
@@ -233,7 +234,7 @@ Knowing these basic ideas, implementing a HelloWorld web app is as simple as def
 
 First, let's define a web app class "HelloWorld":
 
-    ```c++
+    ```cpp
     #include "WebApp.h"
 
     class HelloWorld : public WebApp
