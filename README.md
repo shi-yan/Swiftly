@@ -203,7 +203,7 @@ Intel(R) Core(TM) i7-5600U CPU @ 2.60GHz, 8GB memory, Ubuntu 15.04
 3. Python one liner: python -m SimpleHTTPServer 8000:
     
     > Transactions:              17530 hits
-    
+
     > Availability:             100.00 %
 
     Elapsed time:               9.84 secs
@@ -253,7 +253,7 @@ This class has two functions to implement. One is a function called registerPath
 
 All you need to do here is calling addGetHandler, telling it for which path (in this case "/"), call which function to handle it (in this case "handleHelloWorldGet").
 
-    ```c++
+    ```C++
     void HelloWorld::registerPathHandlers()
     {
         addGetHandler("/", "handleHelloWorldGet");
@@ -262,7 +262,7 @@ All you need to do here is calling addGetHandler, telling it for which path (in 
 
 The second function is the actual path handler which does the actual work, i.e return "Hello World" to the user.
 
-    ```c++
+    ```c
     void HelloWorld::handleHelloWorldGet(HttpRequest &request, HttpResponse &response)
     {
         response << "hello world from Swiftly!\n";
