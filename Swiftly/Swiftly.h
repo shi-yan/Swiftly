@@ -23,14 +23,14 @@ class HttpServer : public QTcpServer
 
     bool disabled;
 
-    HttpServer(QObject* parent = 0);
-
-
     void incomingConnection(qintptr handle);
 
     QVector<int> webAppSet;
 
 public:
+    HttpServer(QObject* parent = 0);
+    virtual ~HttpServer();
+
 
     static HttpServer &getSingleton()
     {

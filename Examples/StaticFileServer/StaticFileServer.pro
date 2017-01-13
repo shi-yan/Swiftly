@@ -8,6 +8,8 @@ QT       += network websockets
 
 QT       -= gui
 
+CONFIG += c++11
+
 TARGET = StaticFileServer
 TEMPLATE = app
 
@@ -30,7 +32,8 @@ win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../../Swiftly/release/
 else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../../Swiftly/debug/ -lSwiftly
 else:unix: LIBS += -L$$OUT_PWD/../../Swiftly/ -lSwiftly
 
-INCLUDEPATH += $$PWD/../../Swiftly
+INCLUDEPATH += $$PWD/../../Swiftly \
+               $$PWD/../../http-parser
 DEPENDPATH += $$PWD/../../Swiftly
 
 win32-g++:CONFIG(release, debug|release): PRE_TARGETDEPS += $$OUT_PWD/../../Swiftly/release/libSwiftly.a

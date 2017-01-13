@@ -6,7 +6,7 @@ SET (Qt5Network_DIR /usr/lib/x86_64-linux-gnu/cmake/Qt5Network)
 
 SET (CMAKE_PREFIX_PATH /usr/lib/x86_64-linux-gnu/qt5)
 #SET (CMAKE_C_COMPILER clang)
-SET (CMAKE_C_FLAGS          "-std=gnu++1z -march=x86-64 -m64 -Wno-c++1z-extensions")
+SET (CMAKE_C_FLAGS          "-march=x86-64 -m64 -Wno-c++1z-extensions")
 #SET (CMAKE_CXX_COMPILER clang++)
 SET (CMAKE_CXX_FLAGS        "-std=gnu++1z -march=x86-64 -m64 -fno-omit-frame-pointer -fPIC -I/usr/local/include -Wall -Wextra -Woverloaded-virtual -Wno-unused-local-typedefs -Wno-c++1z-extensions")
 
@@ -62,7 +62,7 @@ set(SWIFTLY_SOURCES
    Swiftly/HttpHeader.cpp
    Swiftly/HttpRequest.cpp
    Swiftly/HttpResponse.cpp
-   Swiftly/HttpServer.cpp
+   Swiftly/Swiftly.cpp
    Swiftly/IncommingConnectionQueue.cpp
    Swiftly/PathParser.cpp
    Swiftly/PathTree.cpp

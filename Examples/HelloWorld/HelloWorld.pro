@@ -11,7 +11,7 @@ QT       -= gui
 TARGET = HelloWorld
 TEMPLATE = app
 
-
+INCLUDEPATH += $$PWD/../../http-parser
 
 HEADERS += HelloWorld.h
 

@@ -6,11 +6,17 @@
 #include "HttpResponse.h"
 
 HttpServer::HttpServer(QObject* parent )
-    : QTcpServer(parent), disabled(false),connectionCount(0)
+    : QTcpServer(parent), 
+    disabled(false),
+    connectionCount(0)
 {
     qRegisterMetaType<HttpRequest>("HttpRequest");
     qRegisterMetaType<HttpResponse>("HttpResponse");
     //setMaxPendingConnections(2000);
+}
+
+HttpServer::~HttpServer()
+{
 }
 
 void HttpServer::incomingConnection(qintptr socket)
