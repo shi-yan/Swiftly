@@ -2,7 +2,7 @@
 #include <QDebug>
 #include <ctime>
 #include <random>
-#include <endian.h>
+//#include <endian.h>
 #include <QDataStream>
 
 WebsocketServer::WebsocketServer():

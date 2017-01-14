@@ -4,13 +4,12 @@
 Session::Session()
     :m_sessionFile("sessionfile.dat"),
       m_writeMap(NULL),
-      m_readMap(NULL),
       m_readFrom(0),
       m_readSize(0),
+      m_readMap(NULL),
       m_capacity(0),
       m_tail(0)
 {
-
 }
 
 void Session::open()

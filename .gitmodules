@@ -1,3 +1,6 @@
 [submodule "http-parser"]
 	path = http-parser
 	url = https://github.com/nodejs/http-parser.git
+[submodule "qt-mustache"]
+	path = qt-mustache
+	url = https://github.com/robertknight/qt-mustache.git
