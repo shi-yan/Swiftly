@@ -37,7 +37,7 @@ SOURCES += \
     HttpHeader.cpp \
     HttpRequest.cpp \
     HttpResponse.cpp \
-    HttpServer.cpp \
+    Swiftly.cpp \
     IncommingConnectionQueue.cpp \
     PathParser.cpp \
     PathTree.cpp \

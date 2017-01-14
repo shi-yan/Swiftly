@@ -11,7 +11,7 @@ void StaticFileServer::handleFileGet(HttpRequest &request, HttpResponse &respons
 {
     qDebug() << "-----------%%%" << request.getHeader().getPath();
 
-    QFile file(QString("/home/shiy/FreeWillBoard").append(request.getHeader().getPath()));
+    QFile file(QString("./Html").append(request.getHeader().getPath()));
     if (file.exists())
     {
         if (file.open(QFile::ReadOnly))
