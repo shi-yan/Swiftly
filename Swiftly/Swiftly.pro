@@ -47,3 +47,5 @@ SOURCES += \
     WebApp.cpp \
     Worker.cpp \
     ../http-parser/http_parser.c
+
+include(../qt-mustache/qt-mustache.pri)

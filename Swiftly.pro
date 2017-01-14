@@ -1,8 +1,7 @@
 TEMPLATE = subdirs
 
-SUBDIRS = qt-mustache \
+SUBDIRS = \
           Swiftly \
           Examples
 
-Swiftly.depends = qt-mustache
 Examples.depends = Swiftly
