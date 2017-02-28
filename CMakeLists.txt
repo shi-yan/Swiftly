@@ -71,7 +71,8 @@ set(SWIFTLY_SOURCES
    Swiftly/TcpSocket.cpp
    Swiftly/WebApp.cpp
    Swiftly/Worker.cpp
-   http-parser/http_parser.c)
+   http-parser/http_parser.c
+   qt-mustache/src/mustache.cpp)
 
 add_library(Swiftly STATIC 
             ${SWIFTLY_SOURCES})
