@@ -26,7 +26,7 @@ void HttpServer::incomingConnection(qintptr socket)
 
     InCommingConnectionQueue::getSingleton().insertATask(socket);
 
-    qDebug()<<"New Connection!"<<socket;
+    qDebug()<<"New Connection!" << serverAddress().toString() << socket;
 
     connectionCount++;
     qDebug() << "connection:" << connectionCount;

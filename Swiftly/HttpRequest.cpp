@@ -1,5 +1,6 @@
 #include "HttpRequest.h"
 #include <QtCore/QStringList>
+#include "TcpSocket.h"
 
 HttpRequest::HttpRequest(TcpSocket *_socket)
     :QObject(),
@@ -229,4 +230,9 @@ void HttpRequest::parseFormData()
         }
 
     }
+}
+
+QHostAddress HttpRequest::getLocalAddress() const
+{
+    return socket->localAddress();
 }

@@ -3,6 +3,7 @@
 
 #include <QObject>
 #include "HttpHeader.h"
+#include <QHostAddress>
 
 class TcpSocket;
 
@@ -19,10 +20,9 @@ class HttpRequest:public QObject
     unsigned int bytesHaveRead;
 
     QString rawHeader;
-
     TcpSocket *socket;
-public:
 
+public:
     HttpRequest(TcpSocket *_socket=0);
     HttpRequest(const HttpRequest &in);
     void operator=(const HttpRequest &in);
@@ -32,6 +32,8 @@ public:
         formData=_formData;
         hasSetFormData=true;
     }
+
+    QHostAddress getLocalAddress() const;
 
     HttpHeader & getHeader()
     {
