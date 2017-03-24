@@ -1,10 +1,10 @@
 cmake_minimum_required (VERSION 3.5)
 project (FreeWill)
 
-SET (Qt5Core_DIR /usr/lib/x86_64-linux-gnu/cmake/Qt5Core)
-SET (Qt5Network_DIR /usr/lib/x86_64-linux-gnu/cmake/Qt5Network)
+#SET (Qt5Core_DIR /usr/lib/x86_64-linux-gnu/cmake/Qt5Core)
+#SET (Qt5Network_DIR /usr/lib/x86_64-linux-gnu/cmake/Qt5Network)
 
-SET (CMAKE_PREFIX_PATH /usr/lib/x86_64-linux-gnu/qt5)
+#SET (CMAKE_PREFIX_PATH /usr/lib/x86_64-linux-gnu/qt5)
 #SET (CMAKE_C_COMPILER clang)
 SET (CMAKE_C_FLAGS          "-march=x86-64 -m64 -Wno-c++1z-extensions")
 #SET (CMAKE_CXX_COMPILER clang++)
@@ -40,7 +40,7 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 # Instruct CMake to run moc automatically when needed.
 set(CMAKE_AUTOMOC ON)
 
-set(CMAKE_CXX_STANDARD 14)
+#set(CMAKE_CXX_STANDARD 14)
 
 find_package(Qt5Core REQUIRED)
 include_directories(${Qt5Core_INCLUDE_DIRS})

@@ -1,9 +1,7 @@
 #ifndef HTTPREQUEST_H
 #define HTTPREQUEST_H
 
-#include <QObject>
 #include "HttpHeader.h"
-#include <QHostAddress>
 
 class TcpSocket;
 
@@ -32,8 +30,6 @@ public:
         formData=_formData;
         hasSetFormData=true;
     }
-
-    QHostAddress getLocalAddress() const;
 
     HttpHeader & getHeader()
     {

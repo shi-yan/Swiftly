@@ -56,7 +56,7 @@ public:
         return header;
     }
 
-    void finish(enum OutputType outputType=TEXT);
+    void finish(enum OutputType outputType=TEXT, const QString &typeOverride = "text/html");
 
 
     void setStatusCode(int _statusCode)

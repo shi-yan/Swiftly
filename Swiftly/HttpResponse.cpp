@@ -70,73 +70,80 @@ void HttpResponse::write(const char* in,const size_t size)
     buffer.append(in,size);
 }
 
-void HttpResponse::finish(enum OutputType outputType)
+void HttpResponse::finish(enum OutputType outputType, const QString &typeOverride )
 {
-    if (!hasFinished){
-    switch(outputType)
+    if (!hasFinished)
     {
-    case BINARY:
-    {
-        socket->write(buffer);
-        break;
-    }
+        switch(outputType)
+        {
+        case BINARY:
+        {
+            unsigned int bufferSize = buffer.size();
+            buffer.insert(0,header.toString());
+            buffer.prepend(QString("HTTP/1.1 %1 Ok\r\n"
+                                   "Content-Length: %2\r\n"
+                                  "Content-Type: %3;\r\n\r\n").arg(200).arg(bufferSize).arg("image/jpeg").toUtf8());
+            socket->write(buffer);
+            break;
+        }
 
-    case TEXT:
-    default:
-    {
+        case TEXT:
+        default:
+        {
 
-          buffer.insert(0,header.toString());
+            buffer.insert(0,header.toString());
 
-          QString cookieString("Set-Cookie: ");
+            QString cookieString("Set-Cookie: ");
 
-          if (!sessionId.isEmpty())
-          {
-              cookieString.append("ssid=").append(sessionId);
+            if (!sessionId.isEmpty())
+            {
+                cookieString.append("ssid=").append(sessionId);
 
-              for(QMap<QString, QVariant>::Iterator iter = cookies.begin(); iter != cookies.end(); ++iter)
-              {
-                  cookieString.append("&").append(iter.key()).append("=").append(iter.value().toString());
-              }
-          }
-          else
-          {
-              if(cookies.count() > 0)
-              {
-                  QMap<QString, QVariant>::Iterator iter = cookies.begin();
-
-                  cookieString.append(iter.key()).append("=").append(iter.value().toString());
-
-                  for(++iter; iter != cookies.end(); ++iter)
-                  {
+                for(QMap<QString, QVariant>::Iterator iter = cookies.begin(); iter != cookies.end(); ++iter)
+                {
                     cookieString.append("&").append(iter.key()).append("=").append(iter.value().toString());
-                  }
+                }
+            }
+            else
+            {
+                if(cookies.count() > 0)
+                {
+                    QMap<QString, QVariant>::Iterator iter = cookies.begin();
 
-               }
-          }
+                    cookieString.append(iter.key()).append("=").append(iter.value().toString());
 
-          if (cookieString.length() > 12)
-          {
-              cookieString.append("\r\n\r\n");
-              buffer.prepend(cookieString.toUtf8());
-          }
-          else
-          {
-              buffer.prepend("\r\n\r\n");
-          }
+                    for(++iter; iter != cookies.end(); ++iter)
+                    {
+                        cookieString.append("&").append(iter.key()).append("=").append(iter.value().toString());
+                    }
+                }
+            }
 
-          if (statusCode == 200)
-          {
-              buffer.prepend(QString("HTTP/1.1 %1 Ok\r\n"
-                                      "Content-Type: text/html; charset=\"utf-8\"\r\n").arg(statusCode).toUtf8());
-          }
-          else if (statusCode == 404)
-          {
-              buffer.prepend(QString("HTTP/1.1 404 Not Found\r\nContent-Type: text/html; charset=\"utf-8\"\r\n\r\n").toUtf8());
-          }
-          socket->write(buffer);
-          break;
-      }
-      }
+            if (cookieString.length() > 12)
+            {
+                cookieString.append("\r\n\r\n");
+                buffer.prepend(cookieString.toUtf8());
+            }
+            else
+            {
+                buffer.prepend("\r\n\r\n");
+            }
+
+            if (statusCode == 200)
+            {
+                buffer.prepend(QString("HTTP/1.1 %1 Ok\r\n"
+                                      "Content-Type: %2; charset=\"utf-8\"\r\n").arg(statusCode).arg(typeOverride).toUtf8());
+            }
+            else if (statusCode == 404)
+            {
+                buffer.prepend(QString("HTTP/1.1 404 Not Found\r\nContent-Type: text/html; charset=\"utf-8\"\r\n\r\n").toUtf8());
+            }
+
+            socket->write(buffer);
+            break;
+        }
+
+        }
     hasFinished = true;
     }
   }
