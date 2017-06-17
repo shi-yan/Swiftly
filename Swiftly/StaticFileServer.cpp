@@ -25,6 +25,16 @@ QMap<QString, QString> StaticFileServer::m_mimeTypeMap =
  {"xml" , "application/xml"},
  {"pdf" , "application/pdf"}};
 
+QMutex StaticFileServer::m_fileCacheMutex;
+QCache<QString, StaticFileServer::FileCacheItem > StaticFileServer::m_fileCache(1024*1024);
+
+StaticFileServer::FileCacheItem::FileCacheItem(const QFileInfo &fileInfo, const QByteArray &fileContent, const FileType fileType, const QString &mimeType)
+    :m_fileInfo(fileInfo),
+      m_fileContent(fileContent),
+      m_fileType(fileType),
+      m_mimeType(mimeType)
+{}
+
 StaticFileServer::StaticFileServer(const QDir &rootPath)
     :QObject(),
       m_rootDir(rootPath)
@@ -71,46 +81,76 @@ bool StaticFileServer::getFileByPath(const QString &path, QByteArray &fileConten
         return false;
     }
 
-    QFile file(fileInfo.canonicalFilePath());
-    if (file.open(QFile::ReadOnly))
+    StaticFileServer::m_fileCacheMutex.lock();
+    if (!StaticFileServer::m_fileCache.contains(fileInfo.canonicalFilePath()))
     {
-        fileContent = file.readAll();
-        file.close();
-    }
+        m_fileCacheMutex.unlock();
 
-    //qDebug() << fileInfo.suffix();
-
-    if(m_mimeTypeMap.contains(fileInfo.suffix()))
-    {
-        mimeType = m_mimeTypeMap[fileInfo.suffix()];
-    }
-    else
-    {
-        //application/octet-stream
-        //text/plain
-
-        StaticFileServer::FileType fileType = fileTypeHint;
-
-        if (fileType == StaticFileServer::FileType::UNSPECIFIED)
+        QFile file(fileInfo.canonicalFilePath());
+        if (file.open(QFile::ReadOnly))
         {
-            fileType = guessFileType(fileContent);
+            fileContent = file.readAll();
+            file.close();
         }
 
-        if (fileType == StaticFileServer::FileType::TEXT)
+        //qDebug() << fileInfo.suffix();
+
+        if(m_mimeTypeMap.contains(fileInfo.suffix()))
         {
-            mimeType = "text/plain";
-        }
-        else if(fileType == StaticFileServer::FileType::BINARY)
-        {
-            mimeType = "application/octet-stream";
+            mimeType = m_mimeTypeMap[fileInfo.suffix()];
         }
         else
         {
-            return false;
-        }
-    }
+            //application/octet-stream
+            //text/plain
 
+            StaticFileServer::FileType fileType = fileTypeHint;
+
+            if (fileType == StaticFileServer::FileType::UNSPECIFIED)
+            {
+                fileType = guessFileType(fileContent);
+            }
+
+            if (fileType == StaticFileServer::FileType::TEXT)
+            {
+                mimeType = "text/plain";
+            }
+            else if(fileType == StaticFileServer::FileType::BINARY)
+            {
+                mimeType = "application/octet-stream";
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        FileCacheItem *item = new FileCacheItem(fileInfo, fileContent, StaticFileServer::FileType::UNSPECIFIED, mimeType);
+        qint64 sizeInKB = fileInfo.size() / 1024 / 1024;
+
+        if (sizeInKB < 1)
+        {
+            sizeInKB = 1;
+        }
+
+
+        StaticFileServer::m_fileCacheMutex.lock();
+
+        StaticFileServer::m_fileCache.insert(fileInfo.absoluteFilePath(), item, (int) sizeInKB);
+        qDebug() << "file" << fileInfo.absoluteFilePath() << "is in cache" << sizeInKB;
+
+        StaticFileServer::m_fileCacheMutex.unlock();
+    }
+    else
+    {
+        FileCacheItem *item = StaticFileServer::m_fileCache[fileInfo.absoluteFilePath()];
+        fileContent = item->m_fileContent;
+        mimeType = item->m_mimeType;
+        qDebug() << "file" << item->m_fileInfo.absoluteFilePath() << "is from cache";
+        StaticFileServer::m_fileCacheMutex.unlock();
+    }
     return true;
+
 }
 
 StaticFileServer::FileType StaticFileServer::guessFileType(const QByteArray &fileContent)

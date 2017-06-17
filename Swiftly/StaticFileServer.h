@@ -6,7 +6,8 @@
 #include <QFileInfo>
 #include <QString>
 #include <QMap>
-
+#include <QCache>
+#include <QMutex>
 
 class StaticFileServer : public QObject
 {
@@ -21,6 +22,20 @@ public:
         BINARY,
         UNSPECIFIED
     };
+
+    class FileCacheItem
+    {
+    public:
+        QFileInfo m_fileInfo;
+        QByteArray m_fileContent;
+        FileType m_fileType;
+        QString m_mimeType;
+
+    public:
+
+        FileCacheItem(const QFileInfo &fileInfo, const QByteArray &fileContent, const FileType fileType, const QString &mimeType);
+    };
+
     StaticFileServer(const QDir &root = QDir("."));
     StaticFileServer(const StaticFileServer &in);
     bool getFileByPath(const QString &path, QByteArray &fileContent, QString &mimeType, FileType fileTypeHint = FileType::UNSPECIFIED);
@@ -28,6 +43,8 @@ public:
 private:
     FileType guessFileType(const QByteArray &fileContent);
     static QMap<QString, QString> m_mimeTypeMap;
+    static QMutex m_fileCacheMutex;
+    static QCache<QString, FileCacheItem> m_fileCache;
 };
 
 #endif // STATICFILESERVER_H
