@@ -53,6 +53,3 @@ SOURCES += \
     StaticFileMemoryCache.cpp
 
 include(../qt-mustache/qt-mustache.pri)
-
-RESOURCES += \
-    resources.qrc

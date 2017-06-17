@@ -8,6 +8,6 @@ int main(int argc, char *argv[])
     qDebug() << "Example StaticFileServer";
     QCoreApplication a(argc, argv);
     REGISTER_WEBAPP(StaticServer);
-    HttpServer::getSingleton().start(QThread::idealThreadCount(), 8083);
+    HttpServer::getSingleton().start(/*QThread::idealThreadCount()*/1, 8083);
     return a.exec();
 }

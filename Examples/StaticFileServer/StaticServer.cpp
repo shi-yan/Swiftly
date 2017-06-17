@@ -4,7 +4,7 @@
 
 StaticServer::StaticServer():
     WebApp(),
-    m_staticFileServer(QDir("."))
+    m_staticFileServer(QDir("/home/shiy/startmin"))
 {}
 
 void StaticServer::registerPathHandlers()
