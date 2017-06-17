@@ -82,7 +82,7 @@ void HttpResponse::finish(enum OutputType outputType, const QString &typeOverrid
             buffer.insert(0,header.toString());
             buffer.prepend(QString("HTTP/1.1 %1 Ok\r\n"
                                    "Content-Length: %2\r\n"
-                                  "Content-Type: %3;\r\n\r\n").arg(200).arg(bufferSize).arg("image/jpeg").toUtf8());
+                                  "Content-Type: %3;\r\n\r\n").arg(200).arg(bufferSize).arg(typeOverride).toUtf8());
             socket->write(buffer);
             break;
         }

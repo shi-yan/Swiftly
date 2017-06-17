@@ -27,7 +27,9 @@ HEADERS += Swiftly.h \
     TaskHandler.h \
     TcpSocket.h \
     WebApp.h \
-    Worker.h
+    Worker.h \
+    StaticFileServer.h \
+    StaticFileMemoryCache.h
 unix {
     target.path = /usr/lib
     INSTALLS += target
@@ -46,6 +48,11 @@ SOURCES += \
     TcpSocket.cpp \
     WebApp.cpp \
     Worker.cpp \
-    ../http-parser/http_parser.c
+    ../http-parser/http_parser.c \
+    StaticFileServer.cpp \
+    StaticFileMemoryCache.cpp
 
 include(../qt-mustache/qt-mustache.pri)
+
+RESOURCES += \
+    resources.qrc

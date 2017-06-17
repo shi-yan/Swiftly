@@ -13,9 +13,8 @@ CONFIG += c++11
 TARGET = StaticFileServer
 TEMPLATE = app
 
-HEADERS += StaticFileServer.h \
-    WebsocketServer.h \
-    Session.h
+HEADERS += \
+    StaticServer.h
 
 unix {
     target.path = /usr/lib
@@ -23,9 +22,7 @@ unix {
 }
 
 SOURCES += main.cpp \
-    StaticFileServer.cpp \
-    WebsocketServer.cpp \
-    Session.cpp
+    StaticServer.cpp
 
 
 win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../../Swiftly/release/ -lSwiftly

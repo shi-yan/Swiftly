@@ -1,13 +1,16 @@
-#ifndef STATICFILESERVER_H
-#define STATICFILESERVER_H
+#ifndef STATICSERVER_H
+#define STATICSERVER_H
 
 #include "WebApp.h"
+#include "StaticFileServer.h"
 
-class StaticFileServer : public WebApp
+class StaticServer : public WebApp
 {
     Q_OBJECT
 
+    StaticFileServer m_staticFileServer;
 public:
+    StaticServer();
     void registerPathHandlers();
 public slots:
     void handleFileGet(HttpRequest &,HttpResponse &);
