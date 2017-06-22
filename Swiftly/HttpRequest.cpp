@@ -199,13 +199,9 @@ void HttpRequest::parseFormData()
             }
             else if (contentType == "application/x-www-form-urlencoded")
             {
-                bool success=false;
-
                 QMap<QString,QString> _formData;
 
                 QStringList pairs = QString(rawData).split("&",QString::SkipEmptyParts);
-
-
 
                 for(QStringList::Iterator iter = pairs.begin(); iter != pairs.end(); ++iter)
                 {

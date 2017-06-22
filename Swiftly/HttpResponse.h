@@ -22,14 +22,6 @@ class HttpResponse:public QObject
     bool hasFinished;
 
 public:
-
-    enum OutputType
-    {
-        TEXT,
-        BINARY
-    };
-
-    QString debugInfo;
     HttpResponse(TcpSocket *_socket=0);
     HttpResponse(const HttpResponse &in);
     void operator=(const HttpResponse &in);
@@ -56,7 +48,7 @@ public:
         return header;
     }
 
-    void finish(enum OutputType outputType=TEXT, const QString &typeOverride = "text/html");
+    void finish(const QString &typeOverride = "text/html");
 
 
     void setStatusCode(int _statusCode)

@@ -4,7 +4,7 @@
 
 StaticServer::StaticServer():
     WebApp(),
-    m_staticFileServer(QDir("/home/shiy/startmin"))
+    m_staticFileServer(QDir("/Users/shiyan/startmin"))
 {}
 
 void StaticServer::registerPathHandlers()
@@ -21,7 +21,7 @@ void StaticServer::handleFileGet(HttpRequest &request, HttpResponse &response)
     if (m_staticFileServer.getFileByPath(request.getHeader().getPath(), fileContent, mimeType))
     {
         response << fileContent;
-        response.finish(HttpResponse::BINARY, mimeType);
+        response.finish(mimeType);
     }
     else
     {
