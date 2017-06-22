@@ -29,8 +29,7 @@ class HttpHeader : public QObject
 public:
     enum class HttpMethod
     {
-        HTTP_NOMETHOD = 0,
-        HTTP_DELETE,
+        HTTP_DELETE = 0,
         HTTP_GET,
         HTTP_HEAD,
         HTTP_POST,
@@ -60,7 +59,8 @@ public:
         HTTP_MSEARCH,
         HTTP_NOTIFY,
         HTTP_SUBSCRIBE,
-        HTTP_UNSUBSCRIBE
+        HTTP_UNSUBSCRIBE,
+        HTTP_NOMETHOD
     };
 
     HttpHeader();
