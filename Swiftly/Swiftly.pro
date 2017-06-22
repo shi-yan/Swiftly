@@ -29,7 +29,8 @@ HEADERS += Swiftly.h \
     Worker.h \
     StaticFileServer.h \
     IncomingConnectionQueue.h \
-    WorkerSocketWatchDog.h
+    WorkerSocketWatchDog.h \
+    UserManager.h
 unix {
     target.path = /usr/lib
     INSTALLS += target
@@ -50,6 +51,7 @@ SOURCES += \
     ../http-parser/http_parser.c \
     StaticFileServer.cpp \
     IncomingConnectionQueue.cpp \
-    WorkerSocketWatchDog.cpp
+    WorkerSocketWatchDog.cpp \
+    UserManager.cpp
 
 include(../qt-mustache/qt-mustache.pri)

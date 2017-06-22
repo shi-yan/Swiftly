@@ -8,28 +8,29 @@
 #include <QTextStream>
 
 
-class HttpHeader:public QObject
+class HttpHeader : public QObject
 {
     Q_OBJECT
 
-    QMap<QString,QString> headerInfo;
-    QString fragment;
-    QString queryString;
-    QString path;
-    QString host;
-    QString url;
-    QString currentHeaderField;
+    QMap<QString, QString> m_headerInfo;
+    QString m_fragment;
+    QString m_queryString;
+    QString m_path;
+    QString m_host;
+    QString m_url;
+    QString m_currentHeaderField;
 
-    QMap<QString, QString> queries;
-    QMap<QString, QString> cookies;
+    QMap<QString, QString> m_queries;
+    QMap<QString, QString> m_cookies;
 
     bool m_hasQueries;
     bool m_hasCookies;
 
 public:
-    enum HttpMethod
+    enum class HttpMethod
     {
-        HTTP_DELETE=0,
+        HTTP_NOMETHOD = 0,
+        HTTP_DELETE,
         HTTP_GET,
         HTTP_HEAD,
         HTTP_POST,
@@ -63,101 +64,49 @@ public:
     };
 
     HttpHeader();
-
     HttpHeader(const HttpHeader &in);
 
     void operator=(const HttpHeader &in);
 
     ~HttpHeader();
 
-    void setHttpMethod(const enum HttpMethod _httpMethod)
-    {
-        httpMethod=_httpMethod;
-    }
+    void setHttpMethod(HttpMethod httpMethod);
+    HttpMethod getHttpMethod() const;
 
-    enum HttpMethod getHttpMethod()
-    {
-        return httpMethod;
-    }
+    bool hasQueries() const;
+    bool hasCookies() const;
 
-    bool hasQueries()
-    {
-        return m_hasQueries;
-    }
-
-    bool hasCookies()
-    {
-        return m_hasCookies;
-    }
-
-    void setCurrentHeaderField(const QString &_currentHeaderField)
-    {
-        currentHeaderField=_currentHeaderField;
-    }
-
+    void setCurrentHeaderField(const QString &currentHeaderField);
     void processCookie();
 
-    QMap<QString, QString> &getCookie()
-    {
-        return cookies;
-    }
+    QMap<QString, QString> &getCookie();
 
-    QMap<QString,QString> &getHeaderInfo()
-    {
-        return headerInfo;
-    }
+    QMap<QString,QString> &getHeaderInfo();
 
-    QMap<QString, QString> &getQueries()
-    {
-        return queries;
-    }
+    QMap<QString, QString> &getQueries();
 
-    QString &getHeaderInfo(const QString & _headerField)
-    {
-        return headerInfo[_headerField];
-    }
+    QString &getHeaderInfo(const QString & headerField);
 
-    void removeHeaderInfo(const QString &_headerField)
-    {
-        headerInfo.remove(_headerField);
-    }
+    void removeHeaderInfo(const QString &headerField);
 
-    void addHeaderInfo(const QString &_headerValue)
-    {
-        headerInfo[currentHeaderField]=_headerValue;
-    }
+    void addHeaderInfo(const QString &headerValue);
 
-    void setFragment(const QString &_fragment)
-    {
-        fragment=_fragment;
-    }
+    void setFragment(const QString &fragment);
 
-    void setQueryString(const QString &_queryString);
+    void setQueryString(const QString &queryString);
 
-    void setPath(const QString &_path)
-    {
-        path=_path;
-    }
+    void setPath(const QString &path);
 
-    const QString & getPath()
-    {
-        return path;
-    }
+    const QString & getPath() const;
 
-    void setHost(const QString &_host)
-    {
-        host=_host;
-    }
+    void setHost(const QString &host);
 
-    void setUrl(const QString &_url)
-    {
-        url=_url;
-    }
+    void setUrl(const QString &url);
 
     QString toString();
 
-    private:
-        enum HttpMethod httpMethod;
+private:
+    HttpMethod m_httpMethod;
 };
 
 QTextStream & operator<<(QTextStream &ts,  HttpHeader &in);

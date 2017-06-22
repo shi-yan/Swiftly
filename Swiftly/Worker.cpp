@@ -238,12 +238,12 @@ void Worker::readClient()
 
             if(m_parser.method==HTTP_GET)
             {
-                socket->getHeader().setHttpMethod(HttpHeader::HTTP_GET);
+                socket->getHeader().setHttpMethod(HttpHeader::HttpMethod::HTTP_GET);
                 handlerType=PathTreeNode::GET;
             }
             else if(m_parser.method==HTTP_POST)
             {
-                socket->getHeader().setHttpMethod(HttpHeader::HTTP_POST);
+                socket->getHeader().setHttpMethod(HttpHeader::HttpMethod::HTTP_POST);
                 handlerType=PathTreeNode::POST;
             }
             else
