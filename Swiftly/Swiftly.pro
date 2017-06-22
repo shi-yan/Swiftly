@@ -20,7 +20,6 @@ HEADERS += Swiftly.h \
     HttpHeader.h \
     HttpRequest.h \
     HttpResponse.h \
-    IncommingConnectionQueue.h \
     PathParser.h \
     PathTree.h \
     PathTreeNode.h \
@@ -28,7 +27,9 @@ HEADERS += Swiftly.h \
     TcpSocket.h \
     WebApp.h \
     Worker.h \
-    StaticFileServer.h
+    StaticFileServer.h \
+    IncomingConnectionQueue.h \
+    WorkerSocketWatchDog.h
 unix {
     target.path = /usr/lib
     INSTALLS += target
@@ -39,7 +40,6 @@ SOURCES += \
     HttpRequest.cpp \
     HttpResponse.cpp \
     Swiftly.cpp \
-    IncommingConnectionQueue.cpp \
     PathParser.cpp \
     PathTree.cpp \
     PathTreeNode.cpp \
@@ -48,6 +48,8 @@ SOURCES += \
     WebApp.cpp \
     Worker.cpp \
     ../http-parser/http_parser.c \
-    StaticFileServer.cpp
+    StaticFileServer.cpp \
+    IncomingConnectionQueue.cpp \
+    WorkerSocketWatchDog.cpp
 
 include(../qt-mustache/qt-mustache.pri)

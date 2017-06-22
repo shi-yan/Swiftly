@@ -6,8 +6,9 @@
 #include "HttpRequest.h"
 #include "HttpResponse.h"
 #include "PathTree.h"
-#include "IncommingConnectionQueue.h"
+#include "IncomingConnectionQueue.h"
 #include <QtCore/QCoreApplication>
+#include "WorkerSocketWatchDog.h"
 
 int onMessageBegin(http_parser *)
 {
@@ -18,7 +19,7 @@ int onMessageBegin(http_parser *)
 int onPath(http_parser *parser, const char *p,size_t len)
 {
     QByteArray buffer(p,len);
-  //  qDebug()<<"onPath:"<<QString(buffer);
+    //qDebug()<<"onPath:"<<QString(buffer);
 
     ((TcpSocket*)parser->data)->getHeader().setPath(QString(buffer));
 
@@ -28,7 +29,7 @@ int onPath(http_parser *parser, const char *p,size_t len)
 int onQueryString(http_parser *parser, const char *p,size_t len)
 {
     QByteArray buffer(p,len);
-   // qDebug()<<"onQueryString:"<<QString(buffer);
+    // qDebug()<<"onQueryString:"<<QString(buffer);
     ((TcpSocket*)parser->data)->getHeader().setQueryString(QString(buffer));
     return 0;
 }
@@ -36,7 +37,7 @@ int onQueryString(http_parser *parser, const char *p,size_t len)
 int onUrl(http_parser *parser, const char *p,size_t len)
 {
     QByteArray buffer(p,len);
-    qDebug()<<"onUrl:"<<QString(buffer);
+    //qDebug()<<"onUrl:"<<QString(buffer);
     ((TcpSocket*)parser->data)->getHeader().setUrl(QString(buffer));
 
     http_parser_url *u = (http_parser_url*)malloc(sizeof(http_parser_url));
@@ -45,74 +46,55 @@ int onUrl(http_parser *parser, const char *p,size_t len)
     if (u->field_set & (1 << UF_SCHEMA))
     {
         QString string(QByteArray(&p[u->field_data[UF_SCHEMA].off], u->field_data[UF_SCHEMA].len));
-
-        qDebug() << "UF_SCHEMA" << string;
+        //qDebug() << "UF_SCHEMA" << string;
     }
 
     if (u->field_set & (1 << UF_HOST))
     {
-
         QString string(QByteArray(&p[u->field_data[UF_HOST].off], u->field_data[UF_HOST].len));
-
-        qDebug() << "UF_HOST" << string;
-
+        //qDebug() << "UF_HOST" << string;
     }
 
     if (u->field_set & (1 << UF_PORT))
     {
-
-
         QString string(QByteArray(&p[u->field_data[UF_PORT].off], u->field_data[UF_PORT].len));
-
-        qDebug() << "UF_PORT" << string;
+        //qDebug() << "UF_PORT" << string;
     }
 
     if (u->field_set & (1<<UF_PATH))
     {
-
         QString string(QByteArray(&p[u->field_data[UF_PATH].off], u->field_data[UF_PATH].len));
         ((TcpSocket*)parser->data)->getHeader().setPath(string);
-
-        qDebug() << "UF_PATH" << string;
+        //qDebug() << "UF_PATH" << string;
     }
-
-
 
     if (u->field_set & (1<<UF_QUERY))
     {
-
         QString string(QByteArray(&p[u->field_data[UF_QUERY].off], u->field_data[UF_QUERY].len));
         ((TcpSocket*)parser->data)->getHeader().setQueryString(string);
-
-        qDebug() << "UF_QUERY" << string;
+        //qDebug() << "UF_QUERY" << string;
     }
-
 
     if (u->field_set & (1<<UF_FRAGMENT))
     {
-
         QString string(QByteArray(&p[u->field_data[UF_FRAGMENT].off], u->field_data[UF_FRAGMENT].len));
-
-        qDebug() << "UF_FRAGMENT" << string;
+        //qDebug() << "UF_FRAGMENT" << string;
     }
 
     if (u->field_set & (1<<UF_USERINFO))
     {
-
         QString string(QByteArray(&p[u->field_data[UF_USERINFO].off], u->field_data[UF_USERINFO].len));
-
-        qDebug() << "UF_USERINFO" << string;
+        //qDebug() << "UF_USERINFO" << string;
     }
 
     delete(u);
-
     return 0;
 }
 
 int onFragment(http_parser *parser, const char *p,size_t len)
 {
     QByteArray buffer(p,len);
-  //  qDebug()<<"onFragment:"<<QString(buffer);
+    //qDebug()<<"onFragment:"<<QString(buffer);
 
     ((TcpSocket*)parser->data)->getHeader().setFragment(QString(buffer));
     return 0;
@@ -121,7 +103,7 @@ int onFragment(http_parser *parser, const char *p,size_t len)
 int onHeaderField(http_parser *parser, const char *p,size_t len)
 {
     QByteArray buffer(p,len);
-    qDebug()<<"onHeaderField:"<<QString(buffer);
+    //qDebug()<<"onHeaderField:"<<QString(buffer);
     ((TcpSocket*)parser->data)->getHeader().setCurrentHeaderField(QString(buffer));
     return 0;
 }
@@ -129,7 +111,7 @@ int onHeaderField(http_parser *parser, const char *p,size_t len)
 int onHeaderValue(http_parser *parser, const char *p,size_t len)
 {
     QByteArray buffer(p,len);
-  //  qDebug()<<"onHeaderValue:"<<QString(buffer);
+    // qDebug()<<"onHeaderValue:"<<QString(buffer);
     ((TcpSocket*)parser->data)->getHeader().addHeaderInfo(QString(buffer));
     return 0;
 }
@@ -137,36 +119,50 @@ int onHeaderValue(http_parser *parser, const char *p,size_t len)
 int onHeadersComplete(http_parser *parser)
 {
     ((TcpSocket*)parser->data)->getHeader().setHost(((TcpSocket*)parser->data)->getHeader().getHeaderInfo("Host"));
-  // qDebug()<<"Parse Header Complete";
+    // qDebug()<<"Parse Header Complete";
     return 0;
 }
 
 int onBody(http_parser *parser, const char *p,size_t len)
 {
-   // QByteArray buffer(p,len);
-  //  qDebug()<<"onBody:"<<QString(buffer);
+     // QByteArray buffer(p,len);
+    //  qDebug()<<"onBody:"<<QString(buffer);
     ((TcpSocket*)parser->data)->appendData(p,len);
     return 0;
 }
 
 int onMessageComplete(http_parser *)
 {
-    qDebug()<<"Parse Message Complete";
+    //qDebug()<<"Parse Message Complete";
     return 0;
 }
 
-Worker::Worker(const QString _name):inHandlingARequest(false),pathTree(),webAppTable()
+Worker::Worker(const QString &name, IncomingConnectionQueue *connectionQueue)
+    :QThread(),
+      m_name(name),
+      m_parser(),
+      m_webAppTable(),
+      m_pathTree(),
+      m_idleSemaphore(),
+      m_socketWatchDog(nullptr),
+      m_incomingConnectionQueue(connectionQueue)
 {
-   workerName=_name;
 }
 
-void Worker::newSocket(int socket)
+Worker::~Worker()
 {
-    qDebug()<<workerName<<" is handling a request; thread id"<<thread()->currentThreadId();
+    if (m_socketWatchDog)
+    {
+        delete m_socketWatchDog;
+    }
+}
+
+void Worker::newSocket(qintptr socket)
+{
+    qDebug() << m_name << " is handling a request; thread id" << thread()->currentThreadId();
     TcpSocket* s = new TcpSocket(this);
-    connect(s, SIGNAL(readyRead()), this    , SLOT(readClient()));
+    connect(s, SIGNAL(readyRead()), this, SLOT(readClient()));
     connect(s, SIGNAL(disconnected()), this, SLOT(discardClient()));
-    inHandlingARequest=true;
     s->setSocketDescriptor(socket);
 }
 
@@ -184,7 +180,7 @@ void Worker::readClient()
     {
         if ( socket->isNewSocket())
         {
-            QByteArray inCommingContent=socket->readAll();
+            QByteArray incomingContent=socket->readAll();
 
             http_parser_settings settings;
 
@@ -196,26 +192,26 @@ void Worker::readClient()
             settings. on_body=onBody;
             settings. on_message_complete=onMessageComplete;
 
-            http_parser_init(&parser,HTTP_REQUEST);
+            http_parser_init(&m_parser,HTTP_REQUEST);
 
-            parser.data = socket;
+            m_parser.data = socket;
 
-            size_t nparsed = http_parser_execute(&parser,&settings,inCommingContent.constData(),inCommingContent.count());
+            size_t nparsed = http_parser_execute(&m_parser,&settings,incomingContent.constData(),incomingContent.count());
 
-            if(parser.upgrade)
+            if(m_parser.upgrade)
             {
                 qDebug()<<"upgrade";
             }
-            else if(nparsed!=(size_t)inCommingContent.count())
+            else if(nparsed!=(size_t)incomingContent.count())
             {
-                qDebug()<<"nparsed:"<<nparsed<<"buffer size:"<<inCommingContent.count();
+                qDebug()<<"nparsed:"<<nparsed<<"buffer size:"<<incomingContent.count();
             }
             else
             {
                 qDebug()<<"parsing seems to be succeed!";
             }
 
-            socket->setRawHeader(inCommingContent);
+            socket->setRawHeader(incomingContent);
 
             bool isBodySizeOK=false;
             unsigned int bodySize=socket->getHeader().getHeaderInfo("Content-Length").toUInt(&isBodySizeOK);
@@ -232,20 +228,20 @@ void Worker::readClient()
         else
         {
             qDebug()<<"socket size:"<<socket->getTotalBytes()<<"current Size:"<<socket->getBytesHaveRead();
-            QByteArray inCommingContent=socket->readAll();
-            socket->appendData(inCommingContent);
+            QByteArray incomingContent=socket->readAll();
+            socket->appendData(incomingContent);
         }
 
         if(socket->isEof())
         {
             PathTreeNode::TaskHandlerType handlerType;
 
-            if(parser.method==HTTP_GET)
+            if(m_parser.method==HTTP_GET)
             {
                 socket->getHeader().setHttpMethod(HttpHeader::HTTP_GET);
                 handlerType=PathTreeNode::GET;
             }
-            else if(parser.method==HTTP_POST)
+            else if(m_parser.method==HTTP_POST)
             {
                 socket->getHeader().setHttpMethod(HttpHeader::HTTP_POST);
                 handlerType=PathTreeNode::POST;
@@ -253,91 +249,47 @@ void Worker::readClient()
             else
             {
                 qDebug()<<"not get and post"<<socket->atEnd()<<socket->bytesAvailable()<<socket->ConnectedState;
-                //socket->close();
+                socket->close();
                 return;
             }
-/*
-            if(socket->getHeader().getPath().left(6)=="/file/")
+
+            socket->getRequest().processCookies();
+            socket->getRequest().parseFormData();
+
+            qDebug() << "path" << socket->getRequest().getHeader().getPath();
+            const TaskHandler *th=m_pathTree.getTaskHandlerByPath(socket->getRequest().getHeader().getPath(),handlerType);
+
+            if(th)
             {
-                qDebug()<<"serving binary!";
-                FILE *file;
-                char *buffer;
-                unsigned long fileLen;
-
-                file=fopen((QString("file/")+socket->getHeader().getPath().right(socket->getHeader().getPath().count()-6)).toStdString().c_str(),"rb");
-
-                if(!file)
+                if(!th->isEmpty())
                 {
-                    qDebug()<<"unable to open file.";
-                    socket->close();
-                    return;
-                }
-
-                fseek(file,0,SEEK_END);
-                fileLen=ftell(file);
-                fseek(file,0,SEEK_SET);
-
-                buffer=(char *)malloc(fileLen+1);
-
-                if(!buffer)
-                {
-                    qDebug()<<"Memory error!";
-                    fclose(file);
-                    socket->close();
-                    return;
-                }
-
-                fread(buffer,fileLen,1,file);
-
-                fclose(file);
-
-                QDataStream os(socket);
-                os.writeRawData(buffer,fileLen);
-
-                free(buffer);
-
-                socket->close();
-            }
-            else*/
-            {
-                socket->getRequest().processCookies();
-                socket->getRequest().parseFormData();
-
-                qDebug() << "path" << socket->getRequest().getHeader().getPath();
-                const TaskHandler *th=pathTree.getTaskHandlerByPath(socket->getRequest().getHeader().getPath(),handlerType);
-
-                if(th)
-                {
-                    if(!th->isEmpty())
+                    if(th->invoke(socket->getRequest(),socket->getResponse()))
                     {
-                        if(th->invoke(socket->getRequest(),socket->getResponse()))
-                        {
-                            socket->getResponse().finish();
+                        socket->getResponse().finish();
 
-                            qDebug()<<"invoke successful!";
-                        }
-                        else
-                        {
-                            qDebug()<<"invoke unsuccessful!";
-                        }
+                        qDebug()<<"invoke successful!";
                     }
                     else
                     {
-
-                        qDebug()<<"no task handler!";
-                        socket->getResponse().setStatusCode(404);
-                        socket->getResponse().finish();
+                        qDebug()<<"invoke unsuccessful!";
                     }
                 }
                 else
                 {
-                    qDebug()<<"empty task handler!" << socket->getRequest().getHeader().getPath() << ";" <<handlerType;
+                    qDebug()<<"no task handler!";
                     socket->getResponse().setStatusCode(404);
                     socket->getResponse().finish();
                 }
-                socket->waitForBytesWritten();
-                socket->close();
             }
+            else
+            {
+                qDebug()<<"empty task handler!" << socket->getRequest().getHeader().getPath() << ";" <<handlerType;
+                socket->getResponse().setStatusCode(404);
+                socket->getResponse().finish();
+            }
+
+            socket->waitForBytesWritten();
+            socket->close();
         }
         else
         {
@@ -354,9 +306,9 @@ void Worker::registerWebApps(QVector<int> &webAppClassIDs)
     {
         WebApp *app= (WebApp*) QMetaType::create((int)webAppClassIDs[i], (const void *)0);
 
-        webAppTable[webAppClassIDs[i]]=app;
+        m_webAppTable[webAppClassIDs[i]]=app;
 
-        app->setPathTree(&pathTree);
+        app->setPathTree(&m_pathTree);
 
         app->registerPathHandlers();
 
@@ -368,28 +320,27 @@ void Worker::discardClient()
 {
     TcpSocket* socket = (TcpSocket*)sender();
     socket->deleteLater();
-    inHandlingARequest=false;
-    qDebug()<<"discard client inside worker";
+    qDebug()<<"finish serving client inside" << m_name;
+    m_idleSemaphore.release();
 }
 
 void Worker::run()
 {
-    qDebug()<<workerName<<"'s thread id"<<thread()->currentThreadId();
+    qDebug()<<m_name<<"'s thread id"<<thread()->currentThreadId();
 
-    forever
-    {
-        if(!inHandlingARequest)
-        {
-            int socket=InCommingConnectionQueue::getSingleton().getATask();
-
-            if(socket!=-1)
-            {
-                newSocket(socket);
-            }
-        }
-
-        QCoreApplication::processEvents();
-    }
+    m_socketWatchDog = new WorkerSocketWatchDog(this);
+    m_socketWatchDog->start();
 
     exec();
 }
+
+void Worker::waitForIdle()
+{
+    m_idleSemaphore.acquire();
+}
+
+qintptr Worker::getSocket()
+{
+    return m_incomingConnectionQueue->getSocket();
+}
+

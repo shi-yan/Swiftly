@@ -13,24 +13,23 @@
 #include <QtCore/QDebug>
 #include "Worker.h"
 
-
+class IncomingConnectionQueue;
 
 class HttpServer : public QTcpServer
  {
      Q_OBJECT
 
-    int connectionCount;
+    int m_connectionCount;
+    bool m_disabled;
+    IncomingConnectionQueue *m_incomingConnectionQueue;
 
-    bool disabled;
+    QVector<int> m_webAppSet;
+    QVector<Worker*> m_workerPool;
 
-    void incomingConnection(qintptr handle);
-
-    QVector<int> webAppSet;
-
+    void incomingConnection(qintptr handle) override;
 public:
     HttpServer(QObject* parent = 0);
     virtual ~HttpServer();
-
 
     static HttpServer &getSingleton()
     {
@@ -38,25 +37,18 @@ public:
         return obj;
     }
 
-    void start(int numOfWorkers,quint16 port);
+    void start(int numOfWorkers, quint16 port);
+    void pause();
+    void resume();
 
-     void pause()
-     {
-         disabled = true;
-     }
+    template<typename T>
+    void registerWebApp(const char * webAppName)
+    {
+        int id = qRegisterMetaType<T>(webAppName);
+        m_webAppSet.push_back(id);
+    }
 
-     void resume()
-     {
-         disabled = false;
-     }
-
-     template<class T>
-     void registerWebApp(const char * webAppName)
-     {
-         int id = qRegisterMetaType<T>(webAppName);
-        webAppSet.push_back(id);
-     }
-
+    void Shutdown();
  };
 
 #endif // HTTPSERVER_H

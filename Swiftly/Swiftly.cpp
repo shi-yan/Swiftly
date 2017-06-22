@@ -1,18 +1,26 @@
 #include "Swiftly.h"
 #include "HttpHeader.h"
 #include "Worker.h"
-#include "IncommingConnectionQueue.h"
+#include "IncomingConnectionQueue.h"
 #include "HttpRequest.h"
 #include "HttpResponse.h"
 
+
 HttpServer::HttpServer(QObject* parent )
     : QTcpServer(parent), 
-    disabled(false),
-    connectionCount(0)
+      m_connectionCount(0),
+      m_disabled(false),
+      m_incomingConnectionQueue(nullptr),
+      m_webAppSet()
+
 {
+    qRegisterMetaType<qintptr>("qintptr");
     qRegisterMetaType<HttpRequest>("HttpRequest");
     qRegisterMetaType<HttpResponse>("HttpResponse");
     //setMaxPendingConnections(2000);
+
+    m_incomingConnectionQueue = new IncomingConnectionQueue(this);
+
 }
 
 HttpServer::~HttpServer()
@@ -21,36 +29,50 @@ HttpServer::~HttpServer()
 
 void HttpServer::incomingConnection(qintptr socket)
 {
-    if (disabled)
+    if (m_disabled)
         return;
 
-    InCommingConnectionQueue::getSingleton().insertATask(socket);
+    m_incomingConnectionQueue->addSocket(socket);
 
     qDebug()<<"New Connection!" << serverAddress().toString() << socket;
 
-    connectionCount++;
-    qDebug() << "connection:" << connectionCount;
+    m_connectionCount++;
+
+    qDebug() << "connection:" << m_connectionCount;
 }
 
-void HttpServer::start(int numOfWorkers,quint16 port)
+void HttpServer::start(int numOfWorkers, quint16 port)
 {
     qDebug()<<"Need to create"<<numOfWorkers<<"workers";
-
-    InCommingConnectionQueue::getSingleton();
 
     if(numOfWorkers<1)
         numOfWorkers=1;
 
-
     for(int i=0;i<numOfWorkers;++i)
     {
-        Worker *aWorker=new Worker(QString("worker %1").arg(i));
-        aWorker->registerWebApps(webAppSet);
+        Worker *aWorker=new Worker(QString("worker %1").arg(i), m_incomingConnectionQueue);
+        aWorker->registerWebApps(m_webAppSet);
         aWorker->start();
         aWorker->moveToThread(aWorker);
+        m_workerPool.push_back(aWorker);
     }
 
     listen(QHostAddress::Any, port);
 
     qDebug()<<"Start listening! main ThreadId"<<thread()->currentThreadId();
+}
+
+void HttpServer::Shutdown()
+{
+    m_disabled = true;
+}
+
+void HttpServer::pause()
+{
+    m_disabled = true;
+}
+
+void HttpServer::resume()
+{
+    m_disabled = false;
 }

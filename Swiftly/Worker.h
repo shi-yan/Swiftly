@@ -6,28 +6,37 @@
 #include "http_parser.h"
 #include "PathTree.h"
 #include "WebApp.h"
+#include <QSemaphore>
 
-class Worker:public QThread
+class WorkerSocketWatchDog;
+class IncomingConnectionQueue;
+
+class Worker : public QThread
 {
     Q_OBJECT
 
-    QString workerName;
-    http_parser parser;
-    bool inHandlingARequest;
-    QMap<int,WebApp*> webAppTable;
-    PathTree pathTree;
+    QString m_name;
+    http_parser m_parser;
+    QMap<int, WebApp*> m_webAppTable;
+    PathTree m_pathTree;
+    QSemaphore m_idleSemaphore;
+    WorkerSocketWatchDog *m_socketWatchDog;
+    IncomingConnectionQueue *m_incomingConnectionQueue;
 
     bool parseFormData(const QString &contentTypeString, const QByteArray &_body, QMap<QString,QByteArray> &formData);
 
 public:
     void run();
-    Worker(const QString _name);
+    Worker(const QString &name, IncomingConnectionQueue *connectionQueue);
     void registerWebApps(QVector<int> &webAppClassIDs);
+    void waitForIdle();
+    ~Worker();
+    qintptr getSocket();
 
 public slots:
     void readClient();
     void discardClient();
-    void newSocket(int socketid);
+    void newSocket(qintptr socketid);
 };
 
 #endif // WORKER_H
