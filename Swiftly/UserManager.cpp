@@ -50,7 +50,11 @@ bool UserManager::signup(const QString &email, const QByteArray &password)
     mongocxx::database swiftlyDb = client["Swiftly"];
     mongocxx::collection userCollection = swiftlyDb["User"];
 
-    userCollection.create_index()
+    bsoncxx::builder::stream::document index_builder;
+    mongocxx::options::index index_options{};
+    index_builder << "email" << 1;
+    index_options.unique(true);
+    userCollection.create_index(index_builder.view(), index_options);
 
     auto builder = bsoncxx::builder::stream::document{};
     bsoncxx::document::value doc_value = builder
@@ -59,7 +63,7 @@ bool UserManager::signup(const QString &email, const QByteArray &password)
       << bsoncxx::builder::stream::finalize;
 
     mongocxx::stdx::optional<mongocxx::result::insert_one> result =
-     userCollection.insert_one(doc_value.view());
+    userCollection.insert_one(doc_value.view());
 
     if (result)
     {
