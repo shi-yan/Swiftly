@@ -10,15 +10,20 @@ class UserManager : public QObject
 public:
     UserManager();
 
-    bool signup(const QString &email, const QString &password);
-    bool login(const QString &email, const QString &password);
-    bool resetPassword(const QString &email, const QString &newPassword, const QString &resetCodeOrOldPassword, bool useOldPassword);
+    bool signup(const QString &email, const QByteArray &password);
+    bool login(const QString &email, const QByteArray &password);
+    bool resetPassword(const QString &email, const QByteArray &newPassword, const QByteArray &resetCodeOrOldPassword, bool useOldPassword);
     bool activate(const QString &email, const QString &activationCode);
     bool sendResetRequest(const QString &email);
-    bool sendActivationCode(const QString &email);
+    bool sendActivationCode(const QString &userId, const QString &email);
+    bool updateEmail(const QString &userId, const QString &newEmail);
 
     static bool isValidEmail(const QString &email);
-    static bool isStrongPassword(const QString &password);
+    static bool isValidePassword(const QByteArray &password, QString &errorMessage, unsigned int upperCaseNum = 1, unsigned int specialLetterNum = 1,
+                                 unsigned int digitNum = 1, unsigned int lowerCaseLetter = 1, unsigned int length = 8, unsigned int maxLength = 30);
+    static bool verifyPassword(const QByteArray &hash, const QByteArray &password);
+    static void hashPassword(const QByteArray &password, QByteArray &hash);
+
 };
 
 #endif // USERMANAGER_H

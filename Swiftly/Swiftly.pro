@@ -14,7 +14,9 @@ CONFIG += staticlib
 
 # SOURCES += Swiftly.cpp
 
-INCLUDEPATH += ../http-parser
+INCLUDEPATH += ../http-parser \
+               /usr/local/include/bsoncxx/v_noabi \
+               /usr/local/include/mongocxx/v_noabi
 
 HEADERS += Swiftly.h \
     HttpHeader.h \
@@ -53,5 +55,9 @@ SOURCES += \
     IncomingConnectionQueue.cpp \
     WorkerSocketWatchDog.cpp \
     UserManager.cpp
+
+LIBS += -L/usr/local/lib -lsodium
+LIBS += -lmongocxx
+LIBS += -lbsoncxx
 
 include(../qt-mustache/qt-mustache.pri)
