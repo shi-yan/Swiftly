@@ -15,6 +15,8 @@
 #include <mongocxx/uri.hpp>
 #include <mongocxx/bulk_write.hpp>
 #include <mongocxx/exception/bulk_write_exception.hpp>
+#include <QCryptographicHash>
+#include <QDateTime>
 
 using bsoncxx::builder::stream::close_array;
 using bsoncxx::builder::stream::close_document;
@@ -58,10 +60,19 @@ bool UserManager::signup(const QString &email, const QByteArray &password, const
     userCollection.create_index(index_builder.view(), index_options);
 
     auto builder = bsoncxx::builder::stream::document{};
-    bsoncxx::document::value doc_value = builder
+    bsoncxx::document::value userAccountDocumentValue = builder
       << "email" << email.toStdString().c_str()
       << "password" << hash.toStdString().c_str()
+      << "status" << 0
       << bsoncxx::builder::stream::finalize;
+
+    QByteArray activationCode;
+    generateActivationCode(email, activationCode);
+    bsoncxx::document::value activationDocumentValue = bsoncxx::builder::stream::document{}
+            << "activation_code" << activationCode.toStdString().c_str()
+            << "time" << QDateTime.currentDateTimeUtc();
+
+
 
     try
     {
@@ -91,9 +102,56 @@ bool UserManager::signup(const QString &email, const QByteArray &password, const
     return true;
 }
 
-bool UserManager::login(const QString &email, const QByteArray &password)
+bool UserManager::login(const QString &email, const QByteArray &password, QMap<QString, QVariant> &extraFields)
 {
+    if (!isValidEmail(email))
+    {
+        return false;
+    }
 
+    QString errorMessage;
+    if (!isValidePassword(password, errorMessage))
+    {
+        return false;
+    }
+
+
+    mongocxx::client client{mongocxx::uri{}};
+
+    mongocxx::database swiftlyDb = client["Swiftly"];
+    mongocxx::collection userCollection = swiftlyDb["User"];
+
+    mongocxx::stdx::optional<bsoncxx::document::value> maybe_result =
+           userCollection.find_one(bsoncxx::builder::stream::document{}
+                                   << "email" << "billconan@gmail.com" << bsoncxx::builder::stream::finalize);
+
+    if(maybe_result)
+    {
+        //std::cout << bsoncxx::to_json(*maybe_result) << "\n";
+        //bsoncxx::document::element emailElement = (*maybe_result).view()["email"];
+        //email =  QString::fromStdString(emailElement.get_utf8().value.to_string());
+        bsoncxx::document::element passwordElement = (*maybe_result).view()["password"];
+
+        QByteArray passwordHash;
+        passwordHash.resize(crypto_pwhash_STRBYTES);
+        passwordHash.clear();
+        std::string passwordHashStr = passwordElement.get_utf8().value.to_string();
+        passwordHash.setRawData(passwordHashStr.data(), passwordHashStr.size());
+
+        qDebug() << passwordHash;
+
+        if (!UserManager::verifyPassword(passwordHash, password))
+        {
+            return false;
+        }
+    }
+    else
+    {
+        return false;
+    }
+
+
+    return true;
 }
 
 bool UserManager::resetPassword(const QString &email, const QByteArray &newPassword, const QByteArray &resetCodeOrOldPassword, bool useOldPassword)
@@ -118,6 +176,10 @@ bool UserManager::sendActivationCode(const QString &userId, const QString &email
 
 bool UserManager::isValidEmail(const QString &email)
 {
+    if (email.size() > 32 || email.size() < 1 )
+    {
+        return false;
+    }
     static QRegularExpression emailRegexp("^[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,4}$", QRegularExpression::CaseInsensitiveOption);
     QRegularExpressionMatch match = emailRegexp.match(email);
     return match.hasMatch();
@@ -227,4 +289,20 @@ void UserManager::hashPassword(const QByteArray &password, QByteArray &hash)
     {
         qDebug() << "out of memory";
     }
+}
+
+void UserManager::generateActivationCode(const QString &email, QByteArray &activationCode)
+{
+    const unsigned int activationCodeSize = 256;
+    QByteArray buffer = email.toLatin1();
+    buffer.resize(activationCodeSize);
+    unsigned int randomOffset = (email.size() < 32)?email.size():32;
+    randombytes_buf((void *)(buffer.data() + randomOffset), activationCodeSize - randomOffset);
+    QCryptographicHash hash(QCryptographicHash::Sha3_256);
+    hash.addData(buffer);
+    activationCode = hash.result().toBase64();
+
+    qDebug() << activationCode;
+
+
 }
