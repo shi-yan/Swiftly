@@ -71,7 +71,6 @@ bool UserManager::signup(const QString &email, const QByteArray &password)
         std::string userId = oid.to_string();
         qDebug() << userId.c_str() << hash;
     }
-    //save hash;
     return true;
 }
 
@@ -194,35 +193,21 @@ bool UserManager::isValidePassword(const QByteArray &password, QString &errorMes
 bool UserManager::verifyPassword(const QByteArray &hash, const QByteArray &password)
 {
     QString errorMessage = "";
-    if (isValidePassword(password, errorMessage))
+
+    if (crypto_pwhash_str_verify(hash.data(), password.data(),
+                                 password.size()) == 0)
     {
-        if (crypto_pwhash_str_verify(hash.data(), password.data(),
-                                     password.size()) == 0)
-        {
-            return true;
-        }
+        return true;
     }
     return false;
 }
 
 void UserManager::hashPassword(const QByteArray &password, QByteArray &hash)
 {
-    //QString errorMessage = "";
-
-    //qDebug() << "password size" << password.size();
-
-
-    //if (isValidePassword(password, errorMessage))
+    hash.resize(crypto_pwhash_STRBYTES);
+    if (crypto_pwhash_str(hash.data(), password.data(), password.size(),
+         crypto_pwhash_OPSLIMIT_SENSITIVE, crypto_pwhash_MEMLIMIT_SENSITIVE) != 0)
     {
-        hash.resize(crypto_pwhash_STRBYTES);
-        //qDebug() << hash.size();
-
-        if (crypto_pwhash_str(hash.data(), password.data(), password.size(),
-             crypto_pwhash_OPSLIMIT_SENSITIVE, crypto_pwhash_MEMLIMIT_SENSITIVE) != 0)
-        {
-            qDebug() << "out of memory";
-        }
-
-        //qDebug() << hash.size();
+        qDebug() << "out of memory";
     }
 }
