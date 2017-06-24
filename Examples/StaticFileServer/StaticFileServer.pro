@@ -12,6 +12,8 @@ CONFIG += c++11
 
 TARGET = StaticFileServer
 TEMPLATE = app
+#CONFIG += console
+CONFIG -= app_bundle
 
 HEADERS += \
     StaticServer.h
@@ -32,7 +34,10 @@ else:unix: LIBS += -L$$OUT_PWD/../../Swiftly/ -lSwiftly
 INCLUDEPATH += $$PWD/../../Swiftly \
                $$PWD/../../http-parser \
                /usr/local/include/bsoncxx/v_noabi \
-               /usr/local/include/mongocxx/v_noabi
+               /usr/local/include/mongocxx/v_noabi \
+               /usr/local/include \
+               /Users/shiyan/mongo-cxx-driver/build/install/include/bsoncxx/v_noabi \
+               /Users/shiyan/mongo-cxx-driver/build/install/include/mongocxx/v_noabi
 DEPENDPATH += $$PWD/../../Swiftly
 
 win32-g++:CONFIG(release, debug|release): PRE_TARGETDEPS += $$OUT_PWD/../../Swiftly/release/libSwiftly.a
@@ -43,5 +48,6 @@ else:unix: PRE_TARGETDEPS += $$OUT_PWD/../../Swiftly/libSwiftly.a
 
 
 LIBS += -L/usr/local/lib -lsodium
+LIBS += -L/Users/shiyan/mongo-cxx-driver/build/install/lib
 LIBS += -lmongocxx
 LIBS += -lbsoncxx

@@ -13,6 +13,8 @@
 #include <mongocxx/client.hpp>
 #include <mongocxx/stdx.hpp>
 #include <mongocxx/uri.hpp>
+#include <mongocxx/bulk_write.hpp>
+#include <mongocxx/exception/bulk_write_exception.hpp>
 
 using bsoncxx::builder::stream::close_array;
 using bsoncxx::builder::stream::close_document;
@@ -27,7 +29,7 @@ UserManager::UserManager()
 
 }
 
-bool UserManager::signup(const QString &email, const QByteArray &password)
+bool UserManager::signup(const QString &email, const QByteArray &password, const QMap<QString, QVariant> &extraFields)
 {
     if (!isValidEmail(email))
     {
@@ -44,7 +46,6 @@ bool UserManager::signup(const QString &email, const QByteArray &password)
     hashPassword(password, hash);
 
 
-    mongocxx::instance instance{};
     mongocxx::client client{mongocxx::uri{}};
 
     mongocxx::database swiftlyDb = client["Swiftly"];
@@ -62,15 +63,31 @@ bool UserManager::signup(const QString &email, const QByteArray &password)
       << "password" << hash.toStdString().c_str()
       << bsoncxx::builder::stream::finalize;
 
-    mongocxx::stdx::optional<mongocxx::result::insert_one> result =
-    userCollection.insert_one(doc_value.view());
-
-    if (result)
+    try
     {
-        bsoncxx::oid oid = (*result).inserted_id().get_oid().value;
-        std::string userId = oid.to_string();
-        qDebug() << userId.c_str() << hash;
+        mongocxx::stdx::optional<mongocxx::result::insert_one> result =
+        userCollection.insert_one(doc_value.view());
+
+        if (result)
+        {
+            bsoncxx::oid oid = (*result).inserted_id().get_oid().value;
+            std::string userId = oid.to_string();
+            qDebug() << userId.c_str() << hash;
+        }
     }
+    catch(const mongocxx::bulk_write_exception &e)
+    {
+        if (e.code().value() == 11000)
+        {
+            qDebug() << "mongo error: duplicated email:" << e.what();
+        }
+        else
+        {
+            qDebug() << "unknown mongo error:" << e.code().value() << e.what();
+        }
+        return false;
+    }
+
     return true;
 }
 

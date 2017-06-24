@@ -4,6 +4,8 @@
 #include "StaticServer.h"
 #include "UserManager.h"
 #include <sodium.h>
+#include <mongocxx/instance.hpp>
+
 
 int main(int argc, char *argv[])
 {
@@ -11,6 +13,8 @@ int main(int argc, char *argv[])
     {
         qDebug() << "sodium problem";
     }
+    mongocxx::instance instance{};
+
     qDebug() << "Example StaticFileServer";
     qDebug() << UserManager::isValidEmail("billconan@gmail.com");
     QString errorMessage = "";
@@ -24,8 +28,9 @@ int main(int argc, char *argv[])
 
 
     UserManager um;
+    QMap<QString, QVariant> extraFields;
 
-    um.signup("billconan@gmail.com", "hahahahaHaHa123!");
+    um.signup("billconan@gmail.com", "hahahahaHaHa123!", extraFields);
 
     return 0;
     QCoreApplication a(argc, argv);

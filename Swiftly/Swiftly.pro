@@ -16,7 +16,10 @@ CONFIG += staticlib
 
 INCLUDEPATH += ../http-parser \
                /usr/local/include/bsoncxx/v_noabi \
-               /usr/local/include/mongocxx/v_noabi
+               /usr/local/include/mongocxx/v_noabi \
+               /usr/local/include \
+               /Users/shiyan/mongo-cxx-driver/build/install/include/bsoncxx/v_noabi \
+               /Users/shiyan/mongo-cxx-driver/build/install/include/mongocxx/v_noabi
 
 HEADERS += Swiftly.h \
     HttpHeader.h \
@@ -57,6 +60,7 @@ SOURCES += \
     UserManager.cpp
 
 LIBS += -L/usr/local/lib -lsodium
+LIBS += /Users/shiyan/mongo-cxx-driver/build/install/lib
 LIBS += -lmongocxx
 LIBS += -lbsoncxx
 
