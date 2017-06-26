@@ -13,9 +13,9 @@ public:
     bool signup(const QString &email, const QByteArray &password, const QMap<QString, QVariant> &extraFields);
     bool login(const QString &email, const QByteArray &password, QMap<QString, QVariant> &extraFields);
     bool resetPassword(const QString &email, const QByteArray &newPassword, const QByteArray &resetCodeOrOldPassword, bool useOldPassword);
-    bool activate(const QString &email, const QString &activationCode);
-    bool sendResetRequest(const QString &email);
-    bool sendActivationCode(const QString &userId, const QString &email);
+    bool activate(QString &email, const QString &activationCode);
+    bool sendPasswordResetRequest(const QString &email);
+    bool sendActivationCode(const QString &email, QString &activationCode);
     bool updateEmail(const QString &userId, const QString &newEmail);
 
     static bool isValidEmail(const QString &email);

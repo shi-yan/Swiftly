@@ -52,12 +52,25 @@ bool UserManager::signup(const QString &email, const QByteArray &password, const
 
     mongocxx::database swiftlyDb = client["Swiftly"];
     mongocxx::collection userCollection = swiftlyDb["User"];
+    mongocxx::collection activationCollection = swiftlyDb["Activation"];
 
-    bsoncxx::builder::stream::document index_builder;
-    mongocxx::options::index index_options{};
-    index_builder << "email" << 1;
-    index_options.unique(true);
-    userCollection.create_index(index_builder.view(), index_options);
+    bsoncxx::builder::stream::document userIndexBuilder;
+    mongocxx::options::index userIndexOptions{};
+    userIndexBuilder << "email" << 1;
+    userIndexOptions.unique(true);
+    userCollection.create_index(userIndexBuilder.view(), userIndexOptions);
+
+    bsoncxx::builder::stream::document activationEmailIndexBuilder;
+    mongocxx::options::index activationEmailOptions{};
+    activationEmailIndexBuilder << "email" << 1;
+    activationEmailOptions.unique(true);
+    activationCollection.create_index(activationEmailIndexBuilder.view(), activationEmailOptions);
+
+    bsoncxx::builder::stream::document activationCodeIndexBuilder;
+    mongocxx::options::index activationCodeOptions{};
+    activationCodeIndexBuilder << "activation_code" << 1;
+    activationCodeOptions.unique(true);
+    activationCollection.create_index(activationCodeIndexBuilder.view(), activationCodeOptions);
 
     auto builder = bsoncxx::builder::stream::document{};
     bsoncxx::document::value userAccountDocumentValue = builder
@@ -66,24 +79,39 @@ bool UserManager::signup(const QString &email, const QByteArray &password, const
       << "status" << 0
       << bsoncxx::builder::stream::finalize;
 
-    QByteArray activationCode;
-    generateActivationCode(email, activationCode);
-    bsoncxx::document::value activationDocumentValue = bsoncxx::builder::stream::document{}
-            << "activation_code" << activationCode.toStdString().c_str()
-            << "time" << QDateTime.currentDateTimeUtc();
-
 
 
     try
     {
         mongocxx::stdx::optional<mongocxx::result::insert_one> result =
-        userCollection.insert_one(doc_value.view());
+        userCollection.insert_one(userAccountDocumentValue.view());
 
         if (result)
         {
             bsoncxx::oid oid = (*result).inserted_id().get_oid().value;
             std::string userId = oid.to_string();
+
+            QByteArray activationCode;
+            generateActivationCode(email, activationCode);
+            bsoncxx::document::value activationDocumentValue = bsoncxx::builder::stream::document{}
+                    << "activation_code" << activationCode.toStdString().c_str()
+                    << "time" << static_cast<std::int64_t>( QDateTime::currentDateTimeUtc().toTime_t())
+                    << "email" << email.toStdString().c_str()
+                    << "userId" << userId.c_str()
+                    << bsoncxx::builder::stream::finalize;
+
+            result = activationCollection.insert_one(activationDocumentValue.view());
+
+            if (!result)
+            {
+                return false;
+            }
+
             qDebug() << userId.c_str() << hash;
+        }
+        else
+        {
+            return false;
         }
     }
     catch(const mongocxx::bulk_write_exception &e)
@@ -144,6 +172,14 @@ bool UserManager::login(const QString &email, const QByteArray &password, QMap<Q
         {
             return false;
         }
+
+        bsoncxx::document::element statusElement = (*maybe_result).view()["status"];
+
+        std::int64_t status = statusElement.get_int64().value;
+        if (status == 0)
+        {
+            return false;
+        }
     }
     else
     {
@@ -156,22 +192,269 @@ bool UserManager::login(const QString &email, const QByteArray &password, QMap<Q
 
 bool UserManager::resetPassword(const QString &email, const QByteArray &newPassword, const QByteArray &resetCodeOrOldPassword, bool useOldPassword)
 {
+    if (!isValidEmail(email))
+    {
+        return false;
+    }
 
+    if (!isValidEmail(newPassword))
+    {
+        return false;
+    }
+
+
+    mongocxx::client client{mongocxx::uri{}};
+
+    mongocxx::database swiftlyDb = client["Swiftly"];
+    mongocxx::collection resetCollection = swiftlyDb["Reset"];
+    mongocxx::collection userCollection = swiftlyDb["User"];
+
+    QString errorMessage;
+    if (useOldPassword)
+    {
+        if (!isValidePassword(resetCodeOrOldPassword, errorMessage))
+        {
+            return false;
+        }
+
+        mongocxx::stdx::optional<bsoncxx::document::value> maybe_result =
+               userCollection.find_one(bsoncxx::builder::stream::document{}
+                                       << "email" << "billconan@gmail.com" << bsoncxx::builder::stream::finalize);
+
+        if(maybe_result)
+        {
+            //std::cout << bsoncxx::to_json(*maybe_result) << "\n";
+            //bsoncxx::document::element emailElement = (*maybe_result).view()["email"];
+            //email =  QString::fromStdString(emailElement.get_utf8().value.to_string());
+            bsoncxx::document::element passwordElement = (*maybe_result).view()["password"];
+
+            QByteArray passwordHash;
+            passwordHash.resize(crypto_pwhash_STRBYTES);
+            passwordHash.clear();
+            std::string passwordHashStr = passwordElement.get_utf8().value.to_string();
+            passwordHash.setRawData(passwordHashStr.data(), passwordHashStr.size());
+
+            qDebug() << passwordHash;
+
+            if (!UserManager::verifyPassword(passwordHash, resetCodeOrOldPassword))
+            {
+                return false;
+            }
+        }
+        else
+        {
+            return false;
+        }
+
+    }
+    else
+    {
+
+        mongocxx::stdx::optional<bsoncxx::document::value> maybe_result =
+               resetCollection.find_one(bsoncxx::builder::stream::document{}
+                                       << "reset_code" << resetCodeOrOldPassword.toStdString().c_str()
+                                       << bsoncxx::builder::stream::finalize);
+
+        if(maybe_result)
+        {
+            //std::cout << bsoncxx::to_json(*maybe_result) << "\n";
+            //bsoncxx::document::element emailElement = (*maybe_result).view()["email"];
+            //email =  QString::fromStdString(emailElement.get_utf8().value.to_string());
+            bsoncxx::document::element emailElement = (*maybe_result).view()["email"];
+
+            if (email != QString::fromStdString(emailElement.get_utf8().value.to_string()))
+            {
+                return false;
+            }
+        }
+        else
+        {
+            return false;
+        }
+
+        if (!isValidePassword(newPassword, errorMessage))
+        {
+            return false;
+        }
+    }
+
+
+    QByteArray hash;
+    hashPassword(newPassword, hash);
+
+    try
+    {
+        //std::cout << bsoncxx::to_json(*maybe_result) << "\n";
+        //bsoncxx::document::element emailElement = (*maybe_result).view()["email"];
+        //email =  QString::fromStdString(emailElement.get_utf8().value.to_string());
+
+        mongocxx::stdx::optional<mongocxx::result::update> result = userCollection.update_one(bsoncxx::builder::stream::document{} << "email" << email.toStdString().c_str() << finalize,
+                                  bsoncxx::builder::stream::document{} << "$set"
+                                  << bsoncxx::builder::stream::open_document
+                                  << "password" << hash.toStdString().c_str()
+                                  << bsoncxx::builder::stream::close_document
+                                  << bsoncxx::builder::stream::finalize);
+
+
+        if (result)
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+    catch(const mongocxx::bulk_write_exception &e)
+    {
+        if (e.code().value() == 11000)
+        {
+            qDebug() << "mongo error: duplicated email:" << e.what();
+        }
+        else
+        {
+            qDebug() << "unknown mongo error:" << e.code().value() << e.what();
+        }
+        return false;
+    }
+
+    return true;
 }
 
-bool UserManager::activate(const QString &email, const QString &activationCode)
+bool UserManager::activate(QString &email, const QString &activationCode)
 {
+    mongocxx::client client{mongocxx::uri{}};
 
+    mongocxx::database swiftlyDb = client["Swiftly"];
+    mongocxx::collection activationCollection = swiftlyDb["Activation"];
+    mongocxx::collection userCollection = swiftlyDb["User"];
+
+    mongocxx::stdx::optional<bsoncxx::document::value> maybe_result =
+           activationCollection.find_one(bsoncxx::builder::stream::document{}
+                                   << "activation_code" << activationCode.toStdString().c_str()
+                                   << bsoncxx::builder::stream::finalize);
+
+    if(maybe_result)
+    {
+        //std::cout << bsoncxx::to_json(*maybe_result) << "\n";
+        //bsoncxx::document::element emailElement = (*maybe_result).view()["email"];
+        //email =  QString::fromStdString(emailElement.get_utf8().value.to_string());
+        bsoncxx::document::element emailElement = (*maybe_result).view()["email"];
+
+        email = QString::fromStdString(emailElement.get_utf8().value.to_string());
+
+
+        mongocxx::stdx::optional<mongocxx::result::update> result = userCollection.update_one(bsoncxx::builder::stream::document{} << "email" << email.toStdString().c_str() << finalize,
+                                  bsoncxx::builder::stream::document{} << "$set"
+                                  << bsoncxx::builder::stream::open_document
+                                  << "status" << 1 << bsoncxx::builder::stream::close_document
+                                  << bsoncxx::builder::stream::finalize);
+        if (result)
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+    else
+    {
+        return false;
+    }
+
+    return true;
 }
 
-bool UserManager::sendResetRequest(const QString &email)
+bool UserManager::sendPasswordResetRequest(const QString &email)
 {
+    mongocxx::client client{mongocxx::uri{}};
 
+    mongocxx::database swiftlyDb = client["Swiftly"];
+    mongocxx::collection resetCollection = swiftlyDb["Reset"];
+
+    bsoncxx::builder::stream::document resetPasswordEmailIndexBuilder;
+    mongocxx::options::index resetPasswordEmailOptions{};
+    resetPasswordEmailIndexBuilder << "email" << 1;
+    resetPasswordEmailOptions.unique(true);
+    resetCollection.create_index(resetPasswordEmailIndexBuilder.view(), resetPasswordEmailOptions);
+
+    bsoncxx::builder::stream::document resetPasswordCodeIndexBuilder;
+    mongocxx::options::index resetPasswordCodeOptions{};
+    resetPasswordCodeIndexBuilder << "reset_code" << 1;
+    resetPasswordCodeOptions.unique(true);
+    resetCollection.create_index(resetPasswordCodeIndexBuilder.view(), resetPasswordCodeOptions);
+
+    QByteArray passwordResetCode;
+    generateActivationCode(email, passwordResetCode);
+    bsoncxx::document::value passwordResetDocumentValue = bsoncxx::builder::stream::document{}
+            << "reset_code" << passwordResetCode.toStdString().c_str()
+            << "time" << static_cast<std::int64_t>( QDateTime::currentDateTimeUtc().toTime_t())
+            << "email" << email.toStdString().c_str()
+           // << "userId" << userId.c_str()
+            << bsoncxx::builder::stream::finalize;
+
+    try
+    {
+        mongocxx::stdx::optional<mongocxx::result::insert_one> result =
+        resetCollection.insert_one(passwordResetDocumentValue.view());
+
+        if (result)
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+    catch(const mongocxx::bulk_write_exception &e)
+    {
+        if (e.code().value() == 11000)
+        {
+            qDebug() << "mongo error: duplicated email:" << e.what();
+        }
+        else
+        {
+            qDebug() << "unknown mongo error:" << e.code().value() << e.what();
+        }
+        return false;
+    }
+
+    return true;
 }
 
-bool UserManager::sendActivationCode(const QString &userId, const QString &email)
+bool UserManager::sendActivationCode(const QString &email, QString &activationCode)
 {
+    if (!isValidEmail(email))
+    {
+        return false;
+    }
 
+    mongocxx::client client{mongocxx::uri{}};
+
+    mongocxx::database swiftlyDb = client["Swiftly"];
+    mongocxx::collection activationCollection = swiftlyDb["Activation"];
+    mongocxx::collection userCollection = swiftlyDb["User"];
+
+    mongocxx::stdx::optional<bsoncxx::document::value> maybe_result =
+           activationCollection.find_one(bsoncxx::builder::stream::document{}
+                                   << "email" << email.toStdString().c_str()
+                                   << bsoncxx::builder::stream::finalize);
+
+    if (maybe_result)
+    {
+        bsoncxx::document::element emailElement = (*maybe_result).view()["activation_code"];
+
+        activationCode = QString::fromStdString(emailElement.get_utf8().value.to_string());
+
+    }
+    else
+    {
+        return false;
+    }
+
+    return true;
 }
 
 bool UserManager::isValidEmail(const QString &email)
