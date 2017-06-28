@@ -11,7 +11,7 @@ class StaticServer : public WebApp
     StaticFileServer m_staticFileServer;
 public:
     StaticServer();
-    void registerPathHandlers();
+    void registerPathHandlers() override;
 public slots:
     void handleFileGet(HttpRequest &,HttpResponse &);
 };

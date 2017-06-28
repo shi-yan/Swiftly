@@ -8,7 +8,7 @@ class HelloWorld : public WebApp
     Q_OBJECT
 
 public:
-    void registerPathHandlers();
+    void registerPathHandlers() override;
 
 public slots:
     void handleHelloWorldGet(HttpRequest &,HttpResponse &);

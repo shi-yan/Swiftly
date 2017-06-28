@@ -1,4 +1,5 @@
 TEMPLATE = subdirs
 
 SUBDIRS = HelloWorld \
-          StaticFileServer
+          StaticFileServer \
+          UserManagement

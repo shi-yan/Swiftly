@@ -10,13 +10,13 @@ QT       -= gui
 
 CONFIG += c++11
 
-TARGET = StaticFileServer
+TARGET = UserManagement
 TEMPLATE = app
 #CONFIG += console
 CONFIG -= app_bundle
 
 HEADERS += \
-    StaticServer.h
+    UserManagement.h
 
 unix {
     target.path = /usr/lib
@@ -24,7 +24,7 @@ unix {
 }
 
 SOURCES += main.cpp \
-    StaticServer.cpp
+    UserManagement.cpp
 
 
 win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../../Swiftly/release/ -lSwiftly

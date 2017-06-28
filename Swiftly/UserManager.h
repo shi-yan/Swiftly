@@ -10,7 +10,18 @@ class UserManager : public QObject
 public:
     UserManager();
 
-    bool signup(const QString &email, const QByteArray &password, const QMap<QString, QVariant> &extraFields);
+    UserManager(const UserManager &)
+        :QObject()
+    {
+
+    }
+
+    void operator=(const UserManager &)
+    {
+
+    }
+
+    bool signup(const QString &email, const QByteArray &password, const QMap<QString, QVariant> &extraFields, QString &errorMessage);
     bool login(const QString &email, const QByteArray &password, QMap<QString, QVariant> &extraFields);
     bool resetPassword(const QString &email, const QByteArray &newPassword, const QByteArray &resetCodeOrOldPassword, bool useOldPassword);
     bool activate(QString &email, const QString &activationCode);

@@ -4,7 +4,6 @@
 #include <sodium.h>
 #include <QString>
 #include <QStringBuilder>
-
 #include <cstdint>
 #include <iostream>
 #include <vector>
@@ -31,16 +30,17 @@ UserManager::UserManager()
 
 }
 
-bool UserManager::signup(const QString &email, const QByteArray &password, const QMap<QString, QVariant> &extraFields)
+bool UserManager::signup(const QString &email, const QByteArray &password, const QMap<QString, QVariant> &extraFields, QString &errorMessage)
 {
     if (!isValidEmail(email))
     {
+        errorMessage = "Ill-formed email address";
         return false;
     }
 
-    QString errorMessage;
     if (!isValidePassword(password, errorMessage))
     {
+        errorMessage = "Ill-formed password:" % errorMessage;
         return false;
     }
 
@@ -79,8 +79,6 @@ bool UserManager::signup(const QString &email, const QByteArray &password, const
       << "status" << 0
       << bsoncxx::builder::stream::finalize;
 
-
-
     try
     {
         mongocxx::stdx::optional<mongocxx::result::insert_one> result =
@@ -104,6 +102,7 @@ bool UserManager::signup(const QString &email, const QByteArray &password, const
 
             if (!result)
             {
+                errorMessage = "Unable to generate activation code";
                 return false;
             }
 
@@ -111,6 +110,7 @@ bool UserManager::signup(const QString &email, const QByteArray &password, const
         }
         else
         {
+            errorMessage = "Unknown issue when generate user account";
             return false;
         }
     }
@@ -118,11 +118,13 @@ bool UserManager::signup(const QString &email, const QByteArray &password, const
     {
         if (e.code().value() == 11000)
         {
-            qDebug() << "mongo error: duplicated email:" << e.what();
+            //qDebug() << "mongo error: duplicated email:" << e.what();
+            errorMessage = "User with the same email exists" % QString::fromLatin1(e.what());
         }
         else
         {
-            qDebug() << "unknown mongo error:" << e.code().value() << e.what();
+            //qDebug() << "unknown mongo error:" << e.code().value() << e.what();
+            errorMessage = "Database error:" % QString::fromLatin1(e.what());
         }
         return false;
     }
