@@ -16,6 +16,7 @@
 #include <mongocxx/exception/bulk_write_exception.hpp>
 #include <QCryptographicHash>
 #include <QDateTime>
+#include "MongodbManager.h"
 
 using bsoncxx::builder::stream::close_array;
 using bsoncxx::builder::stream::close_document;
@@ -47,10 +48,9 @@ bool UserManager::signup(const QString &email, const QByteArray &password, const
     QByteArray hash;
     hashPassword(password, hash);
 
+    auto client = MongodbManager::getSingleton().getClient();
 
-    mongocxx::client client{mongocxx::uri{}};
-
-    mongocxx::database swiftlyDb = client["Swiftly"];
+    mongocxx::database swiftlyDb = (*client)["Swiftly"];
     mongocxx::collection userCollection = swiftlyDb["User"];
     mongocxx::collection activationCollection = swiftlyDb["Activation"];
 
@@ -132,23 +132,23 @@ bool UserManager::signup(const QString &email, const QByteArray &password, const
     return true;
 }
 
-bool UserManager::login(const QString &email, const QByteArray &password, QMap<QString, QVariant> &extraFields)
+bool UserManager::login(const QString &email, const QByteArray &password, QMap<QString, QVariant> &extraFields, QString &errorMessage)
 {
     if (!isValidEmail(email))
     {
+        errorMessage = "Ill-formed email address";
         return false;
     }
 
-    QString errorMessage;
     if (!isValidePassword(password, errorMessage))
     {
+        errorMessage = "Ill-formed password:" % errorMessage;
         return false;
     }
 
+    auto client = MongodbManager::getSingleton().getClient();
 
-    mongocxx::client client{mongocxx::uri{}};
-
-    mongocxx::database swiftlyDb = client["Swiftly"];
+    mongocxx::database swiftlyDb = (*client)["Swiftly"];
     mongocxx::collection userCollection = swiftlyDb["User"];
 
     mongocxx::stdx::optional<bsoncxx::document::value> maybe_result =
@@ -160,6 +160,16 @@ bool UserManager::login(const QString &email, const QByteArray &password, QMap<Q
         //std::cout << bsoncxx::to_json(*maybe_result) << "\n";
         //bsoncxx::document::element emailElement = (*maybe_result).view()["email"];
         //email =  QString::fromStdString(emailElement.get_utf8().value.to_string());
+
+        bsoncxx::document::element statusElement = (*maybe_result).view()["status"];
+
+        std::int64_t status = statusElement.get_int64().value;
+        if (status == 0)
+        {
+            errorMessage = "User account hasn't been activated yet.";
+            return false;
+        }
+
         bsoncxx::document::element passwordElement = (*maybe_result).view()["password"];
 
         QByteArray passwordHash;
@@ -172,19 +182,13 @@ bool UserManager::login(const QString &email, const QByteArray &password, QMap<Q
 
         if (!UserManager::verifyPassword(passwordHash, password))
         {
-            return false;
-        }
-
-        bsoncxx::document::element statusElement = (*maybe_result).view()["status"];
-
-        std::int64_t status = statusElement.get_int64().value;
-        if (status == 0)
-        {
+            errorMessage = "Wrong password.";
             return false;
         }
     }
     else
     {
+        errorMessage = "No user registered with this email.";
         return false;
     }
 
@@ -204,10 +208,9 @@ bool UserManager::resetPassword(const QString &email, const QByteArray &newPassw
         return false;
     }
 
+    auto client = MongodbManager::getSingleton().getClient();
 
-    mongocxx::client client{mongocxx::uri{}};
-
-    mongocxx::database swiftlyDb = client["Swiftly"];
+    mongocxx::database swiftlyDb = (*client)["Swiftly"];
     mongocxx::collection resetCollection = swiftlyDb["Reset"];
     mongocxx::collection userCollection = swiftlyDb["User"];
 
@@ -325,9 +328,9 @@ bool UserManager::resetPassword(const QString &email, const QByteArray &newPassw
 
 bool UserManager::activate(QString &email, const QString &activationCode)
 {
-    mongocxx::client client{mongocxx::uri{}};
+    auto client = MongodbManager::getSingleton().getClient();
 
-    mongocxx::database swiftlyDb = client["Swiftly"];
+    mongocxx::database swiftlyDb = (*client)["Swiftly"];
     mongocxx::collection activationCollection = swiftlyDb["Activation"];
     mongocxx::collection userCollection = swiftlyDb["User"];
 
@@ -370,9 +373,9 @@ bool UserManager::activate(QString &email, const QString &activationCode)
 
 bool UserManager::sendPasswordResetRequest(const QString &email)
 {
-    mongocxx::client client{mongocxx::uri{}};
+    auto client = MongodbManager::getSingleton().getClient();
 
-    mongocxx::database swiftlyDb = client["Swiftly"];
+    mongocxx::database swiftlyDb = (*client)["Swiftly"];
     mongocxx::collection resetCollection = swiftlyDb["Reset"];
 
     bsoncxx::builder::stream::document resetPasswordEmailIndexBuilder;
@@ -433,9 +436,9 @@ bool UserManager::sendActivationCode(const QString &email, QString &activationCo
         return false;
     }
 
-    mongocxx::client client{mongocxx::uri{}};
+    auto client = MongodbManager::getSingleton().getClient();
 
-    mongocxx::database swiftlyDb = client["Swiftly"];
+    mongocxx::database swiftlyDb = (*client)["Swiftly"];
     mongocxx::collection activationCollection = swiftlyDb["Activation"];
     mongocxx::collection userCollection = swiftlyDb["User"];
 
@@ -588,6 +591,4 @@ void UserManager::generateActivationCode(const QString &email, QByteArray &activ
     activationCode = hash.result().toBase64();
 
     qDebug() << activationCode;
-
-
 }

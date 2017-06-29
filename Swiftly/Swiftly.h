@@ -3,7 +3,7 @@
 
 #define REGISTER_WEBAPP( webapp ) \
     do { \
-      HttpServer::getSingleton().registerWebApp<webapp>("webapp");\
+      HttpServer::getSingleton().registerWebApp<webapp>(#webapp);\
     } while (0)
 
 #include <QtNetwork/QTcpServer>

@@ -4,7 +4,8 @@
 #include "IncomingConnectionQueue.h"
 #include "HttpRequest.h"
 #include "HttpResponse.h"
-
+#include <sodium.h>
+#include "ReCAPTCHAVerifier.h"
 
 HttpServer::HttpServer(QObject* parent )
     : QTcpServer(parent), 
@@ -43,6 +44,12 @@ void HttpServer::incomingConnection(qintptr socket)
 
 void HttpServer::start(int numOfWorkers, quint16 port)
 {
+    if(sodium_init()!=0)
+    {
+        qDebug() << "sodium problem";
+    }
+
+    ReCAPTCHAVerifier::getSingleton().init("6LdhPycUAAAAACGqV4ttoV72Lv-_EkzrQrrC--IA");
     qDebug()<<"Need to create"<<numOfWorkers<<"workers";
 
     if(numOfWorkers<1)

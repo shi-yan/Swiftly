@@ -36,6 +36,8 @@ public:
         return header;
     }
 
+    QString getFromIPAddress() const;
+
     QString & getFormData(const QString &fieldName)
     {
         return formData[fieldName];

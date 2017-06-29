@@ -16,7 +16,8 @@ TEMPLATE = app
 CONFIG -= app_bundle
 
 HEADERS += \
-    UserManagement.h
+    UserManagement.h \
+    UserManagementUI.h
 
 unix {
     target.path = /usr/lib
@@ -24,7 +25,8 @@ unix {
 }
 
 SOURCES += main.cpp \
-    UserManagement.cpp
+    UserManagement.cpp \
+    UserManagementUI.cpp
 
 
 win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../../Swiftly/release/ -lSwiftly

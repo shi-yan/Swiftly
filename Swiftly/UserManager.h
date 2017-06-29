@@ -22,7 +22,7 @@ public:
     }
 
     bool signup(const QString &email, const QByteArray &password, const QMap<QString, QVariant> &extraFields, QString &errorMessage);
-    bool login(const QString &email, const QByteArray &password, QMap<QString, QVariant> &extraFields);
+    bool login(const QString &email, const QByteArray &password, QMap<QString, QVariant> &extraFields, QString &errorMessage);
     bool resetPassword(const QString &email, const QByteArray &newPassword, const QByteArray &resetCodeOrOldPassword, bool useOldPassword);
     bool activate(QString &email, const QString &activationCode);
     bool sendPasswordResetRequest(const QString &email);

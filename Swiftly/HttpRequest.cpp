@@ -1,6 +1,7 @@
 #include <QtCore/QStringList>
 #include "TcpSocket.h"
 #include "HttpRequest.h"
+#include <QHostAddress>
 
 HttpRequest::HttpRequest(TcpSocket *_socket)
     :QObject(),
@@ -225,5 +226,13 @@ void HttpRequest::parseFormData()
 
         }
 
+    }
+}
+
+QString HttpRequest::getFromIPAddress() const
+{
+    if (socket)
+    {
+        return socket->peerAddress().toString();
     }
 }

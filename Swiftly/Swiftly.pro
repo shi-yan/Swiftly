@@ -35,7 +35,10 @@ HEADERS += Swiftly.h \
     StaticFileServer.h \
     IncomingConnectionQueue.h \
     WorkerSocketWatchDog.h \
-    UserManager.h
+    UserManager.h \
+    SessionManager.h \
+    MongodbManager.h \
+    ReCAPTCHAVerifier.h
 unix {
     target.path = /usr/lib
     INSTALLS += target
@@ -57,7 +60,10 @@ SOURCES += \
     StaticFileServer.cpp \
     IncomingConnectionQueue.cpp \
     WorkerSocketWatchDog.cpp \
-    UserManager.cpp
+    UserManager.cpp \
+    SessionManager.cpp \
+    MongodbManager.cpp \
+    ReCAPTCHAVerifier.cpp
 
 LIBS += -L/usr/local/lib -lsodium
 LIBS += /Users/shiyan/mongo-cxx-driver/build/install/lib
