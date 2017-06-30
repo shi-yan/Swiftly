@@ -2,9 +2,12 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include "ReCAPTCHAVerifier.h"
+#include "SmtpManager.h"
+#include "SettingsManager.h"
 
 UserManagement::UserManagement()
-    :WebApp()
+    : WebApp(),
+        m_userManager()
 {
 
 }
@@ -207,4 +210,27 @@ void UserManagement::handleSendActivationCodeGet(HttpRequest &, HttpResponse &)
 void UserManagement::handleUserUpdateEmailPost(HttpRequest &, HttpResponse &)
 {
 
+}
+
+bool UserManagement::sendActivationEmail(const QString &to)
+{
+    if (SettingsManager::getSingleton().has("SMTP/username")
+            || SettingsManager::getSingleton().has("SMTP/password")
+            || SettingsManager::getSingleton().has("SMTP/server")
+            || SettingsManager::getSingleton().has("SMTP/from"))
+    {
+        QString username = SettingsManager::getSingleton().get("SMTP/username").toString();
+        QString password = SettingsManager::getSingleton().get("SMTP/password").toString();
+        QString server = SettingsManager::getSingleton().get("SMTP/server").toString();
+        SmtpManager *smtp = new SmtpManager(username, password, server);
+        connect(smtp, SIGNAL(status(QString)), this, SLOT(mailSent(QString)));
+        smtp->sendMail("shiyan.nebula@gmail.com", "shiy@nvidia.com", "testtest", "no content");
+    }
+}
+
+void UserManagement::mailSent(QString status)
+{
+    qDebug() << status;
+    Smtp *smtp = (Smtp*)QObject::sender();
+    smtp->deleteLater();
 }

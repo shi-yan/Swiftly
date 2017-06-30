@@ -6,6 +6,8 @@
 #include "HttpResponse.h"
 #include <sodium.h>
 #include "ReCAPTCHAVerifier.h"
+#include <QSettings>
+#include "SettingsManager.h"
 
 HttpServer::HttpServer(QObject* parent )
     : QTcpServer(parent), 
@@ -49,7 +51,15 @@ void HttpServer::start(int numOfWorkers, quint16 port)
         qDebug() << "sodium problem";
     }
 
-    ReCAPTCHAVerifier::getSingleton().init("6LdhPycUAAAAACGqV4ttoV72Lv-_EkzrQrrC--IA");
+    SettingsManager::getSingleton().init();
+
+    if(SettingsManager::getSingleton().has("reCAPTCHA/secret"))
+    {
+        qDebug() << "has reCAPTCHA settings";
+        QString secret = SettingsManager::getSingleton().get("reCAPTCHA/secret").toString();
+        ReCAPTCHAVerifier::getSingleton().init(secret);
+    }
+
     qDebug()<<"Need to create"<<numOfWorkers<<"workers";
 
     if(numOfWorkers<1)

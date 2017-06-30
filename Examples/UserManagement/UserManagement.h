@@ -8,16 +8,17 @@ class UserManagement : public WebApp
 {
     Q_OBJECT
 
+    UserManager m_userManager;
 public:
     UserManagement();
     UserManagement(const UserManagement&in)
+        :WebApp(),
+          m_userManager(in.m_userManager)
     {
-        m_userManager = in.m_userManager;
     }
 
     void registerPathHandlers() override;
 
-    UserManager m_userManager;
 public slots:
     void handleUserSignupPost(HttpRequest &,HttpResponse &);
     void handleUserLoginPost(HttpRequest &, HttpResponse &);
@@ -26,6 +27,12 @@ public slots:
     void handleSendPasswordResetRequestGet(HttpRequest &, HttpResponse &);
     void handleSendActivationCodeGet(HttpRequest &, HttpResponse &);
     void handleUserUpdateEmailPost(HttpRequest &, HttpResponse &);
+
+public:
+    bool sendActivationEmail(const QString &to);
+
+private slots:
+    void mailSent(QString status);
 };
 
 #endif // USERMANAGEMENT_H

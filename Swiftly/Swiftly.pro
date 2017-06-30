@@ -38,7 +38,10 @@ HEADERS += Swiftly.h \
     UserManager.h \
     SessionManager.h \
     MongodbManager.h \
-    ReCAPTCHAVerifier.h
+    ReCAPTCHAVerifier.h \
+    SettingsManager.h \
+    LoggingManager.h \
+    SmtpManager.h
 unix {
     target.path = /usr/lib
     INSTALLS += target
@@ -63,7 +66,10 @@ SOURCES += \
     UserManager.cpp \
     SessionManager.cpp \
     MongodbManager.cpp \
-    ReCAPTCHAVerifier.cpp
+    ReCAPTCHAVerifier.cpp \
+    SettingsManager.cpp \
+    LoggingManager.cpp \
+    SmtpManager.cpp
 
 LIBS += -L/usr/local/lib -lsodium
 LIBS += /Users/shiyan/mongo-cxx-driver/build/install/lib
