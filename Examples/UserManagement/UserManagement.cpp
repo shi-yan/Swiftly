@@ -71,16 +71,32 @@ void UserManagement::handleUserSignupPost(HttpRequest &request, HttpResponse &re
 
         QMap<QString, QVariant> extraFields;
         QString errorMessage;
-        if(m_userManager.signup(email, password, extraFields,errorMessage))
+        QByteArray activationCode;
+        if(m_userManager.signup(email, password, extraFields, errorMessage, activationCode))
         {
-            QJsonObject responseObject;
+            if (sendActivationEmail(email, QString::fromLatin1(activationCode)))
+            {
+                QJsonObject responseObject;
 
-            responseObject["status"] = 0;
-            QJsonDocument responseDoc(responseObject);
+                responseObject["status"] = 0;
+                QJsonDocument responseDoc(responseObject);
 
-            response.setStatusCode(200);
-            response << responseDoc.toJson();
-            response.finish("application/json");
+                response.setStatusCode(200);
+                response << responseDoc.toJson();
+                response.finish("application/json");
+            }
+            else
+            {
+                QJsonObject responseObject;
+
+                responseObject["status"] = 5;
+                responseObject["error_message"] = "failed to send activation email!";
+                QJsonDocument responseDoc(responseObject);
+
+                response.setStatusCode(200);
+                response << responseDoc.toJson();
+                response.finish("application/json");
+            }
             return;
         }
         else
@@ -189,22 +205,228 @@ void UserManagement::handleUserLoginPost(HttpRequest &request, HttpResponse &res
 
 void UserManagement::handleUserResetPasswordPost(HttpRequest &, HttpResponse &)
 {
+    QByteArray rawData = request.getRawData();
+    QJsonParseError error;
+    QJsonDocument data = QJsonDocument::fromJson(rawData, &error);
 
+    if (error.error != QJsonParseError::NoError)
+    {
+        QJsonObject responseObject;
+
+        responseObject["status"] = 1;
+        responseObject["error_category"] = "Json Parsing Issue";
+        responseObject["error_code"] = static_cast<int>(error.error);
+        responseObject["error_message"] = error.errorString();
+        QJsonDocument responseDoc(responseObject);
+
+        response.setStatusCode(200);
+        response << responseDoc.toJson();
+        response.finish("application/json");
+        return;
+
+    }
+
+    QJsonObject dataObject = data.object();
+
+    if (dataObject.contains("email") && dataObject.contains("password") && dataObject.contains("reset_code"))
+    {
+        QString email = dataObject["email"].toString();
+        QByteArray password = dataObject["password"].toString().toLatin1();
+        QString reset_code = dataObject["reset_code"].toString();
+
+        if (!m_userManager.resetPassword(email, password, reset_code, false))
+        {
+            QJsonObject responseObject;
+
+            responseObject["status"] = 4;
+            responseObject["error_category"] = "reset password failed.";
+            QJsonDocument responseDoc(responseObject);
+
+            response.setStatusCode(200);
+            response << responseDoc.toJson();
+            response.finish("application/json");
+            return;
+        }
+        else
+        {
+            QJsonObject responseObject;
+
+            responseObject["status"] = 0;
+            QJsonDocument responseDoc(responseObject);
+
+            response.setStatusCode(200);
+            response << responseDoc.toJson();
+            response.finish("application/json");
+            return;
+        }
+    }
+    else
+    {
+        QJsonObject responseObject;
+
+        responseObject["status"] = 3;
+        responseObject["error_category"] = "Missing Infomation";
+        QJsonDocument responseDoc(responseObject);
+
+        response.setStatusCode(200);
+        response << responseDoc.toJson();
+        response.finish("application/json");
+        return;
+    }
 }
 
-void UserManagement::handleUserActivationGet(HttpRequest &, HttpResponse &)
+void UserManagement::handleUserActivationGet(HttpRequest &request, HttpResponse &response)
 {
+    QMap<QString, QString> &queries = request.getHeader().getQueries();
 
+    if (queries.contains("activation_code") && queries.contains("email"))
+    {
+        QByteArray activationCode = queries["activation_code"].toLatin1();
+        QString email = queries["email"];
+
+        if(m_userManager.activate(email, activationCode))
+        {
+            QJsonObject responseObject;
+
+            responseObject["status"] = 0;
+            QJsonDocument responseDoc(responseObject);
+            response.setStatusCode(200);
+            response << responseDoc.toJson();
+            response.finish("application/json");
+            return;
+        }
+        else
+        {
+            QJsonObject responseObject;
+
+            responseObject["status"] = 2;
+            responseObject["error_category"] = "Can't activate!";
+            QJsonDocument responseDoc(responseObject);
+
+            response.setStatusCode(200);
+            response << responseDoc.toJson();
+            response.finish("application/json");
+            return;
+        }
+    }
+    else
+    {
+        QJsonObject responseObject;
+
+        responseObject["status"] = 1;
+        responseObject["error_category"] = "Missing Activation Code";
+        QJsonDocument responseDoc(responseObject);
+
+        response.setStatusCode(200);
+        response << responseDoc.toJson();
+        response.finish("application/json");
+        return;
+    }
 }
 
-void UserManagement::handleSendPasswordResetRequestGet(HttpRequest &, HttpResponse &)
+void UserManagement::handleSendPasswordResetRequestGet(HttpRequest &request, HttpResponse &response)
 {
+    QMap<QString, QString> &queries = request.getHeader().getQueries();
 
+    if (queries.contains("email"))
+    {
+        QString email = queries["email"];
+
+        QByteArray resetCode;
+
+        if(m_userManager.sendPasswordResetRequest(email, resetCode))
+        {
+            QJsonObject responseObject;
+
+            responseObject["status"] = 0;
+            QJsonDocument responseDoc(responseObject);
+
+            response.setStatusCode(200);
+            response << responseDoc.toJson();
+            response.finish("application/json");
+            return;
+        }
+        else
+        {
+            QJsonObject responseObject;
+
+            responseObject["status"] = 1;
+            responseObject["error_category"] = "Unable to send reset code";
+            QJsonDocument responseDoc(responseObject);
+
+            response.setStatusCode(200);
+            response << responseDoc.toJson();
+            response.finish("application/json");
+            return;
+        }
+
+
+    }
+    else
+    {
+        QJsonObject responseObject;
+
+        responseObject["status"] = 2;
+        responseObject["error_category"] = "Missing email";
+        QJsonDocument responseDoc(responseObject);
+
+        response.setStatusCode(200);
+        response << responseDoc.toJson();
+        response.finish("application/json");
+        return;
+    }
 }
 
-void UserManagement::handleSendActivationCodeGet(HttpRequest &, HttpResponse &)
+void UserManagement::handleSendActivationCodeGet(HttpRequest &request, HttpResponse &response)
 {
+    QMap<QString, QString> &queries = request.getHeader().getQueries();
 
+    if (queries.contains("email"))
+    {
+        QString email = queries["email"];
+        QByteArray activationCode;
+
+        m_userManager.generateActivationCode(email, activationCode);
+
+        if (sendActivationEmail(email, QString::fromLatin1(activationCode)))
+        {
+            QJsonObject responseObject;
+
+            responseObject["status"] = 0;
+            QJsonDocument responseDoc(responseObject);
+
+            response.setStatusCode(200);
+            response << responseDoc.toJson();
+            response.finish("application/json");
+            return;
+        }
+        else
+        {
+            QJsonObject responseObject;
+
+            responseObject["status"] = 1;
+            responseObject["error_category"] = "Failed to send Activation Code";
+            QJsonDocument responseDoc(responseObject);
+
+            response.setStatusCode(200);
+            response << responseDoc.toJson();
+            response.finish("application/json");
+            return;
+        }
+    }
+    else
+    {
+        QJsonObject responseObject;
+
+        responseObject["status"] = 2;
+        responseObject["error_category"] = "Missing email address.";
+        QJsonDocument responseDoc(responseObject);
+
+        response.setStatusCode(200);
+        response << responseDoc.toJson();
+        response.finish("application/json");
+        return;
+    }
 }
 
 void UserManagement::handleUserUpdateEmailPost(HttpRequest &, HttpResponse &)
@@ -212,7 +434,7 @@ void UserManagement::handleUserUpdateEmailPost(HttpRequest &, HttpResponse &)
 
 }
 
-bool UserManagement::sendActivationEmail(const QString &to)
+bool UserManagement::sendActivationEmail(const QString &to, const QString &activationCode)
 {
     if (SettingsManager::getSingleton().has("SMTP/username")
             || SettingsManager::getSingleton().has("SMTP/password")
@@ -224,13 +446,35 @@ bool UserManagement::sendActivationEmail(const QString &to)
         QString server = SettingsManager::getSingleton().get("SMTP/server").toString();
         SmtpManager *smtp = new SmtpManager(username, password, server);
         connect(smtp, SIGNAL(status(QString)), this, SLOT(mailSent(QString)));
-        smtp->sendMail("shiyan.nebula@gmail.com", "shiy@nvidia.com", "testtest", "no content");
+        smtp->sendMail("shiyan.nebula@gmail.com", to, "Activate Swiftly", activationCode);
+        return true;
     }
+
+    return false;
+}
+
+bool UserManagement::sendPasswordResetEmail(const QString &to, const QString &resetCode)
+{
+    if (SettingsManager::getSingleton().has("SMTP/username")
+            || SettingsManager::getSingleton().has("SMTP/password")
+            || SettingsManager::getSingleton().has("SMTP/server")
+            || SettingsManager::getSingleton().has("SMTP/from"))
+    {
+        QString username = SettingsManager::getSingleton().get("SMTP/username").toString();
+        QString password = SettingsManager::getSingleton().get("SMTP/password").toString();
+        QString server = SettingsManager::getSingleton().get("SMTP/server").toString();
+        SmtpManager *smtp = new SmtpManager(username, password, server);
+        connect(smtp, SIGNAL(status(QString)), this, SLOT(mailSent(QString)));
+        smtp->sendMail("shiyan.nebula@gmail.com", to, "Reset Swiftly", resetCode);
+        return true;
+    }
+
+    return false;
 }
 
 void UserManagement::mailSent(QString status)
 {
     qDebug() << status;
-    Smtp *smtp = (Smtp*)QObject::sender();
+    SmtpManager *smtp = (SmtpManager*)QObject::sender();
     smtp->deleteLater();
 }

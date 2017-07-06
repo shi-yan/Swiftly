@@ -31,7 +31,9 @@ UserManager::UserManager()
 
 }
 
-bool UserManager::signup(const QString &email, const QByteArray &password, const QMap<QString, QVariant> &extraFields, QString &errorMessage)
+bool UserManager::signup(const QString &email, const QByteArray &password,
+                         const QMap<QString, QVariant> &extraFields, QString &errorMessage,
+                         QByteArray &activationCode)
 {
     if (!isValidEmail(email))
     {
@@ -89,7 +91,6 @@ bool UserManager::signup(const QString &email, const QByteArray &password, const
             bsoncxx::oid oid = (*result).inserted_id().get_oid().value;
             std::string userId = oid.to_string();
 
-            QByteArray activationCode;
             generateActivationCode(email, activationCode);
             bsoncxx::document::value activationDocumentValue = bsoncxx::builder::stream::document{}
                     << "activation_code" << activationCode.toStdString().c_str()
@@ -371,7 +372,7 @@ bool UserManager::activate(QString &email, const QString &activationCode)
     return true;
 }
 
-bool UserManager::sendPasswordResetRequest(const QString &email)
+bool UserManager::sendPasswordResetRequest(const QString &email, QByteArray &passwordResetCode)
 {
     auto client = MongodbManager::getSingleton().getClient();
 
@@ -390,7 +391,6 @@ bool UserManager::sendPasswordResetRequest(const QString &email)
     resetPasswordCodeOptions.unique(true);
     resetCollection.create_index(resetPasswordCodeIndexBuilder.view(), resetPasswordCodeOptions);
 
-    QByteArray passwordResetCode;
     generateActivationCode(email, passwordResetCode);
     bsoncxx::document::value passwordResetDocumentValue = bsoncxx::builder::stream::document{}
             << "reset_code" << passwordResetCode.toStdString().c_str()
@@ -450,7 +450,7 @@ bool UserManager::sendActivationCode(const QString &email, QString &activationCo
     if (maybe_result)
     {
         bsoncxx::document::element emailElement = (*maybe_result).view()["activation_code"];
-
+        //------------
         activationCode = QString::fromStdString(emailElement.get_utf8().value.to_string());
 
     }
@@ -591,4 +591,18 @@ void UserManager::generateActivationCode(const QString &email, QByteArray &activ
     activationCode = hash.result().toBase64();
 
     qDebug() << activationCode;
+}
+
+void UserManager::generatePasswordResetCode(const QString &email, QByteArray &resetCode)
+{
+    const unsigned int resetCodeSize = 256;
+    QByteArray buffer = email.toLatin1();
+    buffer.resize(resetCodeSize);
+    unsigned int randomOffset = (email.size() < 32)?email.size():32;
+    randombytes_buf((void *)(buffer.data() + randomOffset), resetCodeSize - randomOffset);
+    QCryptographicHash hash(QCryptographicHash::Sha3_256);
+    hash.addData(buffer);
+    resetCode = hash.result().toBase64();
+
+    qDebug() << resetCode;
 }

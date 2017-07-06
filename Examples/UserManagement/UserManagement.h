@@ -29,7 +29,8 @@ public slots:
     void handleUserUpdateEmailPost(HttpRequest &, HttpResponse &);
 
 public:
-    bool sendActivationEmail(const QString &to);
+    bool sendActivationEmail(const QString &to, const QString &activationCode);
+    bool sendPasswordResetEmail(const QString &to, const QString &resetCode);
 
 private slots:
     void mailSent(QString status);
