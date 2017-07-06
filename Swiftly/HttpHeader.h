@@ -7,6 +7,9 @@
 #include <QStringBuilder>
 #include <QTextStream>
 
+/*! \class HttpHeader
+ * ... text ...
+ */
 
 class HttpHeader : public QObject
 {
