@@ -25,7 +25,7 @@ import subprocess, os
 read_the_docs_build = os.environ.get('READTHEDOCS', None) == 'True'
 
 if read_the_docs_build:
-    subprocess.call('cd ../doxygen; doxygen', shell=True)
+    subprocess.call('cd ../doxygen; doxygen doxygen.conf', shell=True)
 
 sys.path.append( "/usr/local/lib/python2.7/dist-packages/breathe/" )
 
