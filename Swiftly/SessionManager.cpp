@@ -30,12 +30,6 @@ bool SessionManager::newSession(const QString &userId, const QString &email, QBy
     sessionIdOptions.unique(true);
     sessionCollection.create_index(sessionIdIndexBuilder.view(), sessionIdOptions);
 
-    bsoncxx::builder::stream::document userIdIndexBuilder;
-    mongocxx::options::index userIdOptions{};
-    userIdIndexBuilder << "user_id" << 1;
-    userIdOptions.unique(true);
-    sessionCollection.create_index(userIdIndexBuilder.view(), userIdOptions);
-
     generateSessionId(sessionId);
 
     auto builder = bsoncxx::builder::stream::document{};
@@ -164,7 +158,7 @@ void SessionManager::generateSessionId(QByteArray &sessionId)
     randombytes_buf((void *)buffer.data(), sessionIdSize);
     QCryptographicHash hash(QCryptographicHash::Sha3_256);
     hash.addData(buffer);
-    sessionId = hash.result().toBase64();
+    sessionId = hash.result().toHex();
 }
 
 bool SessionManager::logoutSession(const QByteArray &sessionId)

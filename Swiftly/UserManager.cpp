@@ -78,7 +78,7 @@ bool UserManager::signup(const QString &email, const QByteArray &password,
     bsoncxx::document::value userAccountDocumentValue = builder
       << "email" << email.toStdString().c_str()
       << "password" << hash.toStdString().c_str()
-      << "status" << 0
+      << "status" << static_cast<std::int32_t>(0)
       << bsoncxx::builder::stream::finalize;
 
     try
@@ -154,7 +154,8 @@ bool UserManager::login(const QString &email, const QByteArray &password, QStrin
 
     mongocxx::stdx::optional<bsoncxx::document::value> maybe_result =
            userCollection.find_one(bsoncxx::builder::stream::document{}
-                                   << "email" << "billconan@gmail.com" << bsoncxx::builder::stream::finalize);
+                                   << "email" << email.toStdString().c_str()
+                                   << bsoncxx::builder::stream::finalize);
 
     if(maybe_result)
     {
@@ -167,7 +168,7 @@ bool UserManager::login(const QString &email, const QByteArray &password, QStrin
 
         bsoncxx::document::element statusElement = (*maybe_result).view()["status"];
 
-        std::int64_t status = statusElement.get_int64().value;
+        std::int32_t status = statusElement.get_int32().value;
         if (status == 0)
         {
             errorMessage = "User account hasn't been activated yet.";
@@ -590,7 +591,7 @@ void UserManager::generateActivationCode(const QString &email, QByteArray &activ
     randombytes_buf((void *)(buffer.data() + randomOffset), activationCodeSize - randomOffset);
     QCryptographicHash hash(QCryptographicHash::Sha3_256);
     hash.addData(buffer);
-    activationCode = hash.result().toBase64();
+    activationCode = hash.result().toHex();
 
     qDebug() << activationCode;
 }
@@ -604,7 +605,7 @@ void UserManager::generatePasswordResetCode(const QString &email, QByteArray &re
     randombytes_buf((void *)(buffer.data() + randomOffset), resetCodeSize - randomOffset);
     QCryptographicHash hash(QCryptographicHash::Sha3_256);
     hash.addData(buffer);
-    resetCode = hash.result().toBase64();
+    resetCode = hash.result().toHex();
 
     qDebug() << resetCode;
 }

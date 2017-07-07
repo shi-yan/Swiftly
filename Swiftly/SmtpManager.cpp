@@ -23,7 +23,9 @@ void SmtpManager::sendMail(const QString &from, const QString &to, const QString
 {
     message = "To: " + to + "\n";
     message.append("From: " + from + "\n");
-    message.append("Subject: " + subject + "\n");
+    message.append("Subject: " + subject + "\r\n\r\n");
+    //there should be an empty line here
+    //https://stackoverflow.com/questions/11796664/smtplib-sends-blank-message-if-the-message-contain-certain-characters
     message.append(body);
     message.replace( QString::fromLatin1( "\n" ), QString::fromLatin1( "\r\n" ) );
     message.replace( QString::fromLatin1( "\r\n.\r\n" ),

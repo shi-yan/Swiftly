@@ -4,6 +4,7 @@
 #include "ReCAPTCHAVerifier.h"
 #include "SmtpManager.h"
 #include "SettingsManager.h"
+#include <QStringBuilder>
 
 UserManagement::UserManagement()
     : WebApp(),
@@ -156,10 +157,28 @@ void UserManagement::handleUserLoginPost(HttpRequest &request, HttpResponse &res
 
     QJsonObject dataObject = data.object();
 
-    if (dataObject.contains("email") && dataObject.contains("password"))
+    if (dataObject.contains("email") && dataObject.contains("password") && dataObject.contains("g_recaptcha_response"))
     {
         QString email = dataObject["email"].toString();
         QByteArray password = dataObject["password"].toString().toLatin1();
+        QString g_recaptcha_response = dataObject["g_recaptcha_response"].toString();
+
+
+        if (!ReCAPTCHAVerifier::getSingleton().verify(g_recaptcha_response, request.getFromIPAddress()))
+        {
+            QJsonObject responseObject;
+
+            responseObject["status"] = 4;
+            responseObject["error_category"] = "reCAPTCHA check failed.";
+            responseObject["error_message"] = "reCAPTCHA check failed!";
+            QJsonDocument responseDoc(responseObject);
+
+            response.setStatusCode(200);
+            response << responseDoc.toJson();
+            response.finish("application/json");
+            return;
+        }
+
         QMap<QString, QVariant> extraFields;
         QString errorMessage;
         QString userId;
@@ -173,8 +192,9 @@ void UserManagement::handleUserLoginPost(HttpRequest &request, HttpResponse &res
                 QJsonObject responseObject;
 
                 responseObject["status"] = 0;
-                QJsonDocument responseDoc(responseObject);
                 responseObject["session_id"] = QString::fromLatin1(sessionId);
+
+                QJsonDocument responseDoc(responseObject);
                 response.setStatusCode(200);
                 response << responseDoc.toJson();
                 response.finish("application/json");
@@ -184,9 +204,10 @@ void UserManagement::handleUserLoginPost(HttpRequest &request, HttpResponse &res
                 QJsonObject responseObject;
 
                 responseObject["status"] = 3;
+                responseObject["error_message"] = "can't create session";
+
                 QJsonDocument responseDoc(responseObject);
                 response.setStatusCode(200);
-                responseObject["error_message"] = "can't create session";
 
                 response << responseDoc.toJson();
                 response.finish("application/json");
@@ -213,7 +234,7 @@ void UserManagement::handleUserLoginPost(HttpRequest &request, HttpResponse &res
     {
         QJsonObject responseObject;
 
-        responseObject["status"] = 3;
+        responseObject["status"] = 5;
         responseObject["error_category"] = "Missing Infomation";
         QJsonDocument responseDoc(responseObject);
 
@@ -536,7 +557,10 @@ bool UserManagement::sendActivationEmail(const QString &to, const QString &activ
         QString server = SettingsManager::getSingleton().get("SMTP/server").toString();
         SmtpManager *smtp = new SmtpManager(username, password, server);
         connect(smtp, SIGNAL(status(QString)), this, SLOT(mailSent(QString)));
-        smtp->sendMail("shiyan.nebula@gmail.com", to, "Activate Swiftly", activationCode);
+
+        QString emailContent = "http://localhost:8083/api/activate?activation_code=" % activationCode % "&email=" % to;
+
+        smtp->sendMail("shiyan.nebula@gmail.com", to, "Activate Swiftly", emailContent);
         return true;
     }
 

@@ -4,7 +4,7 @@
 
 UserManagementUI::UserManagementUI()
     :WebApp(),
-      m_staticFileServer(QDir("/home/shiy/startmin")),
+      m_staticFileServer(QDir(SettingsManager::getSingleton().get("UserManagement/static_dir", "/home/shiy/startmin").toString())),
       m_templatePath(SettingsManager::getSingleton().get("UserManagement/template_path", ".").toString())
 {
 
@@ -25,7 +25,7 @@ void UserManagementUI::handleLoginUIGet(HttpRequest &request, HttpResponse &resp
 {
     QByteArray fileContent;
     QString mimeType;
-    if (m_staticFileServer.getFileByPath(m_templatePath % "/login.html", fileContent, mimeType))
+    if (m_staticFileServer.getFileByAbsolutePath(m_templatePath % "/login.html", fileContent, mimeType))
     {
         response << fileContent;
         response.finish(mimeType);
@@ -42,7 +42,7 @@ void UserManagementUI::handleSignupUIGet(HttpRequest &request, HttpResponse &res
 {
     QByteArray fileContent;
     QString mimeType;
-    if (m_staticFileServer.getFileByPath(m_templatePath % "/signup.html", fileContent, mimeType))
+    if (m_staticFileServer.getFileByAbsolutePath(m_templatePath % "/signup.html", fileContent, mimeType))
     {
         response << fileContent;
         response.finish(mimeType);
@@ -59,7 +59,7 @@ void UserManagementUI::handleResetPasswordUIGet(HttpRequest &request, HttpRespon
 {
     QByteArray fileContent;
     QString mimeType;
-    if (m_staticFileServer.getFileByPath(m_templatePath % "/reset_resetCode.html", fileContent, mimeType))
+    if (m_staticFileServer.getFileByAbsolutePath(m_templatePath % "/reset_resetCode.html", fileContent, mimeType))
     {
         response << fileContent;
         response.finish(mimeType);
@@ -76,7 +76,7 @@ void UserManagementUI::handleResendActivationCodeUIGet(HttpRequest &request, Htt
 {
     QByteArray fileContent;
     QString mimeType;
-    if (m_staticFileServer.getFileByPath(m_templatePath % "/resend_activation.html", fileContent, mimeType))
+    if (m_staticFileServer.getFileByAbsolutePath(m_templatePath % "/resend_activation.html", fileContent, mimeType))
     {
         response << fileContent;
         response.finish(mimeType);

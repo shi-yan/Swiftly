@@ -20,7 +20,16 @@
 
         <!-- Custom Fonts -->
         <link href="../css/font-awesome.min.css" rel="stylesheet" type="text/css">
+        <style>
+            /* already defined in bootstrap4 */
+            .text-xs-center {
+                text-align: center;
+            }
 
+            #recaptcha {
+                display: inline-block;
+            }
+        </style>
         <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
         <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
         <!--[if lt IE 9]>
@@ -38,22 +47,22 @@
                             <h3 class="panel-title">Please Sign In</h3>
                         </div>
                         <div class="panel-body">
-                            <form role="form">
+                            <form role="form" action="javascript:handleSubmission();">
                                 <fieldset>
                                     <div class="form-group">
-                                        <p id='emailWarning' class="text-danger hidden-md hidden-lg"> Error: invlaid email. </p>
+                                        <p id='emailWarning' class="text-danger hidden-lg"> Error: invlaid email. </p>
                                         <input class="form-control" placeholder="E-mail" name="email" type="email" autofocus>
                                     </div>
                                     <div class="form-group">
+                                        <p id='passwordWarning' class="text-danger hidden-lg"> Error: invlaid password. </p>
                                         <input class="form-control" placeholder="Password" name="password" type="password" value="">
                                     </div>
-                                    <div class="checkbox">
-                                        <label>
-                                            <input name="remember" type="checkbox" value="Remember Me">Remember Me
-                                        </label>
+                                    <div class="form-group text-xs-center">
+                                        <div id='recaptcha'></div>
                                     </div>
+                                    <p id='submissionWarning' class="text-danger hidden-lg"> Error: invlaid password. </p>
                                     <!-- Change this to a button or input when using this as a form -->
-                                    <button type="button" onclick="handleClick();" class="btn btn-lg btn-success btn-block">Login</button>
+                                    <button id='login'  type="input"  class="btn btn-lg btn-success btn-block">Login</button>
                                 </fieldset>
                             </form>
                         </div>
@@ -74,7 +83,16 @@
         <!-- Custom Theme JavaScript -->
         <script src="../js/startmin.js"></script>
 
-        <script>
+        <script type="text/javascript">
+        var reCAPTCHAWidget;
+
+        var onloadCallback = function() 
+        {
+            reCAPTCHAWidget = grecaptcha.render('recaptcha', {
+              'sitekey' : '6LdhPycUAAAAAA_RL1W8nSJ3_p4-NfZS8pdK9u1p',
+              'theme' : 'light'
+            });
+        }
 
         function validateEmail(email) 
         {
@@ -82,32 +100,217 @@
             return re.test(email);
         }
 
-        function handleClick()
+        function matchPasswords(password1, password2)
         {
-            if ($("input[name='password']").val() != true)
-            {
-                console.log('wfwef');
-                $('#emailWarning').removeClass('hidden-md');
-                $('#emailWarning').removeClass('hidden-lg');
-                $('#emailWarning').addClass('visible-lg');
-            }
-            console.log("haha" + $("input[name='password']").val());
-            console.log("is email valid?" + validateEmail($("input[name='email']").val()));
+            return password1 === password2;
+        }
 
+        function validatePassword(password)
+        {
+            var length = 8;
+            var maxLength = 30;
+            var errorMessage = "";
+            if (password.length < length)
+            {
+                errorMessage = "Password needs to be at least " + length + " in length.";
+                return [false, errorMessage];
+            }
+
+            if (password.length > maxLength)
+            {
+                errorMessage = "Password can't be longer than " + maxLength + ".";
+                return [false, errorMessage];
+            }
+
+            var re = /^[a-zA-Z0-9\._%+-@#!$&*]+$/;
+
+            if (!re.test(password))
+            {
+                errorMessage = "Only A-Z, a-z, 0-9, ._%+-!@#$&* can be used in password.";
+                return [false, errorMessage];
+            }
+
+            var upperCase = 0;
+            var specialLetter = 0;
+            var digit = 0;
+            var lowerCase = 0;
+            var upperCaseNum = 1;
+            var specialLetterNum = 1;
+            var digitNum = 1;
+            var lowerCaseNum = 1;
+
+            for (var i = 0; i< password.length; ++i)
+            {
+                var character = password.charAt(i);
+                if (!isNaN(character * 1))
+                {
+                    digit++;
+                }
+                else
+                {
+                    var isUpper = false;
+                    var isLower = false;
+                    if (character == character.toUpperCase()) 
+                    {
+                        isUpper = true;    
+                    }
+                    if (character == character.toLowerCase())
+                    {
+                        isLower = true;
+                    }
+
+                    if (isUpper && isLower)
+                    {
+                        specialLetter++;
+                    }
+                    else if (isUpper)
+                    {
+                        upperCase++;
+                    }
+                    else if(isLower)
+                    {
+                        lowerCase++;
+                    }
+                    else
+                    {
+                        console.log("unrecognized character:"+character);
+                    }
+                }
+
+                if ((upperCase >= upperCaseNum) &&
+                    (specialLetter >= specialLetterNum) &&
+                    (digit >= digitNum) &&
+                    (lowerCase >= lowerCaseNum))
+                {
+                    return [true, errorMessage];
+                }
+            }
+
+            if (upperCase < upperCaseNum)
+            {
+                errorMessage = "Password needs to contain at least " + upperCaseNum + " upper case letter" + ((upperCaseNum > 1)?"s.":".");
+            }
+            else if (specialLetter < specialLetterNum)
+            {
+                errorMessage = "Password needs to contain at least " + specialLetterNum + " special letter" + ((specialLetterNum > 1)?"s.":".");
+            }
+            else if (digit < digitNum)
+            {
+                errorMessage = "Password needs to contain at least " + digitNum + " digit" + ((digitNum > 1)?"s.":".");
+            }
+            else if (lowerCase < lowerCaseNum)
+            {
+                errorMessage = "Password needs to contain at least " + lowerCaseNum + " lower case letter" + ((lowerCaseNum > 1)?"s.":".");
+            }
+            return [false, errorMessage];
+        }
+
+        function displayErrorMessage(location, message)
+        {
+            $(location).removeClass('hidden-lg');
+            $(location).addClass('visible-lg');
+            $(location).html(message);
+        }
+
+        function clearErrorMessage(location)
+        {
+            $(location).addClass('hidden-lg');
+            $(location).removeClass('visible-lg');
+        }
+
+        function handleSubmission()
+        {
+            $("#login").prop("disabled",true);
+            clearErrorMessage('#emailWarning');
+            clearErrorMessage('#passwordWarning');
+            clearErrorMessage('#submissionWarning');
+
+            var email = $("input[name='email']").val();
+
+            if (email === "" || email == null || !validateEmail(email))
+            {
+                displayErrorMessage('#emailWarning', "Email format isn't correct.");
+                $("#login").prop("disabled",false);
+                grecaptcha.reset(reCAPTCHAWidget);
+                return;
+            }
+
+            var password = $("input[name='password']").val();
+            if (password === "" || password == null)
+            {
+                displayErrorMessage('#passwordWarning', "Haven't provided valid password.");
+                $("#login").prop("disabled",false);
+                grecaptcha.reset(reCAPTCHAWidget);
+                return;
+            }
+
+            var passwordValidationResult = validatePassword(password);
+
+            if (!passwordValidationResult[0])
+            {
+                displayErrorMessage('#passwordWarning', passwordValidationResult[1]);
+                $("#login").prop("disabled",false);
+                grecaptcha.reset(reCAPTCHAWidget);
+                return;
+            }
+
+            var g_recaptcha_response = grecaptcha.getResponse(reCAPTCHAWidget);
+
+            if (g_recaptcha_response === "" || g_recaptcha_response == null)
+            {
+                $("#login").prop("disabled",false);
+                grecaptcha.reset(reCAPTCHAWidget);
+                return;
+            }
+
+            //console.log(grecaptcha.getResponse(reCAPTCHAWidget));
+            //console.log("haha" + $("input[name='password']").val());
+            //console.log("is email valid?" + validateEmail($("input[name='email']").val()));
+
+            var request = new Request('http://localhost:8083/api/login', {
+                method: 'POST', 
+                headers: new Headers({
+                    'Content-Type': 'application/json'
+                }),
+                body: JSON.stringify({
+                    email: email,
+                    password: password,
+                    g_recaptcha_response: g_recaptcha_response
+                })
+            });
 
             // url (required), options (optional)
-            fetch('http://localhost:8080/some/url', {
-                method: 'get'
-            }).then(function(response) {
+            fetch(request).then(function(response) {
                 return response.text();
             }).then(function(text){
                 console.log(text);
+                returnedData = JSON.parse(text);
+                if (returnedData.status != 0)
+                {
+                    displayErrorMessage('#submissionWarning', returnedData.error_message);
+
+                    $("#login").prop("disabled",false);
+                    grecaptcha.reset(reCAPTCHAWidget);
+                }
+                else if (returnedData.status == 0)
+                {
+                    displayErrorMessage('#submissionWarning', 'success!');
+                    window.location = "http://localhost:8083/index.html";
+                }
             })
             .catch(function(err) {
                 // Error :(
+
+                $("#login").prop("disabled",false);
+                grecaptcha.reset(reCAPTCHAWidget);
             });
+
+            $("#login").prop("disabled",false);
+            grecaptcha.reset(reCAPTCHAWidget);
         }
 
+        </script>
+        <script src="https://www.google.com/recaptcha/api.js?onload=onloadCallback&render=explicit" async defer>
         </script>
     </body>
 </html>
