@@ -133,7 +133,7 @@ bool UserManager::signup(const QString &email, const QByteArray &password,
     return true;
 }
 
-bool UserManager::login(const QString &email, const QByteArray &password, QMap<QString, QVariant> &extraFields, QString &errorMessage)
+bool UserManager::login(const QString &email, const QByteArray &password, QString &userId, QMap<QString, QVariant> &extraFields, QString &errorMessage)
 {
     if (!isValidEmail(email))
     {
@@ -161,6 +161,9 @@ bool UserManager::login(const QString &email, const QByteArray &password, QMap<Q
         //std::cout << bsoncxx::to_json(*maybe_result) << "\n";
         //bsoncxx::document::element emailElement = (*maybe_result).view()["email"];
         //email =  QString::fromStdString(emailElement.get_utf8().value.to_string());
+
+        bsoncxx::oid oid = (*maybe_result).view()["_id"].get_oid().value;
+        userId = QString::fromStdString(oid.to_string());
 
         bsoncxx::document::element statusElement = (*maybe_result).view()["status"];
 
@@ -192,7 +195,6 @@ bool UserManager::login(const QString &email, const QByteArray &password, QMap<Q
         errorMessage = "No user registered with this email.";
         return false;
     }
-
 
     return true;
 }

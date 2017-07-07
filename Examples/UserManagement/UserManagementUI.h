@@ -3,11 +3,14 @@
 
 #include "WebApp.h"
 #include "StaticFileServer.h"
+#include "SessionManager.h"
 
 class UserManagementUI : public WebApp
 {
     Q_OBJECT
     StaticFileServer m_staticFileServer;
+    SessionManager m_sessionManager;
+    const QString m_templatePath;
 
 public:
     UserManagementUI();
@@ -19,6 +22,7 @@ public slots:
     void handleResetPasswordUIGet(HttpRequest &, HttpResponse &);
     void handleResendActivationCodeUIGet(HttpRequest &, HttpResponse &);
     void handleFileGet(HttpRequest &,HttpResponse &);
+    void handleLoggedInPageGet(HttpRequest &, HttpResponse &);
 
 };
 

@@ -20,7 +20,7 @@ public:
 
     void init();
     bool has(const QString &key);
-    QVariant get(const QString &key);
+    QVariant get(const QString &key, const QVariant &defaultValue = QVariant());
     void set(const QString &key, const QVariant &value);
 };
 

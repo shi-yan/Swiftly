@@ -12,9 +12,9 @@ void SettingsManager::init()
     qDebug() << m_settings.fileName();
 }
 
-QVariant SettingsManager::get(const QString &key)
+QVariant SettingsManager::get(const QString &key, const QVariant &defaultValue)
 {
-    return m_settings.value(key);
+    return m_settings.value(key, defaultValue);
 }
 
 bool SettingsManager::has(const QString &key)

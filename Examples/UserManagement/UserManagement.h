@@ -3,12 +3,14 @@
 
 #include "WebApp.h"
 #include "UserManager.h"
+#include "SessionManager.h"
 
 class UserManagement : public WebApp
 {
     Q_OBJECT
 
     UserManager m_userManager;
+    SessionManager m_sessionManager;
 public:
     UserManagement();
     UserManagement(const UserManagement&in)
@@ -27,6 +29,7 @@ public slots:
     void handleSendPasswordResetRequestGet(HttpRequest &, HttpResponse &);
     void handleSendActivationCodeGet(HttpRequest &, HttpResponse &);
     void handleUserUpdateEmailPost(HttpRequest &, HttpResponse &);
+    void handleUserLogoutPost(HttpRequest &, HttpResponse &);
 
 public:
     bool sendActivationEmail(const QString &to, const QString &activationCode);

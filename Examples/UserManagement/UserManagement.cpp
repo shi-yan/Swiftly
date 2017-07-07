@@ -21,6 +21,7 @@ void UserManagement::registerPathHandlers()
     addGetHandler("/api/request_password_reset", "handleSendPasswordResetRequestGet");
     addGetHandler("/api/request_activation", "handleSendActivationCodeGet");
     addPostHandler("/api/update_email", "handleUserUpdateEmailPost");
+    addPostHandler("/api/logout", "handleUserLogoutPost");
 }
 
 void UserManagement::handleUserSignupPost(HttpRequest &request, HttpResponse &response)
@@ -161,16 +162,36 @@ void UserManagement::handleUserLoginPost(HttpRequest &request, HttpResponse &res
         QByteArray password = dataObject["password"].toString().toLatin1();
         QMap<QString, QVariant> extraFields;
         QString errorMessage;
-        if(m_userManager.login(email, password, extraFields, errorMessage))
+        QString userId;
+        if(m_userManager.login(email, password, userId, extraFields, errorMessage))
         {
-            QJsonObject responseObject;
 
-            responseObject["status"] = 0;
-            QJsonDocument responseDoc(responseObject);
-            responseObject["session_id"] = "random sessionId";
-            response.setStatusCode(200);
-            response << responseDoc.toJson();
-            response.finish("application/json");
+            QByteArray sessionId;
+            if (m_sessionManager.newSession(userId, email, sessionId))
+            {
+
+                QJsonObject responseObject;
+
+                responseObject["status"] = 0;
+                QJsonDocument responseDoc(responseObject);
+                responseObject["session_id"] = QString::fromLatin1(sessionId);
+                response.setStatusCode(200);
+                response << responseDoc.toJson();
+                response.finish("application/json");
+            }
+            else
+            {
+                QJsonObject responseObject;
+
+                responseObject["status"] = 3;
+                QJsonDocument responseDoc(responseObject);
+                response.setStatusCode(200);
+                responseObject["error_message"] = "can't create session";
+
+                response << responseDoc.toJson();
+                response.finish("application/json");
+            }
+
             return;
         }
         else
@@ -203,7 +224,76 @@ void UserManagement::handleUserLoginPost(HttpRequest &request, HttpResponse &res
     }
 }
 
-void UserManagement::handleUserResetPasswordPost(HttpRequest &, HttpResponse &)
+void UserManagement::handleUserLogoutPost(HttpRequest &request, HttpResponse &response)
+{
+    QByteArray rawData = request.getRawData();
+    QJsonParseError error;
+    QJsonDocument data = QJsonDocument::fromJson(rawData, &error);
+
+    if (error.error != QJsonParseError::NoError)
+    {
+        QJsonObject responseObject;
+
+        responseObject["status"] = 1;
+        responseObject["error_category"] = "Json Parsing Issue";
+        responseObject["error_code"] = static_cast<int>(error.error);
+        responseObject["error_message"] = error.errorString();
+        QJsonDocument responseDoc(responseObject);
+
+        response.setStatusCode(200);
+        response << responseDoc.toJson();
+        response.finish("application/json");
+        return;
+    }
+
+    QJsonObject dataObject = data.object();
+
+    if (dataObject.contains("session_id"))
+    {
+        QByteArray session_id = dataObject["session_id"].toString().toLatin1();
+
+        if (!m_sessionManager.logoutSession(session_id))
+        {
+            QJsonObject responseObject;
+
+            responseObject["status"] = 4;
+            responseObject["error_category"] = "logout failed.";
+            QJsonDocument responseDoc(responseObject);
+
+            response.setStatusCode(200);
+            response << responseDoc.toJson();
+            response.finish("application/json");
+            return;
+        }
+        else
+        {
+            QJsonObject responseObject;
+
+            responseObject["status"] = 0;
+            QJsonDocument responseDoc(responseObject);
+
+            response.setStatusCode(200);
+            response << responseDoc.toJson();
+            response.finish("application/json");
+            return;
+        }
+    }
+    else
+    {
+        QJsonObject responseObject;
+
+        responseObject["status"] = 3;
+        responseObject["error_category"] = "Missing Infomation";
+        QJsonDocument responseDoc(responseObject);
+
+        response.setStatusCode(200);
+        response << responseDoc.toJson();
+        response.finish("application/json");
+        return;
+    }
+}
+
+void UserManagement::handleUserResetPasswordPost(HttpRequest &request, HttpResponse &response)
 {
     QByteArray rawData = request.getRawData();
     QJsonParseError error;
@@ -232,7 +322,7 @@ void UserManagement::handleUserResetPasswordPost(HttpRequest &, HttpResponse &)
     {
         QString email = dataObject["email"].toString();
         QByteArray password = dataObject["password"].toString().toLatin1();
-        QString reset_code = dataObject["reset_code"].toString();
+        QByteArray reset_code = dataObject["reset_code"].toString().toLatin1();
 
         if (!m_userManager.resetPassword(email, password, reset_code, false))
         {

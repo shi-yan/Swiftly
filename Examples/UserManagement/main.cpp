@@ -9,10 +9,10 @@ int main(int argc, char *argv[])
 {
 
     //todo:
-    //config file
+    //config file x
     //logging
-    //session
-    //send email
+    //session x
+    //send email x
     //oauth login
     //  google
     //  facebook
