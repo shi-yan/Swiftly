@@ -9,6 +9,7 @@
 #include "IncomingConnectionQueue.h"
 #include <QtCore/QCoreApplication>
 #include "WorkerSocketWatchDog.h"
+#include "LoggingManager.h"
 
 int onMessageBegin(http_parser *)
 {
@@ -327,6 +328,10 @@ void Worker::discardClient()
 void Worker::run()
 {
     qDebug()<<m_name<<"'s thread id"<<thread()->currentThreadId();
+
+    LoggingManager::getSingleton().log() <<m_name<<"'s thread id"<<thread()->currentThreadId();
+    LoggingManager::getSingleton().log() << "---------- test log ------------------";
+    LoggingManager::getSingleton().log().flush();
 
     m_socketWatchDog = new WorkerSocketWatchDog(this);
     m_socketWatchDog->start();
