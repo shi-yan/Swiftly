@@ -1,4 +1,4 @@
-#include "UserManagement.h"
+#include "UserManagementAPI.h"
 #include <QJsonDocument>
 #include <QJsonObject>
 #include "ReCAPTCHAVerifier.h"
@@ -7,14 +7,14 @@
 #include <QStringBuilder>
 #include "LoggingManager.h"
 
-UserManagement::UserManagement()
+UserManagementAPI::UserManagementAPI()
     : WebApp(),
         m_userManager()
 {
 
 }
 
-void UserManagement::registerPathHandlers()
+void UserManagementAPI::registerPathHandlers()
 {
     addPostHandler("/api/signup", "handleUserSignupPost");
     addPostHandler("/api/login", "handleUserLoginPost");
@@ -26,7 +26,7 @@ void UserManagement::registerPathHandlers()
     addPostHandler("/api/logout", "handleUserLogoutPost");
 }
 
-void UserManagement::handleUserSignupPost(HttpRequest &request, HttpResponse &response)
+void UserManagementAPI::handleUserSignupPost(HttpRequest &request, HttpResponse &response)
 {
     QByteArray rawData = request.getRawData();
     QJsonParseError error;
@@ -77,7 +77,7 @@ void UserManagement::handleUserSignupPost(HttpRequest &request, HttpResponse &re
     }
 }
 
-void UserManagement::handleUserLoginPost(HttpRequest &request, HttpResponse &response)
+void UserManagementAPI::handleUserLoginPost(HttpRequest &request, HttpResponse &response)
 {
     QByteArray rawData = request.getRawData();
     QJsonParseError error;
@@ -131,7 +131,7 @@ void UserManagement::handleUserLoginPost(HttpRequest &request, HttpResponse &res
     }
 }
 
-void UserManagement::handleUserLogoutPost(HttpRequest &request, HttpResponse &response)
+void UserManagementAPI::handleUserLogoutPost(HttpRequest &request, HttpResponse &response)
 {
     QByteArray rawData = request.getRawData();
     QJsonParseError error;
@@ -164,7 +164,7 @@ void UserManagement::handleUserLogoutPost(HttpRequest &request, HttpResponse &re
     }
 }
 
-void UserManagement::handleUserResetPasswordPost(HttpRequest &request, HttpResponse &response)
+void UserManagementAPI::handleUserResetPasswordPost(HttpRequest &request, HttpResponse &response)
 {
     QByteArray rawData = request.getRawData();
     QJsonParseError error;
@@ -178,11 +178,20 @@ void UserManagement::handleUserResetPasswordPost(HttpRequest &request, HttpRespo
 
     QJsonObject dataObject = data.object();
 
-    if (dataObject.contains("email") && dataObject.contains("password") && dataObject.contains("reset_code"))
+    if (dataObject.contains("email") && dataObject.contains("password")
+            && dataObject.contains("reset_code") && dataObject.contains("g_recaptcha_response"))
     {
+
         QString email = dataObject["email"].toString();
         QByteArray password = dataObject["password"].toString().toLatin1();
         QByteArray reset_code = dataObject["reset_code"].toString().toLatin1();
+        QString g_recaptcha_response = dataObject["g_recaptcha_response"].toString();
+
+        if (!ReCAPTCHAVerifier::getSingleton().verify(g_recaptcha_response, request.getFromIPAddress()))
+        {
+            respond(response, StatusCode::reCAPTCHAFailed, "reCAPTCHA check failed!");
+            return;
+        }
 
         if (!m_userManager.resetPassword(email, password, reset_code, false))
         {
@@ -199,7 +208,7 @@ void UserManagement::handleUserResetPasswordPost(HttpRequest &request, HttpRespo
     }
 }
 
-void UserManagement::handleUserActivationGet(HttpRequest &request, HttpResponse &response)
+void UserManagementAPI::handleUserActivationGet(HttpRequest &request, HttpResponse &response)
 {
     QMap<QString, QString> &queries = request.getHeader().getQueries();
 
@@ -223,23 +232,49 @@ void UserManagement::handleUserActivationGet(HttpRequest &request, HttpResponse 
     }
 }
 
-void UserManagement::handleSendPasswordResetRequestGet(HttpRequest &request, HttpResponse &response)
+void UserManagementAPI::handleSendPasswordResetRequestGet(HttpRequest &request, HttpResponse &response)
 {
     QMap<QString, QString> &queries = request.getHeader().getQueries();
 
-    if (queries.contains("email"))
+    if (queries.contains("email") && queries.contains("g_recaptcha_response"))
     {
+        QString g_recaptcha_response = queries["g_recaptcha_response"];
+
+        if (!ReCAPTCHAVerifier::getSingleton().verify(g_recaptcha_response, request.getFromIPAddress()))
+        {
+            respond(response, StatusCode::reCAPTCHAFailed, "reCAPTCHA check failed!");
+            return;
+        }
+
         QString email = queries["email"];
+        QByteArray passwordResetCode;
+        QMap<QString, QVariant> fields;
 
-        QByteArray resetCode;
+        if (!m_userManager.getUser(email, fields))
+        {
+            respond(response, StatusCode::UserFindingFailed, "Failed to find user!");
+            return;
+        }
 
-        if(m_userManager.sendPasswordResetRequest(email, resetCode))
+        if (!fields.contains("status") || fields["status"].toInt() == 0)
+        {
+            respond(response, StatusCode::NotActivated, "Account is not activated yet!");
+            return;
+        }
+
+        if (!m_userManager.generatePasswordResetRequest(email, passwordResetCode))
+        {
+            respond(response, StatusCode::PasswordResetCodeGenerationFailed, "Failed to generate Password Reset Code!");
+            return;
+        }
+
+        if (sendPasswordResetEmail(email, QString::fromLatin1(passwordResetCode)))
         {
             respondSuccess(response);
         }
         else
         {
-            respond(response, StatusCode::SendPasswordResetRequestFailed, "Password reset request failed to send!");
+            respond(response, StatusCode::SendActivationEmailFailed,  "Failed to send Password Reset Code!");
         }
     }
     else
@@ -248,7 +283,7 @@ void UserManagement::handleSendPasswordResetRequestGet(HttpRequest &request, Htt
     }
 }
 
-void UserManagement::handleSendActivationCodeGet(HttpRequest &request, HttpResponse &response)
+void UserManagementAPI::handleSendActivationCodeGet(HttpRequest &request, HttpResponse &response)
 {
     QMap<QString, QString> &queries = request.getHeader().getQueries();
 
@@ -300,12 +335,7 @@ void UserManagement::handleSendActivationCodeGet(HttpRequest &request, HttpRespo
     }
 }
 
-void UserManagement::handleUserUpdateEmailPost(HttpRequest &, HttpResponse &)
-{
-
-}
-
-bool UserManagement::sendActivationEmail(const QString &to, const QString &activationCode)
+bool UserManagementAPI::sendActivationEmail(const QString &to, const QString &activationCode)
 {
     if (SettingsManager::getSingleton().has("SMTP/username")
             || SettingsManager::getSingleton().has("SMTP/password")
@@ -328,7 +358,7 @@ bool UserManagement::sendActivationEmail(const QString &to, const QString &activ
     return false;
 }
 
-bool UserManagement::sendPasswordResetEmail(const QString &to, const QString &resetCode)
+bool UserManagementAPI::sendPasswordResetEmail(const QString &to, const QString &resetCode)
 {
     if (SettingsManager::getSingleton().has("SMTP/username")
             || SettingsManager::getSingleton().has("SMTP/password")
@@ -340,7 +370,10 @@ bool UserManagement::sendPasswordResetEmail(const QString &to, const QString &re
         QString server = SettingsManager::getSingleton().get("SMTP/server").toString();
         SmtpManager *smtp = new SmtpManager(username, password, server);
         connect(smtp, SIGNAL(status(QString)), this, SLOT(mailSent(QString)));
-        smtp->sendMail("shiyan.nebula@gmail.com", to, "Reset Swiftly", resetCode);
+
+        QString emailContent = "http://localhost:8083/resetPassword?reset_code=" % resetCode % "&email=" % to;
+
+        smtp->sendMail("shiyan.nebula@gmail.com", to, "Reset Swiftly", emailContent);
         sLog() << "Send password reset email to:" << to << "with reset code:" << resetCode;
         return true;
     }
@@ -348,7 +381,7 @@ bool UserManagement::sendPasswordResetEmail(const QString &to, const QString &re
     return false;
 }
 
-void UserManagement::mailSent(QString status)
+void UserManagementAPI::mailSent(QString status)
 {
     qDebug() << status;
     SmtpManager *smtp = (SmtpManager*)QObject::sender();

@@ -19,8 +19,9 @@ public:
 public slots:
     void handleLoginUIGet(HttpRequest &, HttpResponse &);
     void handleSignupUIGet(HttpRequest &, HttpResponse &);
-    void handleUserActivationGet(HttpRequest &, HttpResponse &);
+    void handleUserActivationUIGet(HttpRequest &, HttpResponse &);
     void handleResendActivationCodeUIGet(HttpRequest &, HttpResponse &);
+    void handleRequestPasswordResetCodeUIGet(HttpRequest &, HttpResponse &);
     void handleResetPasswordUIGet(HttpRequest &, HttpResponse &);
     void handleFileGet(HttpRequest &,HttpResponse &);
     void handleLoggedInPageGet(HttpRequest &, HttpResponse &);

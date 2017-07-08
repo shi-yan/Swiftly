@@ -207,18 +207,13 @@ bool UserManager::resetPassword(const QString &email, const QByteArray &newPassw
         return false;
     }
 
-    if (!isValidEmail(newPassword))
-    {
-        return false;
-    }
-
+    QString errorMessage;
     auto client = MongodbManager::getSingleton().getClient();
 
     mongocxx::database swiftlyDb = (*client)["Swiftly"];
     mongocxx::collection resetCollection = swiftlyDb["Reset"];
     mongocxx::collection userCollection = swiftlyDb["User"];
 
-    QString errorMessage;
     if (useOldPassword)
     {
         if (!isValidePassword(resetCodeOrOldPassword, errorMessage))
@@ -304,7 +299,6 @@ bool UserManager::resetPassword(const QString &email, const QByteArray &newPassw
                                   << bsoncxx::builder::stream::close_document
                                   << bsoncxx::builder::stream::finalize);
 
-
         if (result)
         {
             return true;
@@ -375,18 +369,18 @@ bool UserManager::activate(QString &email, const QByteArray &activationCode)
     return true;
 }
 
-bool UserManager::sendPasswordResetRequest(const QString &email, QByteArray &passwordResetCode)
+bool UserManager::generatePasswordResetRequest(const QString &email, QByteArray &passwordResetCode)
 {
     auto client = MongodbManager::getSingleton().getClient();
 
     mongocxx::database swiftlyDb = (*client)["Swiftly"];
     mongocxx::collection resetCollection = swiftlyDb["Reset"];
 
-    bsoncxx::builder::stream::document resetPasswordEmailIndexBuilder;
+    /*bsoncxx::builder::stream::document resetPasswordEmailIndexBuilder;
     mongocxx::options::index resetPasswordEmailOptions{};
     resetPasswordEmailIndexBuilder << "email" << 1;
     resetPasswordEmailOptions.unique(true);
-    resetCollection.create_index(resetPasswordEmailIndexBuilder.view(), resetPasswordEmailOptions);
+    resetCollection.create_index(resetPasswordEmailIndexBuilder.view(), resetPasswordEmailOptions);*/
 
     bsoncxx::builder::stream::document resetPasswordCodeIndexBuilder;
     mongocxx::options::index resetPasswordCodeOptions{};
@@ -394,7 +388,7 @@ bool UserManager::sendPasswordResetRequest(const QString &email, QByteArray &pas
     resetPasswordCodeOptions.unique(true);
     resetCollection.create_index(resetPasswordCodeIndexBuilder.view(), resetPasswordCodeOptions);
 
-    generateActivationCode(email, passwordResetCode);
+    generatePasswordResetCode(email, passwordResetCode);
     bsoncxx::document::value passwordResetDocumentValue = bsoncxx::builder::stream::document{}
             << "reset_code" << passwordResetCode.toStdString().c_str()
             << "time" << static_cast<std::int64_t>( QDateTime::currentDateTimeUtc().toTime_t())

@@ -9,7 +9,7 @@
 #include <QJsonDocument>
 #include <QVariant>
 
-class UserManagement : public WebApp
+class UserManagementAPI : public WebApp
 {
     Q_OBJECT
 
@@ -33,13 +33,15 @@ public:
         SendPasswordResetRequestFailed,
         NoPreviousActivationPending,
         UserFindingFailed,
-        AlreadyActivated
+        AlreadyActivated,
+        PasswordResetCodeGenerationFailed,
+        NotActivated
 
     };
 
 
-    UserManagement();
-    UserManagement(const UserManagement&in)
+    UserManagementAPI();
+    UserManagementAPI(const UserManagementAPI&in)
         :WebApp(),
           m_userManager(in.m_userManager)
     {
@@ -54,7 +56,6 @@ public slots:
     void handleUserActivationGet(HttpRequest &, HttpResponse &);
     void handleSendPasswordResetRequestGet(HttpRequest &, HttpResponse &);
     void handleSendActivationCodeGet(HttpRequest &, HttpResponse &);
-    void handleUserUpdateEmailPost(HttpRequest &, HttpResponse &);
     void handleUserLogoutPost(HttpRequest &, HttpResponse &);
 
 public:

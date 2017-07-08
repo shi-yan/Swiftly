@@ -25,7 +25,7 @@ public:
     bool login(const QString &email, const QByteArray &password, QString &userId, QMap<QString, QVariant> &extraFields, QString &errorMessage);
     bool resetPassword(const QString &email, const QByteArray &newPassword, const QByteArray &resetCodeOrOldPassword, bool useOldPassword);
     bool activate(QString &email, const QByteArray &activationCode);
-    bool sendPasswordResetRequest(const QString &email, QByteArray &resetCode);
+    bool generatePasswordResetRequest(const QString &email, QByteArray &resetCode);
     bool getActivationCode(const QString &email, QByteArray &activationCode);
     bool getUser(const QString &email, QMap<QString, QVariant> &fields);
     bool updateEmail(const QString &userId, const QString &newEmail);

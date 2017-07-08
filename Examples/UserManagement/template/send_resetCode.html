@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="description" content="">
+        <meta name="author" content="">
+
+        <title>Swiftly Send Password Reset Code</title>
+
+        <!-- Bootstrap Core CSS -->
+        <link href="../css/bootstrap.min.css" rel="stylesheet">
+
+        <!-- MetisMenu CSS -->
+        <link href="../css/metisMenu.min.css" rel="stylesheet">
+
+        <!-- Custom CSS -->
+        <link href="../css/startmin.css" rel="stylesheet">
+
+        <!-- Custom Fonts -->
+        <link href="../css/font-awesome.min.css" rel="stylesheet" type="text/css">
+
+        <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+        <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+        <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+        <![endif]-->
+        <style>
+            /* already defined in bootstrap4 */
+            .text-xs-center {
+                text-align: center;
+            }
+
+            #recaptcha {
+                display: inline-block;
+            }
+        </style>
+    </head>
+    <body>
+
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4 col-md-offset-4">
+                    <div class="login-panel panel panel-default">
+                        <div class="panel-heading">
+                            <h3 class="panel-title">Send Password Reset Code</h3>
+                        </div>
+                        <div class="panel-body">
+                            <form role="form" action="javascript:handleSubmission();">
+                                <fieldset>
+                                    <div class="form-group">
+                                        <p id='emailWarning' class="text-danger hidden-md hidden-lg"> Error: invlaid email. </p>
+                                        <input class="form-control" placeholder="E-mail" name="email" type="email" value="" autofocus>
+                                    </div>
+                                    <div class="form-group text-xs-center">
+                                        <div id='recaptcha'></div>
+                                    </div>
+                                    <p id='submissionWarning' class="text-danger hidden-lg"> Error: invlaid password. </p>
+                                    <button id='send'  type="input"  class="btn btn-lg btn-success btn-block">Send</button>
+                                </fieldset>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- jQuery -->
+        <script src="../js/jquery.min.js"></script>
+
+        <!-- Bootstrap Core JavaScript -->
+        <script src="../js/bootstrap.min.js"></script>
+
+        <!-- Metis Menu Plugin JavaScript -->
+        <script src="../js/metisMenu.min.js"></script>
+
+        <!-- Custom Theme JavaScript -->
+        <script src="../js/startmin.js"></script>
+
+        <script type="text/javascript">
+        var reCAPTCHAWidget;
+
+        var onloadCallback = function() 
+        {
+            reCAPTCHAWidget = grecaptcha.render('recaptcha', {
+              'sitekey' : '6LdhPycUAAAAAA_RL1W8nSJ3_p4-NfZS8pdK9u1p',
+              'theme' : 'light'
+            });
+        }
+
+        function validateEmail(email) 
+        {
+            var re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+            return re.test(email);
+        }
+
+        function displayErrorMessage(location, message)
+        {
+            $(location).removeClass('hidden-lg');
+            $(location).addClass('visible-lg');
+            $(location).html(message);
+        }
+
+        function clearErrorMessage(location)
+        {
+            $(location).addClass('hidden-lg');
+            $(location).removeClass('visible-lg');
+        }
+
+        function handleSubmission()
+        {
+            $("#send").prop("disabled",true);
+            clearErrorMessage('#submissionWarning');
+
+            var email = $("input[name='email']").val();
+
+            if (email === "" || email == null || !validateEmail(email))
+            {
+                displayErrorMessage('#submissionWarning', "Email format isn't correct.");
+                $("#send").prop("disabled",false);
+                grecaptcha.reset(reCAPTCHAWidget);
+                return;
+            }
+
+            var g_recaptcha_response = grecaptcha.getResponse(reCAPTCHAWidget);
+
+            if (g_recaptcha_response === "" || g_recaptcha_response == null)
+            {
+                $("#send").prop("disabled",false);
+                grecaptcha.reset(reCAPTCHAWidget);
+                return;
+            }
+
+            var request = new Request('http://localhost:8083/api/request_password_reset?email=' + email +"&g_recaptcha_response="+g_recaptcha_response, {
+                method: 'GET', 
+                headers: new Headers({
+                    'Content-Type': 'application/json'
+                })
+            });
+
+            // url (required), options (optional)
+            fetch(request).then(function(response) {
+                return response.text();
+            }).then(function(text){
+                console.log(text);
+                returnedData = JSON.parse(text);
+                if (returnedData.status != 0)
+                {
+                    displayErrorMessage('#submissionWarning', returnedData.error_message);
+
+                    $("#send").prop("disabled",false);
+                    grecaptcha.reset(reCAPTCHAWidget);
+                }
+                else if (returnedData.status == 0)
+                {
+                    displayErrorMessage('#submissionWarning', 'success!');
+                    window.location = "http://localhost:8083/login";
+                }
+            })
+            .catch(function(err) {
+                // Error :(
+
+                $("#send").prop("disabled",false);
+                grecaptcha.reset(reCAPTCHAWidget);
+            });
+        }
+
+        </script>
+        <script src="https://www.google.com/recaptcha/api.js?onload=onloadCallback&render=explicit" async defer>
+        </script>
+
+    </body>
+</html>

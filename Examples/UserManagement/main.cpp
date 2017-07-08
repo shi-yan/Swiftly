@@ -1,7 +1,7 @@
 #include <QCoreApplication>
 #include <QtCore/QThread>
 #include "Swiftly.h"
-#include "UserManagement.h"
+#include "UserManagementAPI.h"
 #include "UserManagementUI.h"
 #include "ReCAPTCHAVerifier.h"
 
@@ -31,7 +31,7 @@ int main(int argc, char *argv[])
 
     QCoreApplication a(argc, argv);
 
-    REGISTER_WEBAPP(UserManagement);
+    REGISTER_WEBAPP(UserManagementAPI);
     REGISTER_WEBAPP(UserManagementUI);
 
     //UserManagement um;

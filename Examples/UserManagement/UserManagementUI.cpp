@@ -13,13 +13,16 @@ UserManagementUI::UserManagementUI()
 
 void UserManagementUI::registerPathHandlers()
 {
-    addGetHandler("/login", "handleLoginUIGet");
     addGetHandler("/signup", "handleSignupUIGet");
-    addGetHandler("/reset_password", "handleResetPasswordUIGet");
-    addGetHandler("/loggedInPage", "handleLoggedInPageGet");
-    addGetHandler("/activate","handleUserActivationGet");
+
+    addGetHandler("/login", "handleLoginUIGet");
+    addGetHandler("/activate","handleUserActivationUIGet");
     addGetHandler("/resendActivationCode", "handleResendActivationCodeUIGet");
+    addGetHandler("/requestPasswordResetCode", "handleRequestPasswordResetCodeUIGet");
+    addGetHandler("/resetPassword", "handleResetPasswordUIGet");
+    addGetHandler("/loggedInPage", "handleLoggedInPageGet");
     addGetHandler("/", "handleFileGet");
+
 
 }
 
@@ -57,11 +60,11 @@ void UserManagementUI::handleSignupUIGet(HttpRequest &request, HttpResponse &res
     }
 }
 
-void UserManagementUI::handleResetPasswordUIGet(HttpRequest &request, HttpResponse &response)
+void UserManagementUI::handleRequestPasswordResetCodeUIGet(HttpRequest &request, HttpResponse &response)
 {
     QByteArray fileContent;
     QString mimeType;
-    if (m_staticFileServer.getFileByAbsolutePath(m_templatePath % "/reset_resetCode.html", fileContent, mimeType))
+    if (m_staticFileServer.getFileByAbsolutePath(m_templatePath % "/send_resetCode.html", fileContent, mimeType))
     {
         response << fileContent;
         response.finish(mimeType);
@@ -150,7 +153,7 @@ void UserManagementUI::handleLoggedInPageGet(HttpRequest &request, HttpResponse 
     }
 }
 
-void UserManagementUI::handleUserActivationGet(HttpRequest &request, HttpResponse &response)
+void UserManagementUI::handleUserActivationUIGet(HttpRequest &request, HttpResponse &response)
 {
     QByteArray pageTemplate;
     QString mimeType;
@@ -179,3 +182,33 @@ void UserManagementUI::handleUserActivationGet(HttpRequest &request, HttpRespons
     }
 
 }
+
+void UserManagementUI::handleResetPasswordUIGet(HttpRequest &request, HttpResponse &response)
+{
+    QByteArray pageTemplate;
+    QString mimeType;
+    QMap<QString, QString> &queries = request.getHeader().getQueries();
+
+    if (queries.contains("email") && queries.contains("reset_code")
+            && m_staticFileServer.getFileByAbsolutePath(m_templatePath % "/reset_password_by_resetCode.html", pageTemplate, mimeType))
+    {
+        QVariantHash info;
+        info["reset_code"] = queries["reset_code"];
+        info["reset_email"] = queries["email"];
+
+        Mustache::Renderer renderer;
+        Mustache::QtVariantContext context(info);
+
+        QString content = renderer.render(QString::fromUtf8(pageTemplate), &context);
+
+        response << content;
+        response.finish(mimeType);
+    }
+    else
+    {
+        response.setStatusCode(404);
+        response << "can't find the file!\n";
+        response.finish();
+    }
+}
+
