@@ -54,15 +54,7 @@ void UserManagement::handleUserSignupPost(HttpRequest &request, HttpResponse &re
 
         QMap<QString, QVariant> extraFields;
         QString errorMessage;
-        QByteArray activationCode;QJsonObject responseObject;
-
-        responseObject["status"] = 4;
-        responseObject["error_category"] = "reset password failed.";
-        QJsonDocument responseDoc(responseObject);
-
-        response.setStatusCode(200);
-        response << responseDoc.toJson();
-        response.finish("application/json");
+        QByteArray activationCode;
         if(m_userManager.signup(email, password, extraFields, errorMessage, activationCode))
         {
             if (sendActivationEmail(email, QString::fromLatin1(activationCode)))

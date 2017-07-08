@@ -9,14 +9,14 @@ PathTree::PathTree(QObject *parent)
 
 bool PathTree::registerAPath(const QString &path,QObject *object,const QString &methodName,enum PathTreeNode::TaskHandlerType type)
 {
-    qDebug()<<"Register a Handler:";
+    /*qDebug()<<"Register a Handler:";
     qDebug()<<"Path:"<<path;
     qDebug()<<"Object:"<<object;
     qDebug()<<"Method Name:"<<methodName;
     //qDebug()<<"Method Count:"<<((Zoidblog*)object)->metaObject()->methodCount();
     //qDebug()<<"Method Signature:"<<((Zoidblog*)object)->metaObject()->method(4).signature();
     qDebug()<<"Method ID:"<<object->metaObject()->indexOfMethod(QMetaObject::normalizedSignature(methodName.toStdString().c_str()));
-
+    */
 
     if(!path.isNull() && !path.isEmpty() && object!=0 && object->metaObject()->indexOfMethod(methodName.toStdString().c_str())!=-1 && !methodName.isNull() && !methodName.isEmpty())
     {
@@ -92,7 +92,7 @@ const TaskHandler * PathTree::getTaskHandlerByPath(const QString &path,enum Path
                         posEnd++;
 
                     QString pathName=path.mid(posBegin,posEnd-posBegin);
-                    qDebug() << "pathName" << pathName;
+                    //qDebug() << "pathName" << pathName;
 
                     if(currentPathTreeNode->hasChild(pathName))
                     {

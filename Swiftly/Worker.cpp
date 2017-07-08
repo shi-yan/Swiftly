@@ -161,7 +161,7 @@ Worker::~Worker()
 
 void Worker::newSocket(qintptr socket)
 {
-    qDebug() << m_name << " is handling a new request; thread id" << thread()->currentThreadId();
+    //qDebug() << m_name << " is handling a new request; thread id" << thread()->currentThreadId();
 
     TcpSocket* s = new TcpSocket(this);
     connect(s, SIGNAL(readyRead()), this, SLOT(readClient()));
@@ -212,7 +212,7 @@ void Worker::readClient()
             }
             else
             {
-                qDebug()<<"parsing seems to be succeed!";
+                //qDebug()<<"parsing seems to be succeed!";
             }
 
             socket->setRawHeader(incomingContent);
@@ -260,7 +260,7 @@ void Worker::readClient()
             socket->getRequest().processCookies();
             socket->getRequest().parseFormData();
 
-            qDebug() << "path" << socket->getRequest().getHeader().getPath();
+            //qDebug() << "path" << socket->getRequest().getHeader().getPath();
             sLog() << "handle request:" << socket->getRequest().getHeader().getPath();
             const TaskHandler *th=m_pathTree.getTaskHandlerByPath(socket->getRequest().getHeader().getPath(),handlerType);
 
@@ -318,7 +318,7 @@ void Worker::discardClient()
 {
     TcpSocket* socket = (TcpSocket*)sender();
     socket->deleteLater();
-    qDebug() << "finish serving client inside" << m_name;
+    //qDebug() << "finish serving client inside" << m_name;
     sLog() << m_name << "finished request.";
     sLogFlush();
     m_idleSemaphore.release();

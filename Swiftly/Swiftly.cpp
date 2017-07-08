@@ -20,7 +20,7 @@ HttpServer::HttpServer(QObject* parent )
     qRegisterMetaType<qintptr>("qintptr");
     qRegisterMetaType<HttpRequest>("HttpRequest");
     qRegisterMetaType<HttpResponse>("HttpResponse");
-    //setMaxPendingConnections(2000);
+    setMaxPendingConnections(20000);
 
     m_incomingConnectionQueue = new IncomingConnectionQueue(this);
 
@@ -37,11 +37,11 @@ void HttpServer::incomingConnection(qintptr socket)
 
     m_incomingConnectionQueue->addSocket(socket);
 
-    qDebug()<<"New Connection!" << serverAddress().toString() << socket;
+    //qDebug()<<"New Connection!" << serverAddress().toString() << socket;
 
     m_connectionCount++;
 
-    qDebug() << "connection:" << m_connectionCount;
+    //qDebug() << "connection:" << m_connectionCount;
 }
 
 void HttpServer::start(int numOfWorkers, quint16 port)

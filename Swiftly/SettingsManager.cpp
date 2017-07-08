@@ -11,9 +11,8 @@ SettingsManager::SettingsManager()
 
 void SettingsManager::init()
 {
-    qDebug() << m_settings.fileName();
-
-    m_settings.setValue("UserManager/test", "gaga");
+    qDebug() << "Setting file location:" << m_settings.fileName();
+    //m_settings.setValue("UserManager/test", "gaga");
 }
 
 QVariant SettingsManager::get(const QString &key, const QVariant &defaultValue)
