@@ -10,6 +10,7 @@
 #include <QtCore/QCoreApplication>
 #include "WorkerSocketWatchDog.h"
 #include "LoggingManager.h"
+#include <QHostAddress>
 
 int onMessageBegin(http_parser *)
 {
@@ -160,11 +161,13 @@ Worker::~Worker()
 
 void Worker::newSocket(qintptr socket)
 {
-    qDebug() << m_name << " is handling a request; thread id" << thread()->currentThreadId();
+    qDebug() << m_name << " is handling a new request; thread id" << thread()->currentThreadId();
+
     TcpSocket* s = new TcpSocket(this);
     connect(s, SIGNAL(readyRead()), this, SLOT(readClient()));
     connect(s, SIGNAL(disconnected()), this, SLOT(discardClient()));
     s->setSocketDescriptor(socket);
+    sLog() << m_name << " receive a new request from ip:" << s->peerAddress().toString();
 }
 
 void Worker::readClient()
@@ -258,26 +261,19 @@ void Worker::readClient()
             socket->getRequest().parseFormData();
 
             qDebug() << "path" << socket->getRequest().getHeader().getPath();
+            sLog() << "handle request:" << socket->getRequest().getHeader().getPath();
             const TaskHandler *th=m_pathTree.getTaskHandlerByPath(socket->getRequest().getHeader().getPath(),handlerType);
 
             if(th)
             {
-                if(!th->isEmpty())
+                if(!th->isEmpty() && th->invoke(socket->getRequest(), socket->getResponse()))
                 {
-                    if(th->invoke(socket->getRequest(),socket->getResponse()))
-                    {
-                        socket->getResponse().finish();
-
-                        qDebug()<<"invoke successful!";
-                    }
-                    else
-                    {
-                        qDebug()<<"invoke unsuccessful!";
-                    }
+                    socket->getResponse().finish();
                 }
                 else
                 {
                     qDebug()<<"no task handler!";
+                    sLog() << "no task handler!";
                     socket->getResponse().setStatusCode(404);
                     socket->getResponse().finish();
                 }
@@ -285,6 +281,7 @@ void Worker::readClient()
             else
             {
                 qDebug()<<"empty task handler!" << socket->getRequest().getHeader().getPath() << ";" <<handlerType;
+                sLog()<<"empty task handler!" << socket->getRequest().getHeader().getPath() << ";" <<handlerType;
                 socket->getResponse().setStatusCode(404);
                 socket->getResponse().finish();
             }
@@ -321,17 +318,17 @@ void Worker::discardClient()
 {
     TcpSocket* socket = (TcpSocket*)sender();
     socket->deleteLater();
-    qDebug()<<"finish serving client inside" << m_name;
+    qDebug() << "finish serving client inside" << m_name;
+    sLog() << m_name << "finished request.";
+    sLogFlush();
     m_idleSemaphore.release();
 }
 
 void Worker::run()
 {
-    qDebug()<<m_name<<"'s thread id"<<thread()->currentThreadId();
+    qDebug() << m_name<<"'s thread id"<<thread()->currentThreadId();
 
-    LoggingManager::getSingleton().log() <<m_name<<"'s thread id"<<thread()->currentThreadId();
-    LoggingManager::getSingleton().log() << "---------- test log ------------------";
-    LoggingManager::getSingleton().log().flush();
+    sLog() << m_name << "'s thread id" << thread()->currentThreadId();
 
     m_socketWatchDog = new WorkerSocketWatchDog(this);
     m_socketWatchDog->start();

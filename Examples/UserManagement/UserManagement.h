@@ -4,6 +4,10 @@
 #include "WebApp.h"
 #include "UserManager.h"
 #include "SessionManager.h"
+#include <QJsonParseError>
+#include <QJsonObject>
+#include <QJsonDocument>
+#include <QVariant>
 
 class UserManagement : public WebApp
 {
@@ -11,7 +15,26 @@ class UserManagement : public WebApp
 
     UserManager m_userManager;
     SessionManager m_sessionManager;
+
 public:
+    enum class StatusCode
+    {
+        NoError,
+        JsonParsingFailed,
+        MissingParameters,
+        reCAPTCHAFailed,
+        SendActivationEmailFailed,
+        SignupFailed,
+        CreateSessionFailed,
+        LoginFailed,
+        LogoutFailed,
+        PasswordResetFailed,
+        ActivationFailed,
+        SendPasswordResetRequestFailed
+
+    };
+
+
     UserManagement();
     UserManagement(const UserManagement&in)
         :WebApp(),
@@ -37,6 +60,45 @@ public:
 
 private slots:
     void mailSent(QString status);
+
+private:
+    inline void respond(HttpResponse &response, const StatusCode status, const QString &errorMessage = QString(),
+                        int debugErrorCode = 0, const QMap<QString, QString> &additionalFields = QMap<QString, QString>())
+    {
+        QJsonObject responseObject;
+
+        responseObject["status"] = to_underlying(status);
+        responseObject["debug_error_code"] = debugErrorCode;
+        responseObject["error_message"] = errorMessage;
+
+        auto iter = additionalFields.begin();
+
+        for(;iter != additionalFields.end(); ++iter)
+        {
+            responseObject[iter.key()] = iter.value();
+        }
+
+        QJsonDocument responseDoc(responseObject);
+
+        response.setStatusCode(200);
+        response << responseDoc.toJson();
+        response.finish("application/json");
+    }
+
+    inline void respondSuccess(HttpResponse &response)
+    {
+        respond(response, StatusCode::NoError, "Succeeded!");
+    }
+
+    inline void respondParameterMissing(HttpResponse &response)
+    {
+        respond(response, StatusCode::MissingParameters, "Missing parameters!");
+    }
+
+    inline void respondJsonParseError(HttpResponse &response, const QJsonParseError &error)
+    {
+        respond(response, StatusCode::JsonParsingFailed, error.errorString(), static_cast<int>(error.error));
+    }
 };
 
 #endif // USERMANAGEMENT_H

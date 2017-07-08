@@ -10,7 +10,7 @@ int main(int argc, char *argv[])
 
     //todo:
     //config file x
-    //logging
+    //logging X
     //session x
     //send email x
     //oauth login
