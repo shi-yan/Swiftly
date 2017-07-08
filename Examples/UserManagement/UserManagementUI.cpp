@@ -1,6 +1,7 @@
 #include "UserManagementUI.h"
 #include "SettingsManager.h"
 #include <QStringBuilder>
+#include "mustache.h"
 
 UserManagementUI::UserManagementUI()
     :WebApp(),
@@ -16,7 +17,7 @@ void UserManagementUI::registerPathHandlers()
     addGetHandler("/signup", "handleSignupUIGet");
     addGetHandler("/reset_password", "handleResetPasswordUIGet");
     addGetHandler("/loggedInPage", "handleLoggedInPageGet");
-    //addGetHandler("/","handleUserActivationGet");
+    addGetHandler("/activate","handleUserActivationGet");
     addGetHandler("/", "handleFileGet");
 
 }
@@ -126,6 +127,35 @@ void UserManagementUI::handleLoggedInPageGet(HttpRequest &request, HttpResponse 
     {
         response.setStatusCode(404);
         response << "can't find session, not logged in?\n";
+        response.finish();
+    }
+}
+
+void UserManagementUI::handleUserActivationGet(HttpRequest &request, HttpResponse &response)
+{
+    QByteArray pageTemplate;
+    QString mimeType;
+    QMap<QString, QString> &queries = request.getHeader().getQueries();
+
+    if (queries.contains("email") && queries.contains("activation_code")
+            && m_staticFileServer.getFileByAbsolutePath(m_templatePath % "/activation.html", pageTemplate, mimeType))
+    {
+        QVariantHash info;
+        info["activation_code"] = queries["activation_code"];
+        info["activation_email"] = queries["email"];
+
+        Mustache::Renderer renderer;
+        Mustache::QtVariantContext context(info);
+
+        QString content = renderer.render(QString::fromUtf8(pageTemplate), &context);
+
+        response << content;
+        response.finish(mimeType);
+    }
+    else
+    {
+        response.setStatusCode(404);
+        response << "can't find the file!\n";
         response.finish();
     }
 

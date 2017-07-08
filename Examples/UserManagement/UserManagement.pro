@@ -35,6 +35,7 @@ else:unix: LIBS += -L$$OUT_PWD/../../Swiftly/ -lSwiftly
 
 INCLUDEPATH += $$PWD/../../Swiftly \
                $$PWD/../../http-parser \
+               $$PWD/../../qt-mustache/src \
                /usr/local/include/bsoncxx/v_noabi \
                /usr/local/include/mongocxx/v_noabi \
                /usr/local/include \

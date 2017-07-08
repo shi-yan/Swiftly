@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="description" content="">
+        <meta name="author" content="">
+
+        <title>Email Activation</title>
+        <!-- Bootstrap Core CSS -->
+        <link href="../css/bootstrap.min.css" rel="stylesheet">
+
+        <!-- MetisMenu CSS -->
+        <link href="../css/metisMenu.min.css" rel="stylesheet">
+
+        <!-- Custom CSS -->
+        <link href="../css/startmin.css" rel="stylesheet">
+
+        <!-- Custom Fonts -->
+        <link href="../css/font-awesome.min.css" rel="stylesheet" type="text/css">
+
+        <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+        <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+        <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+        <![endif]-->
+    </head>
+    <body>
+
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4 col-md-offset-4">
+                    <div class="login-panel panel panel-default">
+                        <div class="panel-heading">
+                            <h3 class="panel-title">Email Activation</h3>
+                        </div>
+                        <div class="panel-body">
+                            <form id="activation_form" role="form" action="javascript:handleSubmission();">
+                                <fieldset>
+                                    <div class="form-group">
+                                        <input class="form-control" placeholder="E-mail" name="email" type="email" value="{{{activation_email}}}" readonly>
+                                    </div>
+                                    <div class="form-group">
+                                        <input class="form-control" placeholder="Activation Code" name="activation_code" type="text" value="{{{activation_code}}}" readonly>
+                                    </div>
+                                    <p id='submissionWarning' class="text-danger hidden-lg"> Error: invlaid password. </p>
+                                </fieldset>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- jQuery -->
+        <script src="../js/jquery.min.js"></script>
+
+        <!-- Bootstrap Core JavaScript -->
+        <script src="../js/bootstrap.min.js"></script>
+
+        <!-- Metis Menu Plugin JavaScript -->
+        <script src="../js/metisMenu.min.js"></script>
+
+        <!-- Custom Theme JavaScript -->
+        <script src="../js/startmin.js"></script>
+
+        <script>
+
+        function validateEmail(email) 
+        {
+            var re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+            return re.test(email);
+        }
+
+        function displayErrorMessage(location, message)
+        {
+            $(location).removeClass('hidden-lg');
+            $(location).addClass('visible-lg');
+            $(location).html(message);
+        }
+
+        function clearErrorMessage(location)
+        {
+            $(location).addClass('hidden-lg');
+            $(location).removeClass('visible-lg');
+        }
+
+        function handleSubmission()
+        {
+            clearErrorMessage('#submissionWarning');
+
+            var email = $("input[name='email']").val();
+
+            if (email === "" || email == null || !validateEmail(email))
+            {
+                displayErrorMessage('#submissionWarning', "Email format isn't correct.");
+                return;
+            }
+
+            var activationCode = $("input[name='activation_code']").val();
+            if (activationCode === "" || activationCode == null)
+            {
+                displayErrorMessage('#submissionWarning', "Haven't provided valid activation code.");
+                return;
+            }
+
+            var request = new Request('http://localhost:8083/api/activate?activation_code='+activationCode+"&email="+email, {
+                method: 'GET', 
+                headers: new Headers({
+                    'Content-Type': 'application/json'
+                })
+            });
+
+            // url (required), options (optional)
+            fetch(request).then(function(response) {
+                return response.text();
+            }).then(function(text){
+                console.log(text);
+                returnedData = JSON.parse(text);
+                if (returnedData.status != 0)
+                {
+                    displayErrorMessage('#submissionWarning', returnedData.error_message);
+                }
+                else if (returnedData.status == 0)
+                {
+                    var count = 0;
+                    setTimeout(function()
+                        { 
+                            count ++;
+                            if (count == 5)
+                            {
+                                window.location = "http://localhost:8083/login"; 
+                            }
+                            else
+                            {
+                                displayErrorMessage('#submissionWarning', 'Success! Will jump to login in' + (5 - count) + " seconds.");
+                            }
+                        }, 1000);
+                }
+            })
+            .catch(function(err) {
+            });
+
+        }
+
+        window.onload=function() 
+        {
+            setTimeout(function(){ autoSubmitform(); }, 100);
+
+            function autoSubmitform()
+            {
+                document.forms["activation_form"].submit();
+            }
+        }
+
+        </script>
+    </body>
+</html>

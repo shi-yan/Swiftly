@@ -292,7 +292,7 @@ bool UserManagement::sendActivationEmail(const QString &to, const QString &activ
         SmtpManager *smtp = new SmtpManager(username, password, server);
         connect(smtp, SIGNAL(status(QString)), this, SLOT(mailSent(QString)));
 
-        QString emailContent = "http://localhost:8083/api/activate?activation_code=" % activationCode % "&email=" % to;
+        QString emailContent = "http://localhost:8083/activate?activation_code=" % activationCode % "&email=" % to;
 
         smtp->sendMail("shiyan.nebula@gmail.com", to, "Activate Swiftly", emailContent);
         sLog() << "Send activation email to:" << to << "with activation code:" << activationCode;
