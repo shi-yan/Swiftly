@@ -24,9 +24,10 @@ public:
     bool signup(const QString &email, const QByteArray &password, const QMap<QString, QVariant> &extraFields, QString &errorMessage, QByteArray &activationCode);
     bool login(const QString &email, const QByteArray &password, QString &userId, QMap<QString, QVariant> &extraFields, QString &errorMessage);
     bool resetPassword(const QString &email, const QByteArray &newPassword, const QByteArray &resetCodeOrOldPassword, bool useOldPassword);
-    bool activate(QString &email, const QString &activationCode);
+    bool activate(QString &email, const QByteArray &activationCode);
     bool sendPasswordResetRequest(const QString &email, QByteArray &resetCode);
-    bool sendActivationCode(const QString &email, QString &activationCode);
+    bool getActivationCode(const QString &email, QByteArray &activationCode);
+    bool getUser(const QString &email, QMap<QString, QVariant> &fields);
     bool updateEmail(const QString &userId, const QString &newEmail);
 
     static bool isValidEmail(const QString &email);

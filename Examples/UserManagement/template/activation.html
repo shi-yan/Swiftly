@@ -126,16 +126,16 @@
                 else if (returnedData.status == 0)
                 {
                     var count = 0;
-                    setTimeout(function()
+                    setInterval(function()
                         { 
                             count ++;
-                            if (count == 5)
+                            if (count >= 5)
                             {
                                 window.location = "http://localhost:8083/login"; 
                             }
                             else
                             {
-                                displayErrorMessage('#submissionWarning', 'Success! Will jump to login in' + (5 - count) + " seconds.");
+                                displayErrorMessage('#submissionWarning', 'Success! Will jump to login in ' + (5 - count) + " seconds.");
                             }
                         }, 1000);
                 }

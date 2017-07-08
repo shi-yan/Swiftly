@@ -252,12 +252,38 @@ void UserManagement::handleSendActivationCodeGet(HttpRequest &request, HttpRespo
 {
     QMap<QString, QString> &queries = request.getHeader().getQueries();
 
-    if (queries.contains("email"))
+    if (queries.contains("email") && queries.contains("g_recaptcha_response"))
     {
+        QString g_recaptcha_response = queries["g_recaptcha_response"];
+
+        if (!ReCAPTCHAVerifier::getSingleton().verify(g_recaptcha_response, request.getFromIPAddress()))
+        {
+            respond(response, StatusCode::reCAPTCHAFailed, "reCAPTCHA check failed!");
+            return;
+        }
+
         QString email = queries["email"];
         QByteArray activationCode;
 
-        m_userManager.generateActivationCode(email, activationCode);
+        if (!m_userManager.getActivationCode(email, activationCode))
+        {
+            respond(response, StatusCode::NoPreviousActivationPending, "No Previous Activation Pending!");
+            return;
+        }
+
+        QMap<QString, QVariant> fields;
+
+        if (!m_userManager.getUser(email, fields))
+        {
+            respond(response, StatusCode::UserFindingFailed, "Failed to find user!");
+            return;
+        }
+
+        if (!fields.contains("status") || fields["status"].toInt() != 0)
+        {
+            respond(response, StatusCode::AlreadyActivated, "Account is already activated!");
+            return;
+        }
 
         if (sendActivationEmail(email, QString::fromLatin1(activationCode)))
         {

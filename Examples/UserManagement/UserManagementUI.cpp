@@ -18,6 +18,7 @@ void UserManagementUI::registerPathHandlers()
     addGetHandler("/reset_password", "handleResetPasswordUIGet");
     addGetHandler("/loggedInPage", "handleLoggedInPageGet");
     addGetHandler("/activate","handleUserActivationGet");
+    addGetHandler("/resendActivationCode", "handleResendActivationCodeUIGet");
     addGetHandler("/", "handleFileGet");
 
 }
@@ -75,11 +76,29 @@ void UserManagementUI::handleResetPasswordUIGet(HttpRequest &request, HttpRespon
 
 void UserManagementUI::handleResendActivationCodeUIGet(HttpRequest &request, HttpResponse &response)
 {
-    QByteArray fileContent;
+    QByteArray pageTemplate;
     QString mimeType;
-    if (m_staticFileServer.getFileByAbsolutePath(m_templatePath % "/resend_activation.html", fileContent, mimeType))
+    QMap<QString, QString> &queries = request.getHeader().getQueries();
+
+    if (m_staticFileServer.getFileByAbsolutePath(m_templatePath % "/resend_activation.html", pageTemplate, mimeType))
     {
-        response << fileContent;
+        QVariantHash info;
+
+        if (queries.contains("email"))
+        {
+            info["activation_email"] = queries["email"];
+        }
+        else
+        {
+            info["activation_email"] = "";
+        }
+
+        Mustache::Renderer renderer;
+        Mustache::QtVariantContext context(info);
+
+        QString content = renderer.render(QString::fromUtf8(pageTemplate), &context);
+
+        response << content;
         response.finish(mimeType);
     }
     else

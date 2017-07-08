@@ -30,7 +30,10 @@ public:
         LogoutFailed,
         PasswordResetFailed,
         ActivationFailed,
-        SendPasswordResetRequestFailed
+        SendPasswordResetRequestFailed,
+        NoPreviousActivationPending,
+        UserFindingFailed,
+        AlreadyActivated
 
     };
 
