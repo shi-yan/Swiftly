@@ -142,7 +142,7 @@ void UserManagementUI::handleLoggedInPageGet(HttpRequest &request, HttpResponse 
 
         response.setStatusCode(200);
         response << "find user!\n" << email;
-        response << "for session" << sessionId;
+        response << "for session " << sessionId;
         response.finish();
     }
     else
@@ -195,6 +195,25 @@ void UserManagementUI::handleResetPasswordUIGet(HttpRequest &request, HttpRespon
         QVariantHash info;
         info["reset_code"] = queries["reset_code"];
         info["reset_email"] = queries["email"];
+
+        Mustache::Renderer renderer;
+        Mustache::QtVariantContext context(info);
+
+        QString content = renderer.render(QString::fromUtf8(pageTemplate), &context);
+
+        response << content;
+        response.finish(mimeType);
+    }
+    else if ( m_staticFileServer.getFileByAbsolutePath(m_templatePath % "/reset_password_by_oldPassword.html", pageTemplate, mimeType))
+    {
+        QString email = "value=\"\" autofocus";
+        if (queries.contains("email"))
+        {
+            email = "value=\"" % queries["email"] % "\" readonly";
+        }
+
+        QVariantHash info;
+        info["reset_email"] = email;
 
         Mustache::Renderer renderer;
         Mustache::QtVariantContext context(info);

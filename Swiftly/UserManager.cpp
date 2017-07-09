@@ -223,7 +223,7 @@ bool UserManager::resetPassword(const QString &email, const QByteArray &newPassw
 
         mongocxx::stdx::optional<bsoncxx::document::value> maybe_result =
                userCollection.find_one(bsoncxx::builder::stream::document{}
-                                       << "email" << "billconan@gmail.com" << bsoncxx::builder::stream::finalize);
+                                       << "email" <<  email.toStdString().c_str() << bsoncxx::builder::stream::finalize);
 
         if(maybe_result)
         {
@@ -276,12 +276,13 @@ bool UserManager::resetPassword(const QString &email, const QByteArray &newPassw
             return false;
         }
 
-        if (!isValidePassword(newPassword, errorMessage))
-        {
-            return false;
-        }
+
     }
 
+    if (!isValidePassword(newPassword, errorMessage))
+    {
+        return false;
+    }
 
     QByteArray hash;
     hashPassword(newPassword, hash);

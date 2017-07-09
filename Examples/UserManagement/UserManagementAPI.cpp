@@ -178,13 +178,16 @@ void UserManagementAPI::handleUserResetPasswordPost(HttpRequest &request, HttpRe
 
     QJsonObject dataObject = data.object();
 
+    //not checking if user is activated or not here might be ok.
+    //because this api call has to be sent from the ui, as it needs recaptcha
+    //and the ui checks if user is activated
+
     if (dataObject.contains("email") && dataObject.contains("password")
-            && dataObject.contains("reset_code") && dataObject.contains("g_recaptcha_response"))
+            && dataObject.contains("g_recaptcha_response"))
     {
 
         QString email = dataObject["email"].toString();
         QByteArray password = dataObject["password"].toString().toLatin1();
-        QByteArray reset_code = dataObject["reset_code"].toString().toLatin1();
         QString g_recaptcha_response = dataObject["g_recaptcha_response"].toString();
 
         if (!ReCAPTCHAVerifier::getSingleton().verify(g_recaptcha_response, request.getFromIPAddress()))
@@ -193,14 +196,30 @@ void UserManagementAPI::handleUserResetPasswordPost(HttpRequest &request, HttpRe
             return;
         }
 
-        if (!m_userManager.resetPassword(email, password, reset_code, false))
+        if (dataObject.contains("reset_code"))
         {
-            respond(response, StatusCode::PasswordResetFailed, "Password reset failed!");
+            QByteArray reset_code = dataObject["reset_code"].toString().toLatin1();
+
+            if (!m_userManager.resetPassword(email, password, reset_code, false))
+            {
+                respond(response, StatusCode::PasswordResetFailed, "Password reset failed!");
+            }
+        }
+        else if(dataObject.contains("old_password"))
+        {
+            QByteArray old_password = dataObject["old_password"].toString().toLatin1();
+
+            if (!m_userManager.resetPassword(email, password, old_password, true))
+            {
+                respond(response, StatusCode::PasswordResetFailed, "Password reset failed!");
+            }
         }
         else
         {
-            respondSuccess(response);
+            respondParameterMissing(response);
         }
+
+        respondSuccess(response);
     }
     else
     {

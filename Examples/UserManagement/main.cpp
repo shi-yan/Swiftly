@@ -34,9 +34,6 @@ int main(int argc, char *argv[])
     REGISTER_WEBAPP(UserManagementAPI);
     REGISTER_WEBAPP(UserManagementUI);
 
-    //UserManagement um;
-    //qDebug() << um.sendActivationEmail("shiy@nvidia.com");
-
     HttpServer::getSingleton().start(QThread::idealThreadCount(), 8083);
 
     return a.exec();
