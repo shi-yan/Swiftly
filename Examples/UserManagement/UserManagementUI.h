@@ -26,6 +26,7 @@ public slots:
     void handleFileGet(HttpRequest &,HttpResponse &);
     void handleLoggedInPageGet(HttpRequest &, HttpResponse &);
 
+
 };
 
 #endif // USERMANAGEMENTUI_H

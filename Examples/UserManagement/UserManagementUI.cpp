@@ -24,6 +24,7 @@ void UserManagementUI::registerPathHandlers()
     addGetHandler("/", "handleFileGet");
 
 
+
 }
 
 void UserManagementUI::handleLoginUIGet(HttpRequest &request, HttpResponse &response)
@@ -45,11 +46,23 @@ void UserManagementUI::handleLoginUIGet(HttpRequest &request, HttpResponse &resp
 
 void UserManagementUI::handleSignupUIGet(HttpRequest &request, HttpResponse &response)
 {
-    QByteArray fileContent;
+    QByteArray pageTemplate;
     QString mimeType;
-    if (m_staticFileServer.getFileByAbsolutePath(m_templatePath % "/signup.html", fileContent, mimeType))
-    {
-        response << fileContent;
+    if (m_staticFileServer.getFileByAbsolutePath(m_templatePath % "/signup.html", pageTemplate, mimeType))
+    {        
+        QVariantHash info;
+
+        QString client_id = SettingsManager::getSingleton().get("GitHub/client_id").toString();
+        QString scope = QString("user:email repo gist").toHtmlEscaped();
+
+        info["github_oauth_link"] = QString("http://github.com/login/oauth/authorize?client_id=" % client_id % "&scpoe=" % scope);
+
+        Mustache::Renderer renderer;
+        Mustache::QtVariantContext context(info);
+
+        QString content = renderer.render(QString::fromUtf8(pageTemplate), &context);
+
+        response << content;
         response.finish(mimeType);
     }
     else

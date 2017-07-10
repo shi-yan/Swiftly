@@ -6,6 +6,10 @@
 #include "SettingsManager.h"
 #include <QStringBuilder>
 #include "LoggingManager.h"
+#include <QNetworkAccessManager>
+#include <QNetworkReply>
+#include <QUrl>
+#include <QUrlQuery>
 
 UserManagementAPI::UserManagementAPI()
     : WebApp(),
@@ -24,6 +28,7 @@ void UserManagementAPI::registerPathHandlers()
     addGetHandler("/api/request_activation", "handleSendActivationCodeGet");
     addPostHandler("/api/update_email", "handleUserUpdateEmailPost");
     addPostHandler("/api/logout", "handleUserLogoutPost");
+    addGetHandler("/api/githubRegistered", "handleGithubRegisterGet");
 }
 
 void UserManagementAPI::handleUserSignupPost(HttpRequest &request, HttpResponse &response)
@@ -406,4 +411,46 @@ void UserManagementAPI::mailSent(QString status)
     SmtpManager *smtp = (SmtpManager*)QObject::sender();
     smtp->deleteLater();
     sLog() << "Email sent!";
+}
+
+void UserManagementAPI::handleGithubRegisterGet(HttpRequest &request, HttpResponse &response)
+{
+    QMap<QString, QString> &queries = request.getHeader().getQueries();
+
+    QString code;
+    if (!queries.contains("code"))
+    {
+        respond(response, StatusCode::MissingParameters, "no code");
+    }
+
+    code = queries["code"];
+
+    QString client_id = SettingsManager::getSingleton().get("GitHub/client_id").toString();
+    QString client_secret = SettingsManager::getSingleton().get("GitHub/client_secret").toString();
+
+    QUrl verificationUrl = QUrl("https://github.com/login/oauth/access_token");
+
+    QUrlQuery query;
+
+    query.addQueryItem("code", code);
+    query.addQueryItem("client_id", client_id);
+    query.addQueryItem("client_secret", client_secret);
+
+    verificationUrl.setQuery(query.query());
+    QNetworkRequest githubRequest;
+    githubRequest.setUrl(verificationUrl);
+    QEventLoop loop;
+    QNetworkAccessManager m_networkAccessManager;
+    githubRequest.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
+
+    QNetworkReply *reply = m_networkAccessManager.post(githubRequest, QByteArray());
+    connect(reply, SIGNAL(finished()), &loop, SLOT(quit()));
+   // connect(reply, SIGNAL(error()), reply, SLOT(deleteLater()));
+    loop.exec();
+    qDebug() << reply->readAll();
+
+    reply->deleteLater();
+
+    respondSuccess(response);
+
 }

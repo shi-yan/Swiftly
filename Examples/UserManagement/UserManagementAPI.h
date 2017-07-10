@@ -8,6 +8,7 @@
 #include <QJsonObject>
 #include <QJsonDocument>
 #include <QVariant>
+#include <QNetworkAccessManager>
 
 class UserManagementAPI : public WebApp
 {
@@ -57,6 +58,9 @@ public slots:
     void handleSendPasswordResetRequestGet(HttpRequest &, HttpResponse &);
     void handleSendActivationCodeGet(HttpRequest &, HttpResponse &);
     void handleUserLogoutPost(HttpRequest &, HttpResponse &);
+
+    void handleGithubRegisterGet(HttpRequest &, HttpResponse &);
+
 
 public:
     bool sendActivationEmail(const QString &to, const QString &activationCode);
