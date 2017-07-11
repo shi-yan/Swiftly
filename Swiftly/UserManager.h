@@ -4,16 +4,19 @@
 #include <QString>
 #include <QObject>
 
+//! This class handles all user registration and login logic
 class UserManager : public QObject
 {
     Q_OBJECT
 public:
+    //! Constructor
+    //! both constructors do nothing, the class members need
+    //! to be pure functions.
     UserManager();
 
     UserManager(const UserManager &)
         :QObject()
     {
-
     }
 
     void operator=(const UserManager &)
@@ -21,14 +24,18 @@ public:
 
     }
 
-    bool signup(const QString &email, const QByteArray &password, const QMap<QString, QVariant> &extraFields, QString &errorMessage, QByteArray &activationCode);
+    bool signup(const QString &email, const QByteArray &password,
+                const QMap<QString, QVariant> &extraFields, QString &errorMessage, QByteArray &activationCode);
+
     bool login(const QString &email, const QByteArray &password, QString &userId, QMap<QString, QVariant> &extraFields, QString &errorMessage);
-    bool resetPassword(const QString &email, const QByteArray &newPassword, const QByteArray &resetCodeOrOldPassword, bool useOldPassword);
-    bool activate(QString &email, const QByteArray &activationCode);
-    bool generatePasswordResetRequest(const QString &email, QByteArray &resetCode);
-    bool getActivationCode(const QString &email, QByteArray &activationCode);
+
+    bool resetPassword(const QString &email, const QByteArray &newPassword, const QByteArray &resetCodeOrOldPassword,
+                       bool useOldPassword, QString &errorMessage);
+    bool activate(QString &email, const QByteArray &activationCode, QString &errorMessage);
+
+    bool generatePasswordResetRequest(const QString &email, QByteArray &resetCode, QString &errorMessage);
+    bool getActivationCode(const QString &email, QByteArray &activationCode, QString &errorMessage);
     bool getUser(const QString &email, QMap<QString, QVariant> &fields);
-    bool updateEmail(const QString &userId, const QString &newEmail);
 
     static bool isValidEmail(const QString &email);
     static bool isValidePassword(const QByteArray &password, QString &errorMessage, unsigned int upperCaseNum = 1, unsigned int specialLetterNum = 1,

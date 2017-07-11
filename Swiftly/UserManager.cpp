@@ -200,14 +200,15 @@ bool UserManager::login(const QString &email, const QByteArray &password, QStrin
     return true;
 }
 
-bool UserManager::resetPassword(const QString &email, const QByteArray &newPassword, const QByteArray &resetCodeOrOldPassword, bool useOldPassword)
+bool UserManager::resetPassword(const QString &email, const QByteArray &newPassword,
+                                const QByteArray &resetCodeOrOldPassword, bool useOldPassword, QString &errorMessage)
 {
     if (!isValidEmail(email))
     {
+        errorMessage = "Email provided is not valid.";
         return false;
     }
 
-    QString errorMessage;
     auto client = MongodbManager::getSingleton().getClient();
 
     mongocxx::database swiftlyDb = (*client)["Swiftly"];
@@ -242,14 +243,15 @@ bool UserManager::resetPassword(const QString &email, const QByteArray &newPassw
 
             if (!UserManager::verifyPassword(passwordHash, resetCodeOrOldPassword))
             {
+                errorMessage = "Not able to verify old password.";
                 return false;
             }
         }
         else
         {
+            errorMessage = "Unable to find a user with email: " % email;
             return false;
         }
-
     }
     else
     {
@@ -268,15 +270,15 @@ bool UserManager::resetPassword(const QString &email, const QByteArray &newPassw
 
             if (email != QString::fromStdString(emailElement.get_utf8().value.to_string()))
             {
+                errorMessage = "Email provided doesn't match the password reset code.";
                 return false;
             }
         }
         else
         {
+            errorMessage = "Unable to find password reset code.";
             return false;
         }
-
-
     }
 
     if (!isValidePassword(newPassword, errorMessage))
@@ -302,10 +304,12 @@ bool UserManager::resetPassword(const QString &email, const QByteArray &newPassw
 
         if (result)
         {
+            errorMessage = "Success!";
             return true;
         }
         else
         {
+            errorMessage = "Unable to set password!";
             return false;
         }
     }
@@ -319,13 +323,14 @@ bool UserManager::resetPassword(const QString &email, const QByteArray &newPassw
         {
             qDebug() << "unknown mongo error:" << e.code().value() << e.what();
         }
+        errorMessage = "Generic database error.";
         return false;
     }
 
     return true;
 }
 
-bool UserManager::activate(QString &email, const QByteArray &activationCode)
+bool UserManager::activate(QString &email, const QByteArray &activationCode, QString &errorMessage)
 {
     auto client = MongodbManager::getSingleton().getClient();
 
@@ -355,22 +360,25 @@ bool UserManager::activate(QString &email, const QByteArray &activationCode)
                                   << bsoncxx::builder::stream::finalize);
         if (result)
         {
+            errorMessage = "Success!";
             return true;
         }
         else
         {
+            errorMessage = "Failed to activate user.";
             return false;
         }
     }
     else
     {
+        errorMessage = "Failed to find activation code.";
         return false;
     }
 
     return true;
 }
 
-bool UserManager::generatePasswordResetRequest(const QString &email, QByteArray &passwordResetCode)
+bool UserManager::generatePasswordResetRequest(const QString &email, QByteArray &passwordResetCode, QString &errorMessage)
 {
     auto client = MongodbManager::getSingleton().getClient();
 
@@ -404,10 +412,12 @@ bool UserManager::generatePasswordResetRequest(const QString &email, QByteArray 
 
         if (result)
         {
+            errorMessage = "Success!";
             return true;
         }
         else
         {
+            errorMessage = "Failed to save password reset code.";
             return false;
         }
     }
@@ -421,13 +431,14 @@ bool UserManager::generatePasswordResetRequest(const QString &email, QByteArray 
         {
             qDebug() << "unknown mongo error:" << e.code().value() << e.what();
         }
+        errorMessage = "Generic database error.";
         return false;
     }
 
     return true;
 }
 
-bool UserManager::getActivationCode(const QString &email, QByteArray &activationCode)
+bool UserManager::getActivationCode(const QString &email, QByteArray &activationCode, QString &errorMessage)
 {
     if (!isValidEmail(email))
     {
@@ -451,9 +462,11 @@ bool UserManager::getActivationCode(const QString &email, QByteArray &activation
         //------------
         std::string activationCodeStr = activationCodeElement.get_utf8().value.to_string();
         activationCode = QByteArray(activationCodeStr.data(), activationCodeStr.size());
+        errorMessage = "Success!";
     }
     else
     {
+        errorMessage = "No activation code found for this email!";
         return false;
     }
 

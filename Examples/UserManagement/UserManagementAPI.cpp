@@ -204,19 +204,20 @@ void UserManagementAPI::handleUserResetPasswordPost(HttpRequest &request, HttpRe
         if (dataObject.contains("reset_code"))
         {
             QByteArray reset_code = dataObject["reset_code"].toString().toLatin1();
-
-            if (!m_userManager.resetPassword(email, password, reset_code, false))
+            QString errorMessage;
+            if (!m_userManager.resetPassword(email, password, reset_code, false, errorMessage))
             {
-                respond(response, StatusCode::PasswordResetFailed, "Password reset failed!");
+                respond(response, StatusCode::PasswordResetFailed, "Password reset failed: " % errorMessage);
             }
         }
         else if(dataObject.contains("old_password"))
         {
             QByteArray old_password = dataObject["old_password"].toString().toLatin1();
+            QString errorMessage;
 
-            if (!m_userManager.resetPassword(email, password, old_password, true))
+            if (!m_userManager.resetPassword(email, password, old_password, true, errorMessage))
             {
-                respond(response, StatusCode::PasswordResetFailed, "Password reset failed!");
+                respond(response, StatusCode::PasswordResetFailed, "Password reset failed: " % errorMessage);
             }
         }
         else
@@ -240,14 +241,15 @@ void UserManagementAPI::handleUserActivationGet(HttpRequest &request, HttpRespon
     {
         QByteArray activationCode = queries["activation_code"].toLatin1();
         QString email = queries["email"];
+        QString errorMessage;
 
-        if(m_userManager.activate(email, activationCode))
+        if(m_userManager.activate(email, activationCode, errorMessage))
         {
             respondSuccess(response);
         }
         else
         {
-            respond(response, StatusCode::ActivationFailed, "Activation failed!");
+            respond(response, StatusCode::ActivationFailed, "Activation failed: " % errorMessage);
         }
     }
     else
@@ -286,9 +288,11 @@ void UserManagementAPI::handleSendPasswordResetRequestGet(HttpRequest &request, 
             return;
         }
 
-        if (!m_userManager.generatePasswordResetRequest(email, passwordResetCode))
+        QString errorMessage;
+
+        if (!m_userManager.generatePasswordResetRequest(email, passwordResetCode, errorMessage))
         {
-            respond(response, StatusCode::PasswordResetCodeGenerationFailed, "Failed to generate Password Reset Code!");
+            respond(response, StatusCode::PasswordResetCodeGenerationFailed, "Failed to generate Password Reset Code: " % errorMessage);
             return;
         }
 
@@ -323,8 +327,9 @@ void UserManagementAPI::handleSendActivationCodeGet(HttpRequest &request, HttpRe
 
         QString email = queries["email"];
         QByteArray activationCode;
+        QString errorMessage;
 
-        if (!m_userManager.getActivationCode(email, activationCode))
+        if (!m_userManager.getActivationCode(email, activationCode, errorMessage))
         {
             respond(response, StatusCode::NoPreviousActivationPending, "No Previous Activation Pending!");
             return;
