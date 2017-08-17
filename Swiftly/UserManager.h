@@ -116,7 +116,7 @@ public:
      * \param[out] errorMessage error messages if any
      * \return true on success, otherwise false
      *
-     * Similar to \fn generatePasswordResetRequest(), this function generates an activation code.
+     * Similar to generatePasswordResetRequest(), this function generates an activation code.
      * The code needs to be sent to user via email.
      * \sa generatePasswordResetRequest()
      */
