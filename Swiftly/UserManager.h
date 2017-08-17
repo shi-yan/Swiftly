@@ -4,14 +4,18 @@
 #include <QString>
 #include <QObject>
 
-//! This class handles all user registration and login logic
+/*! \brief UserManager handles all user registration and login logic
+ *
+ *  Everything related to user signup/signin is implemented in this class.
+ */
 class UserManager : public QObject
 {
     Q_OBJECT
 public:
-    //! Constructor
-    //! both constructors do nothing, the class members need
-    //! to be pure functions.
+    //! \brief Constructor is empty
+    /*! both constructors do nothing, the class members need
+    * to be pure functions.
+    */
     UserManager();
 
     UserManager(const UserManager &)
@@ -19,11 +23,32 @@ public:
     {
     }
 
-    void operator=(const UserManager &)
+    //! the assignment operator shouldn't do anything for this class
+    /*!
+     * \param in the input
+     * \sa UserManager()
+     * Assignment operator shouldn't do anything.
+     */
+    void operator=(const UserManager &in)
     {
+        /*!
+        * We don't want to implement assigment operator
+        */
 
     }
 
+    //! \brief signup a user
+    /*!
+    * \param email unique email address
+    * \param password complex password
+    * \param extraFields a dictionary of extra meta data that needed to be written into user account
+    * \param errorMessage error happened during signup
+    * \param activationCode the activation code that will be sent to activate the user account
+    * This function signs up a user. The user's email must be unique in the database, the password needs to conform to the complext
+    * password standard. The parameter extraFields holds extra meta data that should be written to the user's database entry.
+    * Any error messages will be returned via errorMessage. If user is successfully signed up, an activation code is returned
+    * via activationCode.
+    */
     bool signup(const QString &email, const QByteArray &password,
                 const QMap<QString, QVariant> &extraFields, QString &errorMessage, QByteArray &activationCode);
 
