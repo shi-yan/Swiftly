@@ -238,7 +238,7 @@ void Worker::readClient()
 
         if(socket->isEof())
         {
-            PathTreeNode::TaskHandlerType handlerType;
+            PathTreeNode::HttpVerb handlerType;
 
             if(m_parser.method==HTTP_GET)
             {

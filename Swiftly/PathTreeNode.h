@@ -16,7 +16,7 @@ class PathTreeNode:public QObject
 
 public:
 
-    enum TaskHandlerType
+    enum HttpVerb
     {
         GET,
         POST

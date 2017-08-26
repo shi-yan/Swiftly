@@ -3,11 +3,11 @@
 
 PathTree::PathTree(QObject *parent)
     :QObject(parent),
-      root("")
+      m_root("")
 {
 }
 
-bool PathTree::registerAPath(const QString &path,QObject *object,const QString &methodName,enum PathTreeNode::TaskHandlerType type)
+bool PathTree::registerAPath(const QString &path,QObject *object,const QString &methodName,enum PathTreeNode::HttpVerb verb)
 {
     /*qDebug()<<"Register a Handler:";
     qDebug()<<"Path:"<<path;
@@ -24,17 +24,17 @@ bool PathTree::registerAPath(const QString &path,QObject *object,const QString &
             return false;
         else if(path.count()==1)
         {
-            if(type==PathTreeNode::GET)
-                return root.setGetHandler(object,methodName);
+            if(verb==PathTreeNode::GET)
+                return m_root.setGetHandler(object, methodName);
             else
-                return root.setPostHandler(object,methodName);
+                return m_root.setPostHandler(object, methodName);
         }
         else
         {
             int posBegin=1;
             int posEnd=1;
 
-            PathTreeNode *currentPathTreeNode=&root;
+            PathTreeNode *currentPathTreeNode = &m_root;
 
             for(posEnd=1;posEnd<path.count();++posEnd)
             {
@@ -56,7 +56,7 @@ bool PathTree::registerAPath(const QString &path,QObject *object,const QString &
                 }
             }
 
-            if(type==PathTreeNode::GET)
+            if(verb==PathTreeNode::GET)
                 return currentPathTreeNode->setGetHandler(object,methodName);
             else
                 return currentPathTreeNode->setPostHandler(object,methodName);
@@ -66,23 +66,23 @@ bool PathTree::registerAPath(const QString &path,QObject *object,const QString &
         return false;
 }
 
-const TaskHandler * PathTree::getTaskHandlerByPath(const QString &path,enum PathTreeNode::TaskHandlerType type)
+const TaskHandler * PathTree::getTaskHandlerByPath(const QString &path,enum PathTreeNode::HttpVerb type)
 {
     if(!path.isNull() && !path.isEmpty() && path.at(0)=='/')
     {
         if(path.count()==1)
         {
             if(type==PathTreeNode::GET)
-                return root.getHandler();
+                return m_root.getHandler();
             else
-                return root.postHandler();
+                return m_root.postHandler();
         }
         else
         {
             int posBegin=1;
             int posEnd=1;
 
-            PathTreeNode *currentPathTreeNode=&root;
+            PathTreeNode *currentPathTreeNode = &m_root;
 
             for(posEnd=1;posEnd<path.count();++posEnd)
             {
