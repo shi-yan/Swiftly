@@ -21,16 +21,16 @@ class PathTree : public QObject
 public:
     /*!
      * \brief PathTree constructor
-     * \param parent the parent Qt object.
+     * \param[in] parent the parent Qt object.
      */
     PathTree(QObject *parent = nullptr);
 
     /*!
      * \brief registerAPath parse a path and merge it into the current route tree
-     * \param path is the route path
-     * \param object is the WebApp that will handle the requests of this path
-     * \param methodName the name of the function of the WebApp that should handle this request
-     * \param verb the verb of the handler response to, such as, GET or POST
+     * \param[in] path is the route path
+     * \param[in] object is the WebApp that will handle the requests of this path
+     * \param[in] methodName the name of the function of the WebApp that should handle this request
+     * \param[in] verb the verb of the handler response to, such as, GET or POST
      * \return return true on sucess.
      *
      * After implementing a WebApp, call this function to tell Swiftly that certain http request should be handled by
@@ -41,12 +41,12 @@ public:
      * There can't be 2 WebApps that share the same route. If a WebApp has been registered to handle a route, another registration
      * using the same path will fail.
      */
-    bool registerAPath(const QString &path,QObject *object,const QString &methodName,enum PathTreeNode::HttpVerb verb);
+    bool registerAPath(const QString &path, QObject *object, const QString &methodName, enum PathTreeNode::HttpVerb verb);
 
     /*!
      * \brief getTaskHandlerByPath this function returns a task handler for certain path and handle type.
-     * \param path the request route
-     * \param taskHandleType the type of the handler, such as GET or POST
+     * \param[in] path the request route
+     * \param[in] taskHandleType the type of the handler, such as GET or POST
      * \return return the handler's pointer upon finish.
      *
      * \todo HttpVerb should be a strong type enum
