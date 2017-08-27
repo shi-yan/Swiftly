@@ -48,6 +48,8 @@ public:
      * \param path the request route
      * \param taskHandleType the type of the handler, such as GET or POST
      * \return return the handler's pointer upon finish.
+     *
+     * \todo HttpVerb should be a strong type enum
      */
     const TaskHandler * getTaskHandlerByPath(const QString &path, enum PathTreeNode::HttpVerb verb);
 };
