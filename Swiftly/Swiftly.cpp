@@ -93,3 +93,24 @@ void HttpServer::resume()
 {
     m_disabled = false;
 }
+
+void urlParameterParser(const QByteArray &parameters, QMap<QString, QString> &parameterList)
+{
+    QString parameterString = QString::fromUtf8(parameters);
+
+    QStringList parameterStringList = parameterString.split("&");
+
+    foreach (const QString &str, parameterStringList)
+    {
+        QStringList parameterPair = str.split("=");
+
+        if (parameterPair.size() == 2)
+        {
+            parameterList[parameterPair[0]] = parameterPair[1];
+        }
+        else
+        {
+            qDebug() << "parameter list parsing error";
+        }
+    }
+}

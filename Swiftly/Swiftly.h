@@ -51,4 +51,6 @@ public:
     void Shutdown();
  };
 
+void urlParameterParser(const QByteArray &parameters, QMap<QString, QString> &parameterList);
+
 #endif // HTTPSERVER_H
