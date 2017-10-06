@@ -8,6 +8,7 @@
 #include "ReCAPTCHAVerifier.h"
 #include <QSettings>
 #include "SettingsManager.h"
+#include <QCryptographicHash>
 
 HttpServer::HttpServer(QObject* parent )
     : QTcpServer(parent), 
@@ -114,3 +115,17 @@ void urlParameterParser(const QByteArray &parameters, QMap<QString, QString> &pa
         }
     }
 }
+
+void generateHashCode(QByteArray &activationCode)
+{
+    const unsigned int activationCodeSize = 256;
+    QByteArray buffer;
+    buffer.resize(activationCodeSize);
+    randombytes_buf((void *)buffer.data(), activationCodeSize);
+    QCryptographicHash hash(QCryptographicHash::Sha3_256);
+    hash.addData(buffer);
+    activationCode = hash.result().toHex();
+
+    qDebug() << activationCode;
+}
+

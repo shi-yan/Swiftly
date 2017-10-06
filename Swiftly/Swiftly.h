@@ -52,5 +52,6 @@ public:
  };
 
 void urlParameterParser(const QByteArray &parameters, QMap<QString, QString> &parameterList);
+void generateHashCode(QByteArray &activationCode);
 
 #endif // HTTPSERVER_H
