@@ -9,6 +9,7 @@
 #include <QSettings>
 #include "SettingsManager.h"
 #include <QCryptographicHash>
+#include <QStringBuilder>
 
 HttpServer::HttpServer(QObject* parent )
     : QTcpServer(parent), 
@@ -129,3 +130,18 @@ void generateHashCode(QByteArray &activationCode)
     qDebug() << activationCode;
 }
 
+void generateRedirectPageContent(QString &content, const QString &url, unsigned int delay)
+{
+    content = "<html>"
+              "<head>"
+              "<title>Will redirect after " % QString::number(delay) % " seconds</title>"
+              "<meta http-equiv=\"refresh\" content=\"" % QString::number(delay) % "; URL=" % url % "\">"
+              "</head>"
+              "<body>"
+              "If your browser doesn't automatically redirect you to the new address within a few seconds, "
+              "you may want to go to "
+              "<a href=\"" % url % "\">" % url % "</a> "
+              "manually."
+              "</body>"
+              "</html>";
+}
