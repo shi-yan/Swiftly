@@ -28,7 +28,7 @@ void UserManagementAPI::registerPathHandlers()
     addGetHandler("/api/request_activation", "handleSendActivationCodeGet");
     addPostHandler("/api/update_email", "handleUserUpdateEmailPost");
     addPostHandler("/api/logout", "handleUserLogoutPost");
-    addGetHandler("/api/githubRegistered", "handleGithubRegisterGet");
+    addGetHandler("/api/githubRegistered", "handleGitHubRegisterGet");
 }
 
 void UserManagementAPI::handleUserSignupPost(HttpRequest &request, HttpResponse &response)
@@ -442,13 +442,13 @@ void UserManagementAPI::handleGithubRegisterGet(HttpRequest &request, HttpRespon
     query.addQueryItem("client_secret", client_secret);
 
     verificationUrl.setQuery(query.query());
-    QNetworkRequest githubRequest;
-    githubRequest.setUrl(verificationUrl);
+    QNetworkRequest gitHubRequest;
+    gitHubRequest.setUrl(verificationUrl);
     QEventLoop loop;
     QNetworkAccessManager m_networkAccessManager;
-    githubRequest.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
+    gitHubRequest.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
 
-    QNetworkReply *reply = m_networkAccessManager.post(githubRequest, QByteArray());
+    QNetworkReply *reply = m_networkAccessManager.post(gitHubRequest, QByteArray());
     connect(reply, SIGNAL(finished()), &loop, SLOT(quit()));
    // connect(reply, SIGNAL(error()), reply, SLOT(deleteLater()));
     loop.exec();

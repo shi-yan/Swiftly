@@ -89,6 +89,11 @@ void HttpResponse::finish(const QString &typeOverride )
             headerString = "HTTP/1.1 404 Not Found\r\n"
                            "Content-Type: text/html; charset=\"utf-8\"\r\n";
         }
+        else if (statusCode == 302)
+        {
+            headerString = "HTTP/1.1 302 Found\r\n"
+            "Connection:keep-alive\r\n";
+        }
 
         headerString = headerString % header.toString();
 

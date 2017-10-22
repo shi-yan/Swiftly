@@ -12,7 +12,7 @@ bool WebApp::addGetHandler(const QString &_path,const QString &handlerName)
 {
     QString path=_path;
 
-    if(!pathSpace.isNull() && !pathSpace.isEmpty())
+    if(!pathSpace.isEmpty())
         path='/' + pathSpace + _path;
 
     QString functionName=handlerName;
@@ -26,7 +26,7 @@ bool WebApp::addPostHandler(const QString &_path,const QString &handlerName)
 {
     QString path=_path;
 
-    if(!pathSpace.isNull() && !pathSpace.isEmpty())
+    if(!pathSpace.isEmpty())
         path='/' + pathSpace + _path;
 
     QString functionName=handlerName;

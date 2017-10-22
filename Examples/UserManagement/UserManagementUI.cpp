@@ -55,7 +55,7 @@ void UserManagementUI::handleSignupUIGet(HttpRequest &request, HttpResponse &res
         QString client_id = SettingsManager::getSingleton().get("GitHub/client_id").toString();
         QString scope = QString("user:email repo gist").toHtmlEscaped();
 
-        info["github_oauth_link"] = QString("http://github.com/login/oauth/authorize?client_id=" % client_id % "&scpoe=" % scope);
+        info["gitHub_oauth_link"] = QString("http://github.com/login/oauth/authorize?client_id=" % client_id % "&scpoe=" % scope);
 
         Mustache::Renderer renderer;
         Mustache::QtVariantContext context(info);

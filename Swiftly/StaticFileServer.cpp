@@ -58,7 +58,7 @@ StaticFileServer::StaticFileServer(const StaticFileServer &in)
 
 }
 
-bool StaticFileServer::getFileByPath(const QString &path, QByteArray &fileContent, QString &mimeType, FileType fileTypeHint)
+bool StaticFileServer::getFileByPath(const QString &path, QByteArray &fileContent, QString &mimeType, FileType fileTypeHint) const
 {
     QString filePath = m_rootDir.absolutePath().append(path);
 
@@ -154,7 +154,7 @@ bool StaticFileServer::getFileByPath(const QString &path, QByteArray &fileConten
 }
 
 
-bool StaticFileServer::getFileByAbsolutePath(const QString &absolutePath, QByteArray &fileContent, QString &mimeType, FileType fileTypeHint)
+bool StaticFileServer::getFileByAbsolutePath(const QString &absolutePath, QByteArray &fileContent, QString &mimeType, FileType fileTypeHint) const
 {
     QFileInfo fileInfo(absolutePath);
 
@@ -242,7 +242,7 @@ bool StaticFileServer::getFileByAbsolutePath(const QString &absolutePath, QByteA
 
 }
 
-StaticFileServer::FileType StaticFileServer::guessFileType(const QByteArray &fileContent)
+StaticFileServer::FileType StaticFileServer::guessFileType(const QByteArray &fileContent) const
 {
     //Based on:
     //https://stackoverflow.com/questions/277521/how-to-identify-the-file-content-as-ascii-or-binary

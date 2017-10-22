@@ -18,7 +18,7 @@ bool PathTree::registerAPath(const QString &path,QObject *object,const QString &
     qDebug()<<"Method ID:"<<object->metaObject()->indexOfMethod(QMetaObject::normalizedSignature(methodName.toStdString().c_str()));
     */
 
-    if(!path.isNull() && !path.isEmpty() && object!=0 && object->metaObject()->indexOfMethod(methodName.toStdString().c_str())!=-1 && !methodName.isNull() && !methodName.isEmpty())
+    if(!path.isEmpty() && object!=nullptr && object->metaObject()->indexOfMethod(methodName.toStdString().c_str())!=-1 && !methodName.isEmpty())
     {
         if(path.at(0)!='/')
             return false;
@@ -68,7 +68,7 @@ bool PathTree::registerAPath(const QString &path,QObject *object,const QString &
 
 const TaskHandler * PathTree::getTaskHandlerByPath(const QString &path,enum PathTreeNode::HttpVerb type)
 {
-    if(!path.isNull() && !path.isEmpty() && path.at(0)=='/')
+    if(!path.isEmpty() && path.at(0)=='/')
     {
         if(path.count()==1)
         {

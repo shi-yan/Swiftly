@@ -38,10 +38,10 @@ public:
 
     StaticFileServer(const QDir &root = QDir("."));
     StaticFileServer(const StaticFileServer &in);
-    bool getFileByPath(const QString &path, QByteArray &fileContent, QString &mimeType, FileType fileTypeHint = FileType::UNSPECIFIED);
-    bool getFileByAbsolutePath(const QString &absolutePath, QByteArray &fileContent, QString &mimeType, FileType fileTypeHint = FileType::UNSPECIFIED);
+    bool getFileByPath(const QString &path, QByteArray &fileContent, QString &mimeType, FileType fileTypeHint = FileType::UNSPECIFIED) const;
+    bool getFileByAbsolutePath(const QString &absolutePath, QByteArray &fileContent, QString &mimeType, FileType fileTypeHint = FileType::UNSPECIFIED) const;
 private:
-    FileType guessFileType(const QByteArray &fileContent);
+    FileType guessFileType(const QByteArray &fileContent) const;
     static QMap<QString, QString> m_mimeTypeMap;
     static QMutex m_fileCacheMutex;
     static QCache<QString, FileCacheItem> m_fileCache;
