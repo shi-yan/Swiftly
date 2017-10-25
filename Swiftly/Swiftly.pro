@@ -11,7 +11,7 @@ QT       -= gui
 TARGET = Swiftly
 TEMPLATE = lib
 CONFIG += staticlib
-
+CONFIG += c++14
 # SOURCES += Swiftly.cpp
 
 INCLUDEPATH += ../http-parser \

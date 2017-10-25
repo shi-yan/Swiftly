@@ -16,6 +16,7 @@ class TcpSocket:public QTcpSocket
     HttpResponse response;
 
 public:
+    unsigned int id;
     TcpSocket(QObject *parent=0);
     TcpSocket(const TcpSocket &in);
     void operator=(const TcpSocket &in);

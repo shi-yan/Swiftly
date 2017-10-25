@@ -10,6 +10,8 @@
 #include <QNetworkReply>
 #include <QUrl>
 #include <QUrlQuery>
+#include <QtConcurrent/QtConcurrent>
+#include <QFuture>
 
 UserManagementAPI::UserManagementAPI()
     : WebApp(),
@@ -442,8 +444,17 @@ void UserManagementAPI::handleGithubRegisterGet(HttpRequest &request, HttpRespon
     query.addQueryItem("client_secret", client_secret);
 
     verificationUrl.setQuery(query.query());
+
+
+
     QNetworkRequest gitHubRequest;
     gitHubRequest.setUrl(verificationUrl);
+
+    QFuture<void> future = QtConcurrent::run(QThreadPool::globalInstance(), [&](){
+
+        //this reenters the event loop of the same thread, instead of creating a
+        // new eventloop. This caused use after release problem. because the tcp
+        // socket's disconnection event may hit first.
     QEventLoop loop;
     QNetworkAccessManager m_networkAccessManager;
     gitHubRequest.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
@@ -455,6 +466,10 @@ void UserManagementAPI::handleGithubRegisterGet(HttpRequest &request, HttpRespon
     qDebug() << reply->readAll();
 
     reply->deleteLater();
+
+    });
+
+    future.waitForFinished();
 
     respondSuccess(response);
 

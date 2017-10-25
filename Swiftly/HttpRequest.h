@@ -18,6 +18,7 @@ class HttpRequest:public QObject
     unsigned int bytesHaveRead;
 
     QString rawHeader;
+public:
     TcpSocket *socket;
 
 public:

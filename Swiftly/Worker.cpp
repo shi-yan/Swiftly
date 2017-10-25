@@ -164,6 +164,7 @@ void Worker::newSocket(qintptr socket)
     //qDebug() << m_name << " is handling a new request; thread id" << thread()->currentThreadId();
 
     TcpSocket* s = new TcpSocket(this);
+    s->id = rand();
     connect(s, SIGNAL(readyRead()), this, SLOT(readClient()));
     connect(s, SIGNAL(disconnected()), this, SLOT(discardClient()));
     s->setSocketDescriptor(socket);
@@ -317,6 +318,10 @@ void Worker::registerWebApps(QVector<int> &webAppClassIDs)
 void Worker::discardClient()
 {
     TcpSocket* socket = (TcpSocket*)sender();
+
+    qDebug() << "thread id" << thread()->currentThreadId();
+    qDebug() << "release socket" << socket << socket->id;
+
     socket->deleteLater();
     //qDebug() << "finish serving client inside" << m_name;
     sLog() << m_name << "finished request.";

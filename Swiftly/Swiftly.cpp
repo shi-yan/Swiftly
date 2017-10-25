@@ -70,9 +70,9 @@ void HttpServer::start(int numOfWorkers, quint16 port)
     for(int i=0;i<numOfWorkers;++i)
     {
         Worker *aWorker=new Worker(QString("worker %1").arg(i), m_incomingConnectionQueue);
+        aWorker->moveToThread(aWorker);
         aWorker->registerWebApps(m_webAppSet);
         aWorker->start();
-        aWorker->moveToThread(aWorker);
         m_workerPool.push_back(aWorker);
     }
 
