@@ -72,6 +72,8 @@ public:
         header.removeHeaderInfo(_headerField);
     }
 
+    void redirectTo(const QString &url);
+
 };
 
 #endif // HTTPRESPONSE_H

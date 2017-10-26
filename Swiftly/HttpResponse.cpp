@@ -131,3 +131,10 @@ void HttpResponse::finish(const QString &typeOverride )
         hasFinished = true;
     }
 }
+
+void HttpResponse::redirectTo(const QString &url)
+{
+    setStatusCode(302);
+    setHeader("Location", url);
+    finish();
+}
