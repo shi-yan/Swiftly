@@ -94,6 +94,11 @@ void HttpResponse::finish(const QString &typeOverride )
             headerString = "HTTP/1.1 302 Found\r\n"
             "Connection:keep-alive\r\n";
         }
+        else if (statusCode == 301)
+        {
+            headerString = "HTTP/1.1 301 Moved Permanently\r\n"
+            "Connection:keep-alive\r\n";
+        }
 
         headerString = headerString % header.toString();
 
@@ -121,7 +126,7 @@ void HttpResponse::finish(const QString &typeOverride )
 
         if ((!sessionId.isEmpty()) || (cookies.count() > 0))
         {
-            headerString = headerString % cookieString % "\r\n";
+            headerString = headerString % cookieString % "; Path=/\r\n";
         }
 
         headerString = headerString % "\r\n";

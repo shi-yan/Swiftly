@@ -10,8 +10,9 @@ SimpleSession::SimpleSession()
 
 void SimpleSession::registerPathHandlers()
 {
+    addGetHandler("/", "handleUserLoggedInGet");
+
     addGetHandler("/api/signin","handleUserSigninGet");
-    addGetHandler("/api", "handleUserLoggedInGet");
 
 }
 
@@ -22,7 +23,7 @@ void SimpleSession::handleUserSigninGet(HttpRequest &request,HttpResponse &respo
     generateHashCode(code);
     response.setStatusCode(302);
     response.setSessionId(QString::fromUtf8(code));
-    response.setHeader("Location", "/api");
+    response.setHeader("Location", "/");
     response.finish();
 }
 

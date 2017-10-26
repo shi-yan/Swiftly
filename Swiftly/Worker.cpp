@@ -263,6 +263,7 @@ void Worker::readClient()
 
             //qDebug() << "path" << socket->getRequest().getHeader().getPath();
             sLog() << "handle request:" << socket->getRequest().getHeader().getPath();
+            qDebug() << "handle request:" << socket->getRequest().getHeader().getPath();
             const TaskHandler *th=m_pathTree.getTaskHandlerByPath(socket->getRequest().getHeader().getPath(),handlerType);
 
             if(th)
