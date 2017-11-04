@@ -8,7 +8,7 @@
 #include <QJsonObject>
 #include <QJsonDocument>
 #include <QVariant>
-#include <QNetworkAccessManager>
+#include "NetworkServiceAccessor.h"
 
 class UserManagementAPI : public WebApp
 {
@@ -16,6 +16,7 @@ class UserManagementAPI : public WebApp
 
     UserManager m_userManager;
     SessionManager m_sessionManager;
+    NetworkServiceAccessor m_networkServiceAccessor;
 
 public:
     enum class StatusCode

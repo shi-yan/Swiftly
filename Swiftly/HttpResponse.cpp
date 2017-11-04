@@ -40,6 +40,7 @@ void HttpResponse::operator=(const HttpResponse &in)
 
 HttpResponse::~HttpResponse()
 {
+    //qDebug() << "released";
 }
 
 void HttpResponse::addCookie(const QString &key, const QVariant &value)

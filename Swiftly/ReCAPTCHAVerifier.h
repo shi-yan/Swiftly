@@ -4,6 +4,7 @@
 #include <QString>
 #include <QUrl>
 #include <QObject>
+#include "NetworkServiceAccessor.h"
 
 class ReCAPTCHAVerifier : public QObject
 {
@@ -12,6 +13,7 @@ private:
     ReCAPTCHAVerifier();
     QString m_secret;
     QUrl m_url;
+    NetworkServiceAccessor m_networkServiceAccessor;
 
 public:
     static ReCAPTCHAVerifier &getSingleton()

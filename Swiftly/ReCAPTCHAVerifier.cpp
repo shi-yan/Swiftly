@@ -1,9 +1,6 @@
 #include "ReCAPTCHAVerifier.h"
-#include <QNetworkAccessManager>
 #include <QNetworkRequest>
 #include <QUrlQuery>
-#include <QEventLoop>
-#include <QNetworkReply>
 #include <QDebug>
 #include <QJsonDocument>
 #include <QJsonParseError>
@@ -31,20 +28,8 @@ bool ReCAPTCHAVerifier::verify(const QString &response, const QString &ip)
     QNetworkRequest request;
     request.setUrl(verificationUrl);
     QByteArray rawData;
-    QFuture<void> future = QtConcurrent::run(QThreadPool::globalInstance(), [&](){
 
-    QNetworkAccessManager networkAccessManager;
-    QEventLoop loop;
-    QNetworkReply *reply = networkAccessManager.get(request);
-    connect(reply, SIGNAL(finished()), &loop, SLOT(quit()));
-    loop.exec();
-
-    rawData = reply->readAll();
-    qDebug() << rawData;
-    reply->deleteLater();
-    });
-
-    future.waitForFinished();
+    m_networkServiceAccessor.get(request, rawData);
 
     QJsonParseError error;
     QJsonDocument data = QJsonDocument::fromJson(rawData, &error);
