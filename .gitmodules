@@ -4,3 +4,6 @@
 [submodule "qt-mustache"]
 	path = qt-mustache
 	url = https://github.com/robertknight/qt-mustache.git
+[submodule "LoggingManager"]
+	path = LoggingManager
+	url = https://github.com/shi-yan/LoggingManager.git

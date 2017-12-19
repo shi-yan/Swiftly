@@ -1,5 +1,5 @@
 #include "SimpleSession.h"
-#include "LoggingManager.h"
+#include "../LoggingManager/LoggingManager/LoggingManager.h"
 #include "Swiftly.h"
 
 SimpleSession::SimpleSession()

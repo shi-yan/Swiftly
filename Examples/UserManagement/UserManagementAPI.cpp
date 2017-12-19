@@ -5,7 +5,7 @@
 #include "SmtpManager.h"
 #include "SettingsManager.h"
 #include <QStringBuilder>
-#include "LoggingManager.h"
+#include "../LoggingManager/LoggingManager/LoggingManager.h"
 #include <QUrl>
 #include <QUrlQuery>
 #include <QtConcurrent/QtConcurrent>

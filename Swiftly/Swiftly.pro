@@ -40,7 +40,6 @@ HEADERS += Swiftly.h \
     MongodbManager.h \
     ReCAPTCHAVerifier.h \
     SettingsManager.h \
-    LoggingManager.h \
     SmtpManager.h \
     NetworkServiceAccessor.h
 unix {
@@ -69,7 +68,6 @@ SOURCES += \
     MongodbManager.cpp \
     ReCAPTCHAVerifier.cpp \
     SettingsManager.cpp \
-    LoggingManager.cpp \
     SmtpManager.cpp \
     NetworkServiceAccessor.cpp
 
@@ -79,3 +77,4 @@ LIBS += -lmongocxx
 LIBS += -lbsoncxx
 
 include(../qt-mustache/qt-mustache.pri)
+include(../LoggingManager/LoggingManager/LoggingManager.pri)
