@@ -1,6 +1,7 @@
 #include "SessionManager.h"
 #include <sodium.h>
 #include <bsoncxx/json.hpp>
+#include <bsoncxx/builder/stream/document.hpp>
 #include <mongocxx/instance.hpp>
 #include <mongocxx/client.hpp>
 #include <mongocxx/stdx.hpp>

@@ -8,6 +8,7 @@
 #include <iostream>
 #include <vector>
 #include <bsoncxx/json.hpp>
+#include <bsoncxx/builder/stream/document.hpp>
 #include <mongocxx/instance.hpp>
 #include <mongocxx/client.hpp>
 #include <mongocxx/stdx.hpp>
@@ -17,13 +18,6 @@
 #include <QCryptographicHash>
 #include <QDateTime>
 #include "MongodbManager.h"
-
-using bsoncxx::builder::stream::close_array;
-using bsoncxx::builder::stream::close_document;
-using bsoncxx::builder::stream::document;
-using bsoncxx::builder::stream::finalize;
-using bsoncxx::builder::stream::open_array;
-using bsoncxx::builder::stream::open_document;
 
 
 UserManager::UserManager()
@@ -295,7 +289,7 @@ bool UserManager::resetPassword(const QString &email, const QByteArray &newPassw
         //bsoncxx::document::element emailElement = (*maybe_result).view()["email"];
         //email =  QString::fromStdString(emailElement.get_utf8().value.to_string());
 
-        mongocxx::stdx::optional<mongocxx::result::update> result = userCollection.update_one(bsoncxx::builder::stream::document{} << "email" << email.toStdString().c_str() << finalize,
+        mongocxx::stdx::optional<mongocxx::result::update> result = userCollection.update_one(bsoncxx::builder::stream::document{} << "email" << email.toStdString().c_str() << bsoncxx::builder::stream::finalize,
                                   bsoncxx::builder::stream::document{} << "$set"
                                   << bsoncxx::builder::stream::open_document
                                   << "password" << hash.toStdString().c_str()
@@ -353,7 +347,7 @@ bool UserManager::activate(QString &email, const QByteArray &activationCode, QSt
         email = QString::fromStdString(emailElement.get_utf8().value.to_string());
 
 
-        mongocxx::stdx::optional<mongocxx::result::update> result = userCollection.update_one(bsoncxx::builder::stream::document{} << "email" << email.toStdString().c_str() << finalize,
+        mongocxx::stdx::optional<mongocxx::result::update> result = userCollection.update_one(bsoncxx::builder::stream::document{} << "email" << email.toStdString().c_str() << bsoncxx::builder::stream::finalize,
                                   bsoncxx::builder::stream::document{} << "$set"
                                   << bsoncxx::builder::stream::open_document
                                   << "status" << 1 << bsoncxx::builder::stream::close_document
