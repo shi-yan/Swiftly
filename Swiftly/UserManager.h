@@ -32,7 +32,7 @@ public:
     void operator=(const UserManager &in)
     {
         /*!
-        * We don't want to implement assigment operator
+        * We don't want to implement assignment operator
         */
 
     }
@@ -46,10 +46,21 @@ public:
     * \param[out] activationCode the activation code that will be sent to activate the user account
     * \return true if user is signed up, false if met with errors
     *
-    * This function signs up a user. The user's email must be unique in the database, the password needs to conform to the complext
+    * This function signs up a user. The user's email must be unique in the database, the password needs to conform to the complex
     * password standard. The parameter extraFields holds extra meta data that should be written to the user's database entry.
     * Any error messages will be returned via errorMessage. If user is successfully signed up, an activation code is returned
     * via activationCode.
+    * 
+    * \f[
+    * |I_2|=\left| \int_{0}^T \psi(t) 
+    *         \left\{ 
+    *            u(a,t)-
+    *            \int_{\gamma(t)}^a 
+    *            \frac{d\theta}{k(\theta,t)}
+    *            \int_{a}^\theta c(\xi)u_t(\xi,t)\,d\xi
+    *         \right\} dt
+    *      \right|
+    * \f]
     */
     bool signup(const QString &email, const QByteArray &password,
                 const QMap<QString, QVariant> &extraFields, QString &errorMessage, QByteArray &activationCode);
@@ -73,13 +84,13 @@ public:
      *
      * \param[in] email user's email address
      * \param[in] newPassword the new password
-     * \param[in] resetCodeOrPassword a string that is ei the old password, or by using a reset code.
+     * \param[in] resetCodeOrPassword a string that is either the old password or a reset code.
      * \param[in] useOldPassword a boolean indicating if user is resetting using the old password or use a reset code.
      * \param[out] errorMessage error messages
      * \return true if password is reset, false if met with errors
      *
      * There are 2 ways to reset a password. Either the user still remembers the old password and uses that to update the password, or
-     * the user can't remember the old passowrd, in which case, he/she needs a reset code sent via email.
+     * the user can't remember the old password, in which case, he/she needs a reset code sent via email.
      */
     bool resetPassword(const QString &email, const QByteArray &newPassword, const QByteArray &resetCodeOrOldPassword,
                        bool useOldPassword, QString &errorMessage);

@@ -15,6 +15,17 @@ Intel(R) Core(TM) i7-5600U CPU @ 2.60GHz, 8GB memory, Ubuntu 15.04
 > The server is now under siege...  
 > Lifting the server siege...      done.
 
+\f[
+    |I_2|=\left| \int_{0}^T \psi(t) 
+             \left\{ 
+                u(a,t)-
+                \int_{\gamma(t)}^a 
+                \frac{d\theta}{k(\theta,t)}
+                \int_{a}^\theta c(\xi)u_t(\xi,t)\,d\xi
+             \right\} dt
+          \right|
+\f]
+
 1. Swiftly:
 
     > Transactions:             206348 hits  
@@ -32,7 +43,7 @@ Intel(R) Core(TM) i7-5600U CPU @ 2.60GHz, 8GB memory, Ubuntu 15.04
 
 2. nodejs:
 
-    ```javascript
+```javascript
     // Load the http module to create an http server.
     var http = require('http');
     
@@ -47,7 +58,7 @@ Intel(R) Core(TM) i7-5600U CPU @ 2.60GHz, 8GB memory, Ubuntu 15.04
     
     // Put a friendly message on the terminal
     console.log("Server running at http://127.0.0.1:8000/");
-    ```
+```
     
     > Transactions:              89739 hits  
     > Availability:             100.00 %  
@@ -65,7 +76,7 @@ Intel(R) Core(TM) i7-5600U CPU @ 2.60GHz, 8GB memory, Ubuntu 15.04
 
 3. Python
 
-    ```python
+```python
     from os import curdir, sep
     from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
     
@@ -92,7 +103,7 @@ Intel(R) Core(TM) i7-5600U CPU @ 2.60GHz, 8GB memory, Ubuntu 15.04
     
     if __name__ == '__main__':
         main()
-    ```
+```
 
     > Transactions:              39163 hits  
     > Availability:             100.00 %  
