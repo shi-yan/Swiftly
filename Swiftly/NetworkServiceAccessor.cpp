@@ -43,7 +43,7 @@ void NetworkServiceAccessor::post(const QNetworkRequest &request, const QByteArr
     future.waitForFinished();
 }
 
-void NetworkServiceAccessor::get(const QNetworkRequest &request, QByteArray &replyData) const
+void NetworkServiceAccessor::get(const QNetworkRequest &request, QByteArray &replyData, QList<QNetworkReply::RawHeaderPair> &headers) const
 {
     QFuture<void> future = QtConcurrent::run(QThreadPool::globalInstance(), [&](){
     QEventLoop loop;
@@ -63,6 +63,7 @@ void NetworkServiceAccessor::get(const QNetworkRequest &request, QByteArray &rep
     }
     else
     {
+        headers = reply->rawHeaderPairs();
         replyData = reply->readAll();
         qDebug() << replyData;
     }

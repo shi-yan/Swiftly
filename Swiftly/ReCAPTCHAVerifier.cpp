@@ -28,8 +28,8 @@ bool ReCAPTCHAVerifier::verify(const QString &response, const QString &ip)
     QNetworkRequest request;
     request.setUrl(verificationUrl);
     QByteArray rawData;
-
-    m_networkServiceAccessor.get(request, rawData);
+    QList<QNetworkReply::RawHeaderPair> headers;
+    m_networkServiceAccessor.get(request, rawData, headers);
 
     QJsonParseError error;
     QJsonDocument data = QJsonDocument::fromJson(rawData, &error);
