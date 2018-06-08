@@ -13,8 +13,8 @@ private:
 public:
     NetworkServiceAccessor();
 
-    void post(const QNetworkRequest &request, const QByteArray &data, QByteArray &reply) const;
-    void get(const QNetworkRequest &request, QByteArray &reply, QList<QNetworkReply::RawHeaderPair> &headers) const;
+    QNetworkReply::NetworkError post(const QNetworkRequest &request, const QByteArray &data, QByteArray &reply) const;
+    QNetworkReply::NetworkError get(const QNetworkRequest &request, QByteArray &reply, QList<QNetworkReply::RawHeaderPair> &headers) const;
 };
 
 #endif // NETWORKSERVICEACCESSER_H
