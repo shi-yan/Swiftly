@@ -2,69 +2,75 @@
 
 PathTreeNode::PathTreeNode()
     :QObject(),
-      pathName(),
-      getTaskHandler(),
-      postTaskHandler(),
-      children()
+      m_pathName(),
+      m_getTaskHandler(),
+      m_postTaskHandler(),
+      m_children()
 {
 }
 
 PathTreeNode::PathTreeNode(const PathTreeNode &in)
     :QObject(),
-      pathName(in.pathName),
-      getTaskHandler(in.getTaskHandler),
-      postTaskHandler(in.postTaskHandler),
-      children()
+      m_pathName(in.m_pathName),
+      m_getTaskHandler(in.m_getTaskHandler),
+      m_postTaskHandler(in.m_postTaskHandler),
+      m_children()
 {
-    children=in.children;
+    m_children=in.m_children;
 }
 
-PathTreeNode::PathTreeNode(const QString _pathName)
+PathTreeNode::PathTreeNode(const QString pathName)
     :QObject(),
-      pathName(_pathName),
-      getTaskHandler(),
-      postTaskHandler(),
-      children()
+      m_pathName(pathName),
+      m_getTaskHandler(),
+      m_postTaskHandler(),
+      m_children()
 {
 
 }
 
 void PathTreeNode::operator=(const PathTreeNode &in)
 {
-    pathName=in.pathName;
-    getTaskHandler=in.getTaskHandler;
-    postTaskHandler=in.postTaskHandler;
-    children=in.children;
+    m_pathName=in.m_pathName;
+    m_getTaskHandler=in.m_getTaskHandler;
+    m_postTaskHandler=in.m_postTaskHandler;
+    m_children=in.m_children;
 }
 
 
 void PathTreeNode::addChild(const QString &childPathName)
 {
     PathTreeNode newNode(childPathName);
-    children[childPathName]=newNode;
+    m_children[childPathName]=newNode;
 }
 
 bool PathTreeNode::hasChild(const QString &childPathName)
 {
-    return children.contains(childPathName);
+    return m_children.contains(childPathName);
 }
 
-bool PathTreeNode::setGetHandler(QObject *object,const QString methodName)
+bool PathTreeNode::setGetHandler(const std::function<void (HttpRequest &, HttpResponse &)> &in)
 {
-    if(getTaskHandler.isEmpty())
+    if(m_getTaskHandler)
     {
-        return getTaskHandler.setHandler(object,methodName);
+        return false;
     }
     else
-        return false;
+    {
+        m_getTaskHandler = in;
+        return true;
+    }
 }
 
-bool PathTreeNode::setPostHandler(QObject *object, const QString methodName)
+bool PathTreeNode::setPostHandler(const std::function<void (HttpRequest &, HttpResponse &)> &in)
 {
-    if(postTaskHandler.isEmpty())
+    if(m_postTaskHandler)
     {
-        return postTaskHandler.setHandler(object,methodName);
+        return false;
     }
     else
-        return false;
+    {
+        m_postTaskHandler = in;
+        return true;
+    }
 }

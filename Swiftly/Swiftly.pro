@@ -11,7 +11,7 @@ QT       -= gui
 TARGET = Swiftly
 TEMPLATE = lib
 CONFIG += staticlib
-CONFIG += c++14
+CONFIG += c++1z
 # SOURCES += Swiftly.cpp
 
 INCLUDEPATH += ../http-parser \
@@ -28,7 +28,6 @@ HEADERS += Swiftly.h \
     PathParser.h \
     PathTree.h \
     PathTreeNode.h \
-    TaskHandler.h \
     TcpSocket.h \
     WebApp.h \
     Worker.h \
@@ -55,7 +54,6 @@ SOURCES += \
     PathParser.cpp \
     PathTree.cpp \
     PathTreeNode.cpp \
-    TaskHandler.cpp \
     TcpSocket.cpp \
     WebApp.cpp \
     Worker.cpp \

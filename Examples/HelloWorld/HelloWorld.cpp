@@ -2,7 +2,7 @@
 
 void HelloWorld::registerPathHandlers()
 {
-   addGetHandler("/", "handleHelloWorldGet");
+    AddGetHandler("/", handleHelloWorldGet);
 }
 
 void HelloWorld::handleHelloWorldGet(HttpRequest &request, HttpResponse &response)

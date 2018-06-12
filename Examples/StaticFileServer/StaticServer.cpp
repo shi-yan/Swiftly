@@ -9,7 +9,7 @@ StaticServer::StaticServer():
 
 void StaticServer::registerPathHandlers()
 {
-   addGetHandler("/", "handleFileGet");
+    AddGetHandler("/", handleFileGet);
 }
 
 void StaticServer::handleFileGet(HttpRequest &request, HttpResponse &response)

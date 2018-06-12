@@ -3,7 +3,6 @@
 
 #include <QObject>
 #include "PathTreeNode.h"
-#include "TaskHandler.h"
 
 /*! \brief PathTree represents a tree strcture that cat route a request to its handler
  *
@@ -41,7 +40,7 @@ public:
      * There can't be 2 WebApps that share the same route. If a WebApp has been registered to handle a route, another registration
      * using the same path will fail.
      */
-    bool registerAPath(const QString &path, QObject *object, const QString &methodName, enum PathTreeNode::HttpVerb verb);
+    bool registerAPath(const QString &path, const std::function<void(HttpRequest &, HttpResponse &)> &in, enum PathTreeNode::HttpVerb verb);
 
     /*!
      * \brief getTaskHandlerByPath this function returns a task handler for certain path and handle type.
@@ -51,7 +50,7 @@ public:
      *
      * \todo HttpVerb should be a strong type enum
      */
-    const TaskHandler * getTaskHandlerByPath(const QString &path, enum PathTreeNode::HttpVerb verb);
+    const std::function<void(HttpRequest &, HttpResponse &)> & getTaskHandlerByPath(const QString &path, enum PathTreeNode::HttpVerb verb);
 };
 
 #endif // PATHTREE_H

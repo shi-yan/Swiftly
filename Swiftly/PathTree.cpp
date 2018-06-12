@@ -7,7 +7,7 @@ PathTree::PathTree(QObject *parent)
 {
 }
 
-bool PathTree::registerAPath(const QString &path,QObject *object,const QString &methodName,enum PathTreeNode::HttpVerb verb)
+bool PathTree::registerAPath(const QString &path, const std::function<void(HttpRequest &, HttpResponse &)> &in,enum PathTreeNode::HttpVerb verb)
 {
     /*qDebug()<<"Register a Handler:";
     qDebug()<<"Path:"<<path;
@@ -18,23 +18,29 @@ bool PathTree::registerAPath(const QString &path,QObject *object,const QString &
     qDebug()<<"Method ID:"<<object->metaObject()->indexOfMethod(QMetaObject::normalizedSignature(methodName.toStdString().c_str()));
     */
 
-    if(!path.isEmpty() && object!=nullptr && object->metaObject()->indexOfMethod(methodName.toStdString().c_str())!=-1 && !methodName.isEmpty())
+    if(!path.isEmpty() && in)
     {
         if(path.at(0)!='/')
+        {
             return false;
+        }
         else if(path.count()==1)
         {
             if(verb==PathTreeNode::GET)
-                return m_root.setGetHandler(object, methodName);
+            {
+                return m_root.setGetHandler(in);
+            }
             else
-                return m_root.setPostHandler(object, methodName);
+            {
+                return m_root.setPostHandler(in);
+            }
         }
         else
         {
             int posBegin=1;
             int posEnd=1;
 
-            PathTreeNode *currentPathTreeNode = &m_root;
+            PathTreeNode& currentPathTreeNode = m_root;
 
             for(posEnd=1;posEnd<path.count();++posEnd)
             {
@@ -45,28 +51,32 @@ bool PathTree::registerAPath(const QString &path,QObject *object,const QString &
 
                     QString pathName=path.mid(posBegin,posEnd-posBegin);
 
-                    if(!currentPathTreeNode->hasChild(pathName))
+                    if(!currentPathTreeNode.hasChild(pathName))
                     {
-                        currentPathTreeNode->addChild(pathName);
+                        currentPathTreeNode.addChild(pathName);
                     }
 
-                    currentPathTreeNode=currentPathTreeNode->getChild(pathName);
+                    currentPathTreeNode=currentPathTreeNode.getChild(pathName);
 
                     posEnd=posBegin=posEnd+1;
                 }
             }
 
             if(verb==PathTreeNode::GET)
-                return currentPathTreeNode->setGetHandler(object,methodName);
+            {
+                return currentPathTreeNode.setGetHandler(in);
+            }
             else
-                return currentPathTreeNode->setPostHandler(object,methodName);
+            {
+                return currentPathTreeNode.setPostHandler(in);
+            }
         }
     }
     else
         return false;
 }
 
-const TaskHandler * PathTree::getTaskHandlerByPath(const QString &path,enum PathTreeNode::HttpVerb type)
+const std::function<void(HttpRequest &, HttpResponse &)> & PathTree::getTaskHandlerByPath(const QString &path,enum PathTreeNode::HttpVerb type)
 {
     if(!path.isEmpty() && path.at(0)=='/')
     {
@@ -82,7 +92,7 @@ const TaskHandler * PathTree::getTaskHandlerByPath(const QString &path,enum Path
             int posBegin=1;
             int posEnd=1;
 
-            PathTreeNode *currentPathTreeNode = &m_root;
+            PathTreeNode &currentPathTreeNode = m_root;
 
             for(posEnd=1;posEnd<path.count();++posEnd)
             {
@@ -94,9 +104,9 @@ const TaskHandler * PathTree::getTaskHandlerByPath(const QString &path,enum Path
                     QString pathName=path.mid(posBegin,posEnd-posBegin);
                     //qDebug() << "pathName" << pathName;
 
-                    if(currentPathTreeNode->hasChild(pathName))
+                    if(currentPathTreeNode.hasChild(pathName))
                     {
-                        currentPathTreeNode=currentPathTreeNode->getChild(pathName);
+                        currentPathTreeNode=currentPathTreeNode.getChild(pathName);
                         posBegin = posEnd = posEnd + 1;
                     }
                     else
@@ -108,9 +118,13 @@ const TaskHandler * PathTree::getTaskHandlerByPath(const QString &path,enum Path
 
 
             if(type==PathTreeNode::GET)
-                return currentPathTreeNode->getHandler();
+            {
+                return currentPathTreeNode.getHandler();
+            }
             else
-                return currentPathTreeNode->postHandler();
+            {
+                return currentPathTreeNode.postHandler();
+            }
         }
     }
     else

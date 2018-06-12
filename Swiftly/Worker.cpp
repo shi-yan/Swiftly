@@ -264,21 +264,12 @@ void Worker::readClient()
             //qDebug() << "path" << socket->getRequest().getHeader().getPath();
             sLog() << "handle request:" << socket->getRequest().getHeader().getPath();
             qDebug() << "handle request:" << socket->getRequest().getHeader().getPath();
-            const TaskHandler *th=m_pathTree.getTaskHandlerByPath(socket->getRequest().getHeader().getPath(),handlerType);
+            const std::function<void (HttpRequest &, HttpResponse &)> &th = m_pathTree.getTaskHandlerByPath(socket->getRequest().getHeader().getPath(), handlerType);
 
             if(th)
             {
-                if(!th->isEmpty() && th->invoke(socket->getRequest(), socket->getResponse()))
-                {
-                    socket->getResponse().finish();
-                }
-                else
-                {
-                    qDebug()<<"no task handler!";
-                    sLog() << "no task handler!";
-                    socket->getResponse().setStatusCode(404);
-                    socket->getResponse().finish();
-                }
+                th(socket->getRequest(), socket->getResponse());
+                socket->getResponse().finish();
             }
             else
             {

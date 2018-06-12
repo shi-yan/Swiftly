@@ -10,10 +10,8 @@ SimpleSession::SimpleSession()
 
 void SimpleSession::registerPathHandlers()
 {
-    addGetHandler("/", "handleUserLoggedInGet");
-
-    addGetHandler("/api/signin","handleUserSigninGet");
-
+    AddGetHandler("/", handleUserLoggedInGet);
+    AddGetHandler("/api/signin", handleUserSigninGet);
 }
 
 

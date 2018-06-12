@@ -19,6 +19,12 @@
 #include <QDateTime>
 #include "MongodbManager.h"
 
+using bsoncxx::builder::stream::close_array;
+using bsoncxx::builder::stream::close_document;
+using bsoncxx::builder::stream::document;
+using bsoncxx::builder::stream::finalize;
+using bsoncxx::builder::stream::open_array;
+using bsoncxx::builder::stream::open_document;
 
 UserManager::UserManager()
 {
@@ -90,7 +96,7 @@ bool UserManager::signup(const QString &email, const QByteArray &password,
                     << "activation_code" << activationCode.toStdString().c_str()
                     << "time" << static_cast<std::int64_t>( QDateTime::currentDateTimeUtc().toTime_t())
                     << "email" << email.toStdString().c_str()
-                    << "userId" << userId.c_str()
+                    << "userId" << userId
                     << bsoncxx::builder::stream::finalize;
 
             result = activationCollection.insert_one(activationDocumentValue.view());

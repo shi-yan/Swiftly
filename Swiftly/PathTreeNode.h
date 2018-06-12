@@ -2,17 +2,19 @@
 #define PATHTREENODE_H
 
 #include <QObject>
-#include "TaskHandler.h"
 #include <QMap>
+#include <functional>
+#include "HttpRequest.h"
+#include "HttpResponse.h"
 
 class PathTreeNode:public QObject
 {
     Q_OBJECT
 
-    QString pathName;
-    TaskHandler getTaskHandler;
-    TaskHandler postTaskHandler;
-    QMap<QString,PathTreeNode> children;
+    QString m_pathName;
+    QMap<QString,PathTreeNode> m_children;
+    std::function<void(HttpRequest &, HttpResponse &)> m_getTaskHandler;
+    std::function<void(HttpRequest &, HttpResponse &)> m_postTaskHandler;
 
 public:
 
@@ -31,28 +33,28 @@ public:
     void addChild(const QString &childPathName);
     bool hasChild(const QString &childPathName);
 
-    PathTreeNode *getChild(const QString &childePathName)
+    PathTreeNode& getChild(const QString &childePathName)
     {
-        return &children[childePathName];
+        return m_children[childePathName];
     }
 
-    bool setGetHandler(QObject *object,const QString methodName);
+    bool setGetHandler(const std::function<void (HttpRequest &, HttpResponse &)> &in);
 
-    bool setPostHandler(QObject *object,const QString methodName);
+    bool setPostHandler(const std::function<void (HttpRequest &, HttpResponse &)> &in);
 
-    const TaskHandler * getHandler()
+    const std::function<void(HttpRequest &, HttpResponse &)> & getHandler()
     {
-        return &getTaskHandler;
+        return m_getTaskHandler;
     }
 
-    const TaskHandler * postHandler()
+    const std::function<void(HttpRequest &, HttpResponse &)> & postHandler()
     {
-        return &postTaskHandler;
+        return m_postTaskHandler;
     }
 
     QString & getPathName()
     {
-        return pathName;
+        return m_pathName;
     }
 
 

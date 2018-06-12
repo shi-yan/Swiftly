@@ -20,15 +20,14 @@ UserManagementAPI::UserManagementAPI()
 
 void UserManagementAPI::registerPathHandlers()
 {
-    addPostHandler("/api/signup", "handleUserSignupPost");
-    addPostHandler("/api/login", "handleUserLoginPost");
-    addPostHandler("/api/reset_password", "handleUserResetPasswordPost");
-    addGetHandler("/api/activate","handleUserActivationGet");
-    addGetHandler("/api/request_password_reset", "handleSendPasswordResetRequestGet");
-    addGetHandler("/api/request_activation", "handleSendActivationCodeGet");
-    addPostHandler("/api/update_email", "handleUserUpdateEmailPost");
-    addPostHandler("/api/logout", "handleUserLogoutPost");
-    addGetHandler("/api/githubRegistered", "handleGitHubRegisterGet");
+    AddPostHandler("/api/signup", handleUserSignupPost);
+    AddPostHandler("/api/login", handleUserLoginPost);
+    AddPostHandler("/api/reset_password", handleUserResetPasswordPost);
+    AddGetHandler("/api/activate", handleUserActivationGet);
+    AddGetHandler("/api/request_password_reset", handleSendPasswordResetRequestGet);
+    AddGetHandler("/api/request_activation", handleSendActivationCodeGet);
+    AddPostHandler("/api/logout", handleUserLogoutPost);
+    AddGetHandler("/api/githubRegistered", handleGitHubRegisterGet);
 }
 
 void UserManagementAPI::handleUserSignupPost(HttpRequest &request, HttpResponse &response)
@@ -418,7 +417,7 @@ void UserManagementAPI::mailSent(QString status)
     sLog() << "Email sent!";
 }
 
-void UserManagementAPI::handleGithubRegisterGet(HttpRequest &request, HttpResponse &response)
+void UserManagementAPI::handleGitHubRegisterGet(HttpRequest &request, HttpResponse &response)
 {
     QMap<QString, QString> &queries = request.getHeader().getQueries();
 

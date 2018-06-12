@@ -59,9 +59,7 @@ public slots:
     void handleSendPasswordResetRequestGet(HttpRequest &, HttpResponse &);
     void handleSendActivationCodeGet(HttpRequest &, HttpResponse &);
     void handleUserLogoutPost(HttpRequest &, HttpResponse &);
-
-    void handleGithubRegisterGet(HttpRequest &, HttpResponse &);
-
+    void handleGitHubRegisterGet(HttpRequest &, HttpResponse &);
 
 public:
     bool sendActivationEmail(const QString &to, const QString &activationCode);

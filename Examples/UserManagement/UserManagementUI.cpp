@@ -13,18 +13,14 @@ UserManagementUI::UserManagementUI()
 
 void UserManagementUI::registerPathHandlers()
 {
-    addGetHandler("/signup", "handleSignupUIGet");
-
-    addGetHandler("/login", "handleLoginUIGet");
-    addGetHandler("/activate","handleUserActivationUIGet");
-    addGetHandler("/resendActivationCode", "handleResendActivationCodeUIGet");
-    addGetHandler("/requestPasswordResetCode", "handleRequestPasswordResetCodeUIGet");
-    addGetHandler("/resetPassword", "handleResetPasswordUIGet");
-    addGetHandler("/loggedInPage", "handleLoggedInPageGet");
-    addGetHandler("/", "handleFileGet");
-
-
-
+    AddGetHandler("/signup", handleSignupUIGet);
+    AddGetHandler("/login", handleLoginUIGet);
+    AddGetHandler("/activate", handleUserActivationUIGet);
+    AddGetHandler("/resendActivationCode", handleResendActivationCodeUIGet);
+    AddGetHandler("/requestPasswordResetCode", handleRequestPasswordResetCodeUIGet);
+    AddGetHandler("/resetPassword", handleResetPasswordUIGet);
+    AddGetHandler("/loggedInPage", handleLoggedInPageGet);
+    AddGetHandler("/", handleFileGet);
 }
 
 void UserManagementUI::handleLoginUIGet(HttpRequest &request, HttpResponse &response)
