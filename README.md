@@ -197,7 +197,7 @@ All you need to do here is calling addGetHandler, telling it for which path (in 
 ```cpp
 void HelloWorld::registerPathHandlers()
 {
-    addGetHandler("/", "handleHelloWorldGet");
+    AddGetHandler("/", handleHelloWorldGet);
 }
 ```
 
