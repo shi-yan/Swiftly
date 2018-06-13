@@ -35,6 +35,7 @@ bool UserManager::signup(const QString &email, const QByteArray &password,
                          const QMap<QString, QVariant> &extraFields, QString &errorMessage,
                          QByteArray &activationCode)
 {
+    Q_UNUSED(extraFields)
     if (!isValidEmail(email))
     {
         errorMessage = "Ill-formed email address";
@@ -135,6 +136,7 @@ bool UserManager::signup(const QString &email, const QByteArray &password,
 
 bool UserManager::login(const QString &email, const QByteArray &password, QString &userId, QMap<QString, QVariant> &extraFields, QString &errorMessage)
 {
+    Q_UNUSED(extraFields)
     if (!isValidEmail(email))
     {
         errorMessage = "Ill-formed email address";
@@ -511,13 +513,13 @@ bool UserManager::isValidEmail(const QString &email)
     {
         return false;
     }
-    static QRegularExpression emailRegexp("^[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,4}$", QRegularExpression::CaseInsensitiveOption);
+    static QRegularExpression emailRegexp("^[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,40}$", QRegularExpression::CaseInsensitiveOption);
     QRegularExpressionMatch match = emailRegexp.match(email);
     return match.hasMatch();
 }
 
 bool UserManager::isValidePassword(const QByteArray &password, QString &errorMessage, unsigned int upperCaseNum, unsigned int specialLetterNum,
-                                   unsigned int digitNum, unsigned int lowerCaseNum, unsigned int length, unsigned int maxLength)
+                                   unsigned int digitNum, unsigned int lowerCaseNum, int length, int maxLength)
 {
     errorMessage = "";
 

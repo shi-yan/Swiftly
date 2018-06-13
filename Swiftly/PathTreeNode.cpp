@@ -3,48 +3,39 @@
 PathTreeNode::PathTreeNode()
     :QObject(),
       m_pathName(),
+      m_children(),
       m_getTaskHandler(),
-      m_postTaskHandler(),
-      m_children()
+      m_postTaskHandler()
 {
 }
 
 PathTreeNode::PathTreeNode(const PathTreeNode &in)
-    :QObject(),
-      m_pathName(in.m_pathName),
-      m_getTaskHandler(in.m_getTaskHandler),
-      m_postTaskHandler(in.m_postTaskHandler),
-      m_children()
+    :QObject()
 {
-    m_children=in.m_children;
+    Q_UNUSED(in)
 }
 
 PathTreeNode::PathTreeNode(const QString pathName)
     :QObject(),
       m_pathName(pathName),
+      m_children(),
       m_getTaskHandler(),
-      m_postTaskHandler(),
-      m_children()
+      m_postTaskHandler()
 {
-
 }
 
 void PathTreeNode::operator=(const PathTreeNode &in)
 {
-    m_pathName=in.m_pathName;
-    m_getTaskHandler=in.m_getTaskHandler;
-    m_postTaskHandler=in.m_postTaskHandler;
-    m_children=in.m_children;
+    Q_UNUSED(in)
 }
-
 
 void PathTreeNode::addChild(const QString &childPathName)
 {
-    PathTreeNode newNode(childPathName);
+    PathTreeNode *newNode = new PathTreeNode(childPathName);
     m_children[childPathName]=newNode;
 }
 
-bool PathTreeNode::hasChild(const QString &childPathName)
+bool PathTreeNode::hasChild(const QString &childPathName) const
 {
     return m_children.contains(childPathName);
 }
@@ -73,4 +64,13 @@ bool PathTreeNode::setPostHandler(const std::function<void (HttpRequest &, HttpR
         m_postTaskHandler = in;
         return true;
     }
+}
+
+PathTreeNode::~PathTreeNode()
+{
+    foreach(PathTreeNode *node, m_children)
+    {
+        delete node;
+    }
+    m_children.clear();
 }

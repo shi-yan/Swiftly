@@ -11,17 +11,6 @@
 class UserManager : public QObject
 {
     Q_OBJECT
-public:
-    //! \brief Constructor is empty
-    /*! both constructors do nothing, the class members need
-    * to be pure functions.
-    */
-    UserManager();
-
-    UserManager(const UserManager &)
-        :QObject()
-    {
-    }
 
     //! the assignment operator shouldn't do anything for this class
     /*!
@@ -34,8 +23,22 @@ public:
         /*!
         * We don't want to implement assignment operator
         */
-
+        Q_UNUSED(in)
     }
+
+public:
+    //! \brief Constructor is empty
+    /*! both constructors do nothing, the class members need
+    * to be pure functions.
+    */
+    UserManager();
+
+    UserManager(const UserManager &)
+        :QObject()
+    {
+    }
+
+
 
     //! \brief signup a user
     /*!
@@ -169,7 +172,7 @@ public:
      * Check on the complexity of password.
      */
     static bool isValidePassword(const QByteArray &password, QString &errorMessage, unsigned int upperCaseNum = 1, unsigned int specialLetterNum = 1,
-                                 unsigned int digitNum = 1, unsigned int lowerCaseLetter = 1, unsigned int length = 8, unsigned int maxLength = 30);
+                                 unsigned int digitNum = 1, unsigned int lowerCaseLetter = 1, int length = 8, int maxLength = 30);
 
     /*!
      * \brief verifyPassword verify if a provided password matches a provided hash code

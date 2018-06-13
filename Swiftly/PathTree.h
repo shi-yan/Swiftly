@@ -16,8 +16,9 @@ class PathTree : public QObject
 
     //! the root of the route path tree
     PathTreeNode m_root;
-
+    std::function<void(HttpRequest &, HttpResponse &)> m_emptyFunc;
 public:
+
     /*!
      * \brief PathTree constructor
      * \param[in] parent the parent Qt object.
@@ -46,7 +47,7 @@ public:
      * \brief getTaskHandlerByPath this function returns a task handler for certain path and handle type.
      * \param[in] path the request route
      * \param[in] taskHandleType the type of the handler, such as GET or POST
-     * \return return the handler's pointer upon finish.
+     * \return return the handler upon finish.
      *
      * \todo HttpVerb should be a strong type enum
      */

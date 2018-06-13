@@ -90,7 +90,7 @@ void UserManagementUI::handleResendActivationCodeUIGet(HttpRequest &request, Htt
 {
     QByteArray pageTemplate;
     QString mimeType;
-    QMap<QString, QString> &queries = request.getHeader().getQueries();
+    const QMap<QString, QString> &queries = request.getHeader().getQueries();
 
     if (m_staticFileServer.getFileByAbsolutePath(m_templatePath % "/resend_activation.html", pageTemplate, mimeType))
     {
@@ -141,7 +141,7 @@ void UserManagementUI::handleFileGet(HttpRequest &request,HttpResponse &response
 
 void UserManagementUI::handleLoggedInPageGet(HttpRequest &request, HttpResponse &response)
 {
-    QMap<QString, QString> &cookies = request.getHeader().getCookie();
+    const QMap<QString, QString> &cookies = request.getHeader().getCookie();
 
     if (cookies.contains("ssid"))
     {
@@ -166,7 +166,7 @@ void UserManagementUI::handleUserActivationUIGet(HttpRequest &request, HttpRespo
 {
     QByteArray pageTemplate;
     QString mimeType;
-    QMap<QString, QString> &queries = request.getHeader().getQueries();
+    const QMap<QString, QString> &queries = request.getHeader().getQueries();
 
     if (queries.contains("email") && queries.contains("activation_code")
             && m_staticFileServer.getFileByAbsolutePath(m_templatePath % "/activation.html", pageTemplate, mimeType))
@@ -196,7 +196,7 @@ void UserManagementUI::handleResetPasswordUIGet(HttpRequest &request, HttpRespon
 {
     QByteArray pageTemplate;
     QString mimeType;
-    QMap<QString, QString> &queries = request.getHeader().getQueries();
+    const QMap<QString, QString> &queries = request.getHeader().getQueries();
 
     if (queries.contains("email") && queries.contains("reset_code")
             && m_staticFileServer.getFileByAbsolutePath(m_templatePath % "/reset_password_by_resetCode.html", pageTemplate, mimeType))

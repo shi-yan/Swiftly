@@ -4,38 +4,38 @@
 
 HttpResponse::HttpResponse(TcpSocket *_socket)
     :QObject(),
-      buffer(),
-      socket(_socket),
-      header(),
-      statusCode(200),
-      cookies(),
-      sessionId(),
-      hasFinished(false)
+      m_buffer(),
+      m_socket(_socket),
+      m_header(),
+      m_statusCode(200),
+      m_cookies(),
+      m_sessionId(),
+      m_hasFinished(false)
 {
 }
 
 HttpResponse::HttpResponse(const HttpResponse &in)
     :QObject(),
-      buffer(in.buffer),
-      socket(in.socket),
-      header(in.header),
-      statusCode(in.statusCode),
-      cookies(in.cookies),
-      sessionId(in.sessionId),
-      hasFinished(in.hasFinished)
+      m_buffer(in.m_buffer),
+      m_socket(in.m_socket),
+      m_header(in.m_header),
+      m_statusCode(in.m_statusCode),
+      m_cookies(in.m_cookies),
+      m_sessionId(in.m_sessionId),
+      m_hasFinished(in.m_hasFinished)
 {
 
 }
 
 void HttpResponse::operator=(const HttpResponse &in)
 {
-    buffer = in.buffer;
-    socket = in.socket;
-    header = in.header;
-    statusCode = in.statusCode;
-    sessionId = in.sessionId;
-    cookies = in.cookies;
-    hasFinished = in.hasFinished;
+    m_buffer = in.m_buffer;
+    m_socket = in.m_socket;
+    m_header = in.m_header;
+    m_statusCode = in.m_statusCode;
+    m_sessionId = in.m_sessionId;
+    m_cookies = in.m_cookies;
+    m_hasFinished = in.m_hasFinished;
 }
 
 HttpResponse::~HttpResponse()
@@ -45,44 +45,44 @@ HttpResponse::~HttpResponse()
 
 void HttpResponse::addCookie(const QString &key, const QVariant &value)
 {
-    cookies.insert(key, value);
+    m_cookies.insert(key, value);
 }
 
 HttpResponse& HttpResponse::operator<<(const QByteArray &in)
 {
-    buffer.append(in);
+    m_buffer.append(in);
     return *this;
 }
 
 HttpResponse& HttpResponse::operator<<(const char *in)
 {
-    buffer.append(in);
+    m_buffer.append(in);
     return *this;
 }
 
 HttpResponse& HttpResponse::operator<<(const QString &in)
 {
-    buffer.append(in);
+    m_buffer.append(in);
     return *this;
 }
 
 void HttpResponse::write(const char* in,const size_t size)
 {
-    buffer.append(in,size);
+    m_buffer.append(in,size);
 }
 
 void HttpResponse::finish(const QString &typeOverride )
 {
-    if (!hasFinished)
+    if (!m_hasFinished)
     {
-        unsigned int bufferSize = buffer.size();
+        unsigned int bufferSize = m_buffer.size();
 
         QString headerString;
 
-        switch (statusCode)
+        switch (m_statusCode)
         {
         case 200:
-            headerString = "HTTP/1.1 " % QString::number(statusCode) % " Ok\r\n"
+            headerString = "HTTP/1.1 " % QString::number(m_statusCode) % " Ok\r\n"
                            "Content-Length: " % QString::number(bufferSize) % "\r\n"
                            "Content-Type: " % typeOverride % "; charset=\"utf-8\"\r\n";
             break;
@@ -111,40 +111,40 @@ void HttpResponse::finish(const QString &typeOverride )
             qDebug() << "unimplemented http status code";
         }
 
-        headerString = headerString % header.toString();
+        headerString = headerString % m_header.toString();
 
         QString cookieString("Set-Cookie: ");
 
-        if (!sessionId.isEmpty())
+        if (!m_sessionId.isEmpty())
         {
-            cookieString.append("ssid=").append(sessionId);
-            for(QMap<QString, QVariant>::Iterator iter = cookies.begin(); iter != cookies.end(); ++iter)
+            cookieString.append("ssid=").append(m_sessionId);
+            for(QMap<QString, QVariant>::Iterator iter = m_cookies.begin(); iter != m_cookies.end(); ++iter)
             {
                 cookieString.append("&").append(iter.key()).append("=").append(iter.value().toString());
             }
         }
-        else if(cookies.count() > 0)
+        else if(m_cookies.count() > 0)
         {
-            QMap<QString, QVariant>::Iterator iter = cookies.begin();
+            QMap<QString, QVariant>::Iterator iter = m_cookies.begin();
 
             cookieString.append(iter.key()).append("=").append(iter.value().toString());
 
-            for(++iter; iter != cookies.end(); ++iter)
+            for(++iter; iter != m_cookies.end(); ++iter)
             {
                 cookieString.append("&").append(iter.key()).append("=").append(iter.value().toString());
             }
         }
 
-        if ((!sessionId.isEmpty()) || (cookies.count() > 0))
+        if ((!m_sessionId.isEmpty()) || (m_cookies.count() > 0))
         {
             headerString = headerString % cookieString % "; Path=/\r\n";
         }
 
         headerString = headerString % "\r\n";
 
-        socket->write(headerString.toUtf8());
-        socket->write(buffer);
-        hasFinished = true;
+        m_socket->write(headerString.toUtf8());
+        m_socket->write(m_buffer);
+        m_hasFinished = true;
     }
 }
 

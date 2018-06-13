@@ -12,10 +12,11 @@ class PathTreeNode:public QObject
     Q_OBJECT
 
     QString m_pathName;
-    QMap<QString,PathTreeNode> m_children;
+    QMap<QString,PathTreeNode*> m_children;
     std::function<void(HttpRequest &, HttpResponse &)> m_getTaskHandler;
     std::function<void(HttpRequest &, HttpResponse &)> m_postTaskHandler;
-
+    void operator=(const PathTreeNode &in);
+    PathTreeNode(const PathTreeNode &in);
 public:
 
     enum HttpVerb
@@ -25,15 +26,15 @@ public:
     };
 
     PathTreeNode();
-    PathTreeNode(const PathTreeNode &in);
+
     PathTreeNode(const QString _pathName);
-    void operator=(const PathTreeNode &in);
+
 
 
     void addChild(const QString &childPathName);
-    bool hasChild(const QString &childPathName);
+    bool hasChild(const QString &childPathName) const;
 
-    PathTreeNode& getChild(const QString &childePathName)
+    PathTreeNode *getChild(const QString &childePathName)
     {
         return m_children[childePathName];
     }
@@ -42,12 +43,12 @@ public:
 
     bool setPostHandler(const std::function<void (HttpRequest &, HttpResponse &)> &in);
 
-    const std::function<void(HttpRequest &, HttpResponse &)> & getHandler()
+    const std::function<void(HttpRequest &, HttpResponse &)> & getHandler() const
     {
         return m_getTaskHandler;
     }
 
-    const std::function<void(HttpRequest &, HttpResponse &)> & postHandler()
+    const std::function<void(HttpRequest &, HttpResponse &)> & postHandler() const
     {
         return m_postTaskHandler;
     }
@@ -57,6 +58,7 @@ public:
         return m_pathName;
     }
 
+    ~PathTreeNode();
 
 };
 

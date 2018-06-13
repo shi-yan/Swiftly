@@ -8,22 +8,29 @@
 #include <QTextStream>
 
 /*! \class HttpHeader
- * ... text ...
+ * This class represents the Http Header of a Http request.
  */
 
 class HttpHeader : public QObject
 {
     Q_OBJECT
 
+    // Raw Header in the form of key value pairs
     QMap<QString, QString> m_headerInfo;
     QString m_fragment;
+    // Url queries
     QString m_queryString;
+    // Url path
     QString m_path;
+    // Url host
     QString m_host;
+    // Url
     QString m_url;
     QString m_currentHeaderField;
 
+    // Url queries in the form of key value pairs
     QMap<QString, QString> m_queries;
+    // Cookies in the form of key value pairs
     QMap<QString, QString> m_cookies;
 
     bool m_hasQueries;
@@ -68,9 +75,7 @@ public:
 
     HttpHeader();
     HttpHeader(const HttpHeader &in);
-
     void operator=(const HttpHeader &in);
-
     ~HttpHeader();
 
     void setHttpMethod(HttpMethod httpMethod);
@@ -82,13 +87,13 @@ public:
     void setCurrentHeaderField(const QString &currentHeaderField);
     void processCookie();
 
-    QMap<QString, QString> &getCookie();
+    const QMap<QString, QString> &getCookie() const;
 
-    QMap<QString,QString> &getHeaderInfo();
+    const QMap<QString,QString> &getHeaderInfo() const;
 
-    QMap<QString, QString> &getQueries();
+    const QMap<QString, QString> &getQueries() const;
 
-    QString &getHeaderInfo(const QString & headerField);
+    QString getHeaderInfo(const QString & headerField) const;
 
     void removeHeaderInfo(const QString &headerField);
 

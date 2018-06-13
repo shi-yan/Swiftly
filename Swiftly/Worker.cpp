@@ -120,6 +120,7 @@ int onHeaderValue(http_parser *parser, const char *p,size_t len)
 
 int onHeadersComplete(http_parser *parser)
 {
+    //potential bug
     ((TcpSocket*)parser->data)->getHeader().setHost(((TcpSocket*)parser->data)->getHeader().getHeaderInfo("Host"));
     // qDebug()<<"Parse Header Complete";
     return 0;

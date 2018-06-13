@@ -65,7 +65,9 @@ void HttpServer::start(int numOfWorkers, quint16 port)
     qDebug()<<"Need to create"<<numOfWorkers<<"workers";
 
     if(numOfWorkers<1)
+    {
         numOfWorkers=1;
+    }
 
     for(int i=0;i<numOfWorkers;++i)
     {

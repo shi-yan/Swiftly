@@ -221,11 +221,8 @@ void HttpRequest::parseFormData()
                     formData=(_formData);
 
                 }
-
             }
-
         }
-
     }
 }
 
@@ -235,4 +232,5 @@ QString HttpRequest::getFromIPAddress() const
     {
         return socket->peerAddress().toString();
     }
+    return QString();
 }

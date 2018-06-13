@@ -234,7 +234,7 @@ void UserManagementAPI::handleUserResetPasswordPost(HttpRequest &request, HttpRe
 
 void UserManagementAPI::handleUserActivationGet(HttpRequest &request, HttpResponse &response)
 {
-    QMap<QString, QString> &queries = request.getHeader().getQueries();
+    const QMap<QString, QString> &queries = request.getHeader().getQueries();
 
     if (queries.contains("activation_code") && queries.contains("email"))
     {
@@ -259,7 +259,7 @@ void UserManagementAPI::handleUserActivationGet(HttpRequest &request, HttpRespon
 
 void UserManagementAPI::handleSendPasswordResetRequestGet(HttpRequest &request, HttpResponse &response)
 {
-    QMap<QString, QString> &queries = request.getHeader().getQueries();
+    const QMap<QString, QString> &queries = request.getHeader().getQueries();
 
     if (queries.contains("email") && queries.contains("g_recaptcha_response"))
     {
@@ -312,7 +312,7 @@ void UserManagementAPI::handleSendPasswordResetRequestGet(HttpRequest &request, 
 
 void UserManagementAPI::handleSendActivationCodeGet(HttpRequest &request, HttpResponse &response)
 {
-    QMap<QString, QString> &queries = request.getHeader().getQueries();
+    const QMap<QString, QString> &queries = request.getHeader().getQueries();
 
     if (queries.contains("email") && queries.contains("g_recaptcha_response"))
     {
@@ -419,7 +419,7 @@ void UserManagementAPI::mailSent(QString status)
 
 void UserManagementAPI::handleGitHubRegisterGet(HttpRequest &request, HttpResponse &response)
 {
-    QMap<QString, QString> &queries = request.getHeader().getQueries();
+    const QMap<QString, QString> &queries = request.getHeader().getQueries();
 
     QString code;
     if (!queries.contains("code"))

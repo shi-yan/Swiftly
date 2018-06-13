@@ -150,22 +150,22 @@ void HttpHeader::setCurrentHeaderField(const QString &currentHeaderField)
     m_currentHeaderField = currentHeaderField;
 }
 
-QMap<QString, QString> &HttpHeader::getCookie()
+const QMap<QString, QString> &HttpHeader::getCookie() const
 {
     return m_cookies;
 }
 
-QMap<QString,QString> &HttpHeader::getHeaderInfo()
+const QMap<QString,QString> &HttpHeader::getHeaderInfo() const
 {
     return m_headerInfo;
 }
 
-QMap<QString, QString> &HttpHeader::getQueries()
+const QMap<QString, QString> &HttpHeader::getQueries() const
 {
     return m_queries;
 }
 
-QString &HttpHeader::getHeaderInfo(const QString & headerField)
+QString HttpHeader::getHeaderInfo(const QString & headerField) const
 {
     return m_headerInfo[headerField];
 }

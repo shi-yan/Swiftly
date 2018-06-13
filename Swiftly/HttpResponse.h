@@ -13,13 +13,13 @@ class HttpResponse:public QObject
 {
     Q_OBJECT
 
-    QByteArray buffer;
-    TcpSocket *socket;
-    HttpHeader header;
-    int statusCode;
-    QMap<QString, QVariant> cookies;
-    QString sessionId;
-    bool hasFinished;
+    QByteArray m_buffer;
+    TcpSocket *m_socket;
+    HttpHeader m_header;
+    int m_statusCode;
+    QMap<QString, QVariant> m_cookies;
+    QString m_sessionId;
+    bool m_hasFinished;
 
 public:
     HttpResponse(TcpSocket *_socket=0);
@@ -34,18 +34,18 @@ public:
     HttpResponse& operator<<(const QString &in);
     void write(const char*,const size_t size);
 
-    void setSessionId(const QString &_sessionId) {sessionId = _sessionId;}
+    void setSessionId(const QString &_sessionId) {m_sessionId = _sessionId;}
 
     QByteArray & getBuffer()
     {
-        return buffer;
+        return m_buffer;
     }
 
     void addCookie(const QString &key, const QVariant &value);
 
     HttpHeader & getHeader()
     {
-        return header;
+        return m_header;
     }
 
     void finish(const QString &typeOverride = "text/html");
@@ -53,23 +53,23 @@ public:
 
     void setStatusCode(int _statusCode)
     {
-        statusCode=_statusCode;
+        m_statusCode=_statusCode;
     }
 
-    QString & getHeader(const QString &_headerField)
+    QString getHeader(const QString &_headerField) const
     {
-        return header.getHeaderInfo(_headerField);
+        return m_header.getHeaderInfo(_headerField);
     }
 
     void setHeader(const QString &_headerField,const QString &_headerValue)
     {
-        header.setCurrentHeaderField(_headerField);
-        header.addHeaderInfo(_headerValue);
+        m_header.setCurrentHeaderField(_headerField);
+        m_header.addHeaderInfo(_headerValue);
     }
 
     void removeHeader(const QString &_headerField)
     {
-        header.removeHeaderInfo(_headerField);
+        m_header.removeHeaderInfo(_headerField);
     }
 
     void redirectTo(const QString &url);

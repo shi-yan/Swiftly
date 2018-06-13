@@ -25,7 +25,6 @@ HEADERS += Swiftly.h \
     HttpHeader.h \
     HttpRequest.h \
     HttpResponse.h \
-    PathParser.h \
     PathTree.h \
     PathTreeNode.h \
     TcpSocket.h \
@@ -51,7 +50,6 @@ SOURCES += \
     HttpRequest.cpp \
     HttpResponse.cpp \
     Swiftly.cpp \
-    PathParser.cpp \
     PathTree.cpp \
     PathTreeNode.cpp \
     TcpSocket.cpp \
