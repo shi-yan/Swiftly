@@ -28,7 +28,7 @@ class WebApp:public QObject
 
 public:
     WebApp(const QString &_pathSpace="",QObject *parent =0);
-    WebApp(const WebApp &in):QObject(),m_pathSpace(in.m_pathSpace){}
+    WebApp(const WebApp &in):QObject(),m_pathSpace(in.m_pathSpace),m_pathTree(in.m_pathTree){}
 
     bool addGetHandler(const QString &_path, const std::function<void (HttpRequest &, HttpResponse &)> &in);
     bool addPostHandler(const QString &_path, const std::function<void (HttpRequest &, HttpResponse &)> &in);

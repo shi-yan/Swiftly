@@ -145,7 +145,7 @@ Worker::Worker(const QString &name, IncomingConnectionQueue *connectionQueue)
       m_name(name),
       m_parser(),
       m_webAppTable(),
-      m_pathTree(),
+      m_pathTree(new PathTree()),
       m_idleSemaphore(),
       m_socketWatchDog(nullptr),
       m_incomingConnectionQueue(connectionQueue)

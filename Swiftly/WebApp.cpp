@@ -3,7 +3,8 @@
 
 WebApp::WebApp(const QString &_pathSpace,QObject *parent )
     :QObject(parent),
-      m_pathSpace(_pathSpace)
+      m_pathSpace(_pathSpace),
+      m_pathTree(new PathTree())
 {
 
 }
