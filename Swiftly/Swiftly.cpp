@@ -72,6 +72,7 @@ void HttpServer::start(int numOfWorkers, quint16 port)
     for(int i=0;i<numOfWorkers;++i)
     {
         Worker *aWorker=new Worker(QString("worker %1").arg(i), m_incomingConnectionQueue);
+        aWorker->setPriority(QThread::HighPriority);
         aWorker->moveToThread(aWorker);
         aWorker->registerWebApps(m_webAppSet);
         aWorker->start();
@@ -98,7 +99,7 @@ void HttpServer::resume()
     m_disabled = false;
 }
 
-void urlParameterParser(const QByteArray &parameters, QMap<QString, QString> &parameterList)
+void urlParameterParser(const QByteArray &parameters, QHash<QString, QString> &parameterList)
 {
     QString parameterString = QString::fromUtf8(parameters);
 

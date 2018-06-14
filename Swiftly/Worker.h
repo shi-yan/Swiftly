@@ -1,8 +1,8 @@
 #ifndef WORKER_H
 #define WORKER_H
 
-#include <QtCore/QThread>
-#include <QtCore/QMap>
+#include <QThread>
+#include <QHash>
 #include "http_parser.h"
 #include "PathTree.h"
 #include "WebApp.h"
@@ -17,13 +17,13 @@ class Worker : public QThread
 
     QString m_name;
     http_parser m_parser;
-    QMap<int, WebApp*> m_webAppTable;
+    QHash<int, WebApp*> m_webAppTable;
     PathTree m_pathTree;
     QSemaphore m_idleSemaphore;
     WorkerSocketWatchDog *m_socketWatchDog;
     IncomingConnectionQueue *m_incomingConnectionQueue;
 
-    bool parseFormData(const QString &contentTypeString, const QByteArray &_body, QMap<QString,QByteArray> &formData);
+    bool parseFormData(const QString &contentTypeString, const QByteArray &_body, QHash<QString,QByteArray> &formData);
 
 public:
     void run();

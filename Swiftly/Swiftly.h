@@ -51,7 +51,7 @@ public:
     void Shutdown();
  };
 
-void urlParameterParser(const QByteArray &parameters, QMap<QString, QString> &parameterList);
+void urlParameterParser(const QByteArray &parameters, QHash<QString, QString> &parameterList);
 void generateHashCode(QByteArray &activationCode);
 void generateRedirectPageContent(QString &content, const QString &url, unsigned int delay = 1);
 

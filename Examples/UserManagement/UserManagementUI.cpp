@@ -90,7 +90,7 @@ void UserManagementUI::handleResendActivationCodeUIGet(HttpRequest &request, Htt
 {
     QByteArray pageTemplate;
     QString mimeType;
-    const QMap<QString, QString> &queries = request.getHeader().getQueries();
+    const QHash<QString, QSharedPointer<QString>> &queries = request.getHeader().getQueries();
 
     if (m_staticFileServer.getFileByAbsolutePath(m_templatePath % "/resend_activation.html", pageTemplate, mimeType))
     {
@@ -98,7 +98,7 @@ void UserManagementUI::handleResendActivationCodeUIGet(HttpRequest &request, Htt
 
         if (queries.contains("email"))
         {
-            info["activation_email"] = queries["email"];
+            info["activation_email"] = *queries["email"].data();
         }
         else
         {
@@ -141,11 +141,11 @@ void UserManagementUI::handleFileGet(HttpRequest &request,HttpResponse &response
 
 void UserManagementUI::handleLoggedInPageGet(HttpRequest &request, HttpResponse &response)
 {
-    const QMap<QString, QString> &cookies = request.getHeader().getCookie();
+    const QHash<QString, QSharedPointer<QString>> &cookies = request.getHeader().getCookie();
 
     if (cookies.contains("ssid"))
     {
-        QByteArray sessionId = cookies["ssid"].toLatin1();
+        QByteArray sessionId = (* cookies["ssid"].data()).toLatin1();
         QString email;
         m_sessionManager.findSession(sessionId, email);
 
@@ -166,14 +166,14 @@ void UserManagementUI::handleUserActivationUIGet(HttpRequest &request, HttpRespo
 {
     QByteArray pageTemplate;
     QString mimeType;
-    const QMap<QString, QString> &queries = request.getHeader().getQueries();
+    const QHash<QString, QSharedPointer<QString>> &queries = request.getHeader().getQueries();
 
     if (queries.contains("email") && queries.contains("activation_code")
             && m_staticFileServer.getFileByAbsolutePath(m_templatePath % "/activation.html", pageTemplate, mimeType))
     {
         QVariantHash info;
-        info["activation_code"] = queries["activation_code"];
-        info["activation_email"] = queries["email"];
+        info["activation_code"] = (*queries["activation_code"].data());
+        info["activation_email"] = (*queries["email"]);
 
         Mustache::Renderer renderer;
         Mustache::QtVariantContext context(info);
@@ -196,14 +196,14 @@ void UserManagementUI::handleResetPasswordUIGet(HttpRequest &request, HttpRespon
 {
     QByteArray pageTemplate;
     QString mimeType;
-    const QMap<QString, QString> &queries = request.getHeader().getQueries();
+    const QHash<QString, QSharedPointer<QString>> &queries = request.getHeader().getQueries();
 
     if (queries.contains("email") && queries.contains("reset_code")
             && m_staticFileServer.getFileByAbsolutePath(m_templatePath % "/reset_password_by_resetCode.html", pageTemplate, mimeType))
     {
         QVariantHash info;
-        info["reset_code"] = queries["reset_code"];
-        info["reset_email"] = queries["email"];
+        info["reset_code"] = *queries["reset_code"].data();
+        info["reset_email"] = *queries["email"].data();
 
         Mustache::Renderer renderer;
         Mustache::QtVariantContext context(info);
@@ -218,7 +218,7 @@ void UserManagementUI::handleResetPasswordUIGet(HttpRequest &request, HttpRespon
         QString email = "value=\"\" autofocus";
         if (queries.contains("email"))
         {
-            email = "value=\"" % queries["email"] % "\" readonly";
+            email = "value=\"" % (*queries["email"].data()) % "\" readonly";
         }
 
         QVariantHash info;

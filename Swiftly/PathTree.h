@@ -15,7 +15,7 @@ class PathTree : public QObject
 
 
     //! the root of the route path tree
-    PathTreeNode m_root;
+    QSharedPointer<PathTreeNode> m_root;
     std::function<void(HttpRequest &, HttpResponse &)> m_emptyFunc;
 public:
 

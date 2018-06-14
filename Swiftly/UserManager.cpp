@@ -32,7 +32,7 @@ UserManager::UserManager()
 }
 
 bool UserManager::signup(const QString &email, const QByteArray &password,
-                         const QMap<QString, QVariant> &extraFields, QString &errorMessage,
+                         const QHash<QString, QVariant> &extraFields, QString &errorMessage,
                          QByteArray &activationCode)
 {
     Q_UNUSED(extraFields)
@@ -134,7 +134,7 @@ bool UserManager::signup(const QString &email, const QByteArray &password,
     return true;
 }
 
-bool UserManager::login(const QString &email, const QByteArray &password, QString &userId, QMap<QString, QVariant> &extraFields, QString &errorMessage)
+bool UserManager::login(const QString &email, const QByteArray &password, QString &userId, QHash<QString, QVariant> &extraFields, QString &errorMessage)
 {
     Q_UNUSED(extraFields)
     if (!isValidEmail(email))
@@ -475,7 +475,7 @@ bool UserManager::getActivationCode(const QString &email, QByteArray &activation
     return true;
 }
 
-bool UserManager::getUser(const QString &email, QMap<QString, QVariant> &fields)
+bool UserManager::getUser(const QString &email, QHash<QString, QVariant> &fields)
 {
     if (!isValidEmail(email))
     {

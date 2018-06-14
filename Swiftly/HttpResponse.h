@@ -17,7 +17,7 @@ class HttpResponse:public QObject
     TcpSocket *m_socket;
     HttpHeader m_header;
     int m_statusCode;
-    QMap<QString, QVariant> m_cookies;
+    QHash<QString, QVariant> m_cookies;
     QString m_sessionId;
     bool m_hasFinished;
 
@@ -56,15 +56,24 @@ public:
         m_statusCode=_statusCode;
     }
 
-    QString getHeader(const QString &_headerField) const
+    QString getHeader(const QString &headerField) const
     {
-        return m_header.getHeaderInfo(_headerField);
+        QWeakPointer<QString> header = m_header.getHeaderInfo(headerField);
+
+        if (!header.isNull())
+        {
+            return *header.data();
+        }
+        else
+        {
+            return QString();
+        }
     }
 
-    void setHeader(const QString &_headerField,const QString &_headerValue)
+    void setHeader(const QString &_headerField, const QSharedPointer<QString> &headerValue)
     {
         m_header.setCurrentHeaderField(_headerField);
-        m_header.addHeaderInfo(_headerValue);
+        m_header.addHeaderInfo(headerValue);
     }
 
     void removeHeader(const QString &_headerField)
@@ -72,7 +81,7 @@ public:
         m_header.removeHeaderInfo(_headerField);
     }
 
-    void redirectTo(const QString &url);
+    void redirectTo(QSharedPointer<QString> url);
 
 };
 

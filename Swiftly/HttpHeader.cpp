@@ -1,5 +1,6 @@
 #include "HttpHeader.h"
-#include <QtCore/QStringList>
+#include <QStringList>
+#include <QStringBuilder>
 
 HttpHeader::HttpHeader()
     :QObject(),
@@ -45,7 +46,7 @@ void HttpHeader::processCookie()
     {
         m_hasCookies = true;
 
-        QStringList cookieGroup = m_headerInfo["Cookie"].split(";",QString::SkipEmptyParts);
+        QStringList cookieGroup = m_headerInfo["Cookie"]->split(";",QString::SkipEmptyParts);
 
         for (QStringList::Iterator giter = cookieGroup.begin(); giter < cookieGroup.end(); ++giter)
         {
@@ -60,7 +61,9 @@ void HttpHeader::processCookie()
                     continue;
                 }
 
-                m_cookies.insert(pair[0], pair[1]);
+                QSharedPointer<QString> value(new QString(pair[1]));
+
+                m_cookies.insert(pair[0], value);
             }
         }
     }
@@ -84,11 +87,11 @@ void HttpHeader::operator=(const HttpHeader &in)
 
 QTextStream & operator<<(QTextStream &ts,  HttpHeader &in)
 {
-    QMapIterator<QString, QString> i(in.getHeaderInfo());
+    QHashIterator<QString, QSharedPointer<QString>> i(in.getHeaderInfo());
     while (i.hasNext())
     {
         i.next();
-        ts << i.key() << ": " << i.value() << "\r\n";
+        ts << i.key() << ": " << *i.value().data() << "\r\n";
     }
     return ts;
 }
@@ -96,11 +99,11 @@ QTextStream & operator<<(QTextStream &ts,  HttpHeader &in)
 QString HttpHeader::toString()
 {
     QString result;
-    QMapIterator<QString, QString> i(getHeaderInfo());
+    QHashIterator<QString, QSharedPointer<QString>> i(getHeaderInfo());
     while (i.hasNext())
     {
         i.next();
-        result.append(i.key()).append(": ").append(i.value()).append("\r\n");
+        result = result % i.key() % ": " % (*i.value().data()) % "\r\n";
     }
     return result;
 }
@@ -121,7 +124,9 @@ void HttpHeader::setQueryString(const QString &queryString)
             continue;
         }
 
-        m_queries.insert(pair[0], pair[1]);
+        QSharedPointer<QString> value(new QString(pair[1]));
+
+        m_queries.insert(pair[0], value);
     }
 }
 
@@ -150,24 +155,31 @@ void HttpHeader::setCurrentHeaderField(const QString &currentHeaderField)
     m_currentHeaderField = currentHeaderField;
 }
 
-const QMap<QString, QString> &HttpHeader::getCookie() const
+const QHash<QString, QSharedPointer<QString>> &HttpHeader::getCookie() const
 {
     return m_cookies;
 }
 
-const QMap<QString,QString> &HttpHeader::getHeaderInfo() const
+const QHash<QString, QSharedPointer<QString>> &HttpHeader::getHeaderInfo() const
 {
     return m_headerInfo;
 }
 
-const QMap<QString, QString> &HttpHeader::getQueries() const
+const QHash<QString, QSharedPointer<QString>> &HttpHeader::getQueries() const
 {
     return m_queries;
 }
 
-QString HttpHeader::getHeaderInfo(const QString & headerField) const
+QWeakPointer<QString> HttpHeader::getHeaderInfo(const QString & headerField) const
 {
-    return m_headerInfo[headerField];
+    if (m_headerInfo.contains(headerField))
+    {
+        return m_headerInfo[headerField].toWeakRef();
+    }
+    else
+    {
+        return QWeakPointer<QString>();
+    }
 }
 
 void HttpHeader::removeHeaderInfo(const QString &headerField)
@@ -175,7 +187,7 @@ void HttpHeader::removeHeaderInfo(const QString &headerField)
     m_headerInfo.remove(headerField);
 }
 
-void HttpHeader::addHeaderInfo(const QString &headerValue)
+void HttpHeader::addHeaderInfo(const QSharedPointer<QString> &headerValue)
 {
     m_headerInfo[m_currentHeaderField] = headerValue;
 }

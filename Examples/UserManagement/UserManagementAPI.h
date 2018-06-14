@@ -70,7 +70,7 @@ private slots:
 
 private:
     inline void respond(HttpResponse &response, const StatusCode status, const QString &errorMessage = QString(),
-                        int debugErrorCode = 0, const QMap<QString, QString> &additionalFields = QMap<QString, QString>())
+                        int debugErrorCode = 0, const QHash<QString, QString> &additionalFields = QHash<QString, QString>())
     {
         QJsonObject responseObject;
 

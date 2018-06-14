@@ -2,7 +2,6 @@
 #define PATHTREENODE_H
 
 #include <QObject>
-#include <QMap>
 #include <functional>
 #include "HttpRequest.h"
 #include "HttpResponse.h"
@@ -12,7 +11,7 @@ class PathTreeNode:public QObject
     Q_OBJECT
 
     QString m_pathName;
-    QMap<QString,PathTreeNode*> m_children;
+    QHash<QString, QSharedPointer<PathTreeNode>> m_children;
     std::function<void(HttpRequest &, HttpResponse &)> m_getTaskHandler;
     std::function<void(HttpRequest &, HttpResponse &)> m_postTaskHandler;
     void operator=(const PathTreeNode &in);
@@ -34,7 +33,7 @@ public:
     void addChild(const QString &childPathName);
     bool hasChild(const QString &childPathName) const;
 
-    PathTreeNode *getChild(const QString &childePathName)
+    QWeakPointer<PathTreeNode> getChild(const QString &childePathName)
     {
         return m_children[childePathName];
     }

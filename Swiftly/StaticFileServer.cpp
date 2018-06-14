@@ -4,7 +4,7 @@
 
 //based on
 //https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types
-QMap<QString, QString> StaticFileServer::m_mimeTypeMap =
+QHash<QString, QString> StaticFileServer::m_mimeTypeMap =
 {{"txt" , "text/plain"},
  {"htm" , "text/html"},
  {"html", "text/html"},

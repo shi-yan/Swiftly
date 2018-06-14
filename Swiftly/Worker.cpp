@@ -113,15 +113,15 @@ int onHeaderField(http_parser *parser, const char *p,size_t len)
 int onHeaderValue(http_parser *parser, const char *p,size_t len)
 {
     QByteArray buffer(p,len);
-    // qDebug()<<"onHeaderValue:"<<QString(buffer);
-    ((TcpSocket*)parser->data)->getHeader().addHeaderInfo(QString(buffer));
+    QSharedPointer<QString> headerValue(new QString(buffer));
+    ((TcpSocket*)parser->data)->getHeader().addHeaderInfo(headerValue);
     return 0;
 }
 
 int onHeadersComplete(http_parser *parser)
 {
     //potential bug
-    ((TcpSocket*)parser->data)->getHeader().setHost(((TcpSocket*)parser->data)->getHeader().getHeaderInfo("Host"));
+    ((TcpSocket*)parser->data)->getHeader().setHost(*((TcpSocket*)parser->data)->getHeader().getHeaderInfo("Host").data());
     // qDebug()<<"Parse Header Complete";
     return 0;
 }
@@ -220,11 +220,17 @@ void Worker::readClient()
             socket->setRawHeader(incomingContent);
 
             bool isBodySizeOK=false;
-            unsigned int bodySize=socket->getHeader().getHeaderInfo("Content-Length").toUInt(&isBodySizeOK);
+            unsigned int bodySize = 0;
+            QSharedPointer<QString> contentLength = socket->getHeader().getHeaderInfo("Content-Length");
 
-            if(isBodySizeOK==false)
+            if (!contentLength.isNull())
             {
-                bodySize=0;
+                bodySize = contentLength->toUInt(&isBodySizeOK);
+
+                if(isBodySizeOK==false)
+                {
+                    bodySize=0;
+                }
             }
 
             socket->setTotalBytes(bodySize);
@@ -329,6 +335,7 @@ void Worker::run()
     sLog() << m_name << "'s thread id" << thread()->currentThreadId();
 
     m_socketWatchDog = new WorkerSocketWatchDog(this);
+    m_socketWatchDog->setPriority(QThread::HighestPriority);
     m_socketWatchDog->start();
 
     exec();

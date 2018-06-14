@@ -71,34 +71,34 @@ void HttpRequest::processCookies()
 
 void HttpRequest::parseFormData()
 {
-    QString contentLengthString=header.getHeaderInfo("Content-Length");
+    QWeakPointer<QString> contentLengthString=header.getHeaderInfo("Content-Length");
 
-    if(!contentLengthString.isEmpty())
+    if(!contentLengthString.isNull())
     {
         //int contentLength=contentLengthString.toInt();
 
-        QString contentTypeString=header.getHeaderInfo("Content-Type");
+        QWeakPointer<QString> contentTypeString=header.getHeaderInfo("Content-Type");
 
-        if(!contentTypeString.isEmpty())
+        if(!contentTypeString.isNull())
         {
             int i=0;
-            for(i=0;i<contentTypeString.count();++i)
+            for(i=0;i<(*contentTypeString.data()).count();++i)
             {
-                if(contentTypeString.at(i)==';')
+                if((*contentTypeString.data()).at(i)==';')
                     break;
             }
 
-            QString contentType=contentTypeString.mid(0,i);
+            QString contentType=(*contentTypeString.data()).mid(0,i);
 
             if(contentType=="multipart/form-data")
             {
                     bool success=false;
 
-                    QMap<QString,QString> _formData;
+                    QHash<QString, QSharedPointer<QString>> _formData;
 
-                    if(contentTypeString.mid(i+2,9)=="boundary=")
+                    if((*contentTypeString.data()).mid(i+2,9)=="boundary=")
                     {
-                        QString boundary=contentTypeString.mid(i+11,contentTypeString.count()-i-11);
+                        QString boundary=(*contentTypeString.data()).mid(i+11,(*contentTypeString.data()).count()-i-11);
 
                         int linebegin=0;
                         int lineend=0;
@@ -167,7 +167,7 @@ void HttpRequest::parseFormData()
                                     if(aValueLine.left(2+boundary.count())=="--"+boundary)
                                     {
 
-                                        _formData[fieldName]=value;
+                                        _formData[fieldName] = QSharedPointer<QString>(new QString(value));
                                         if(aValueLine.right(2)=="--")
                                         {
                                             success=true;
@@ -200,7 +200,7 @@ void HttpRequest::parseFormData()
             }
             else if (contentType == "application/x-www-form-urlencoded")
             {
-                QMap<QString,QString> _formData;
+                QHash<QString, QSharedPointer<QString>> _formData;
 
                 QStringList pairs = QString(rawData).split("&",QString::SkipEmptyParts);
 
@@ -210,7 +210,7 @@ void HttpRequest::parseFormData()
 
                     if (pair.size() == 2)
                     {
-                        _formData.insert(pair[0], pair[1]);
+                        _formData.insert(pair[0], QSharedPointer<QString>(new QString(pair[1])));
                         hasSetFormData=true;
 
                     }

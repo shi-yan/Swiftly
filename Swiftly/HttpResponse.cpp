@@ -118,14 +118,14 @@ void HttpResponse::finish(const QString &typeOverride )
         if (!m_sessionId.isEmpty())
         {
             cookieString.append("ssid=").append(m_sessionId);
-            for(QMap<QString, QVariant>::Iterator iter = m_cookies.begin(); iter != m_cookies.end(); ++iter)
+            for(QHash<QString, QVariant>::Iterator iter = m_cookies.begin(); iter != m_cookies.end(); ++iter)
             {
                 cookieString.append("&").append(iter.key()).append("=").append(iter.value().toString());
             }
         }
         else if(m_cookies.count() > 0)
         {
-            QMap<QString, QVariant>::Iterator iter = m_cookies.begin();
+            QHash<QString, QVariant>::Iterator iter = m_cookies.begin();
 
             cookieString.append(iter.key()).append("=").append(iter.value().toString());
 
@@ -148,7 +148,7 @@ void HttpResponse::finish(const QString &typeOverride )
     }
 }
 
-void HttpResponse::redirectTo(const QString &url)
+void HttpResponse::redirectTo(QSharedPointer<QString> url)
 {
     setStatusCode(302);
     setHeader("Location", url);

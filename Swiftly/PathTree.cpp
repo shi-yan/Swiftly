@@ -4,7 +4,7 @@
 
 PathTree::PathTree(QObject *parent)
     :QObject(parent),
-      m_root(""),
+      m_root(new PathTreeNode("")),
       m_emptyFunc()
 {
 }
@@ -30,11 +30,11 @@ bool PathTree::registerAPath(const QString &path, const std::function<void(HttpR
         {
             if(verb==PathTreeNode::GET)
             {
-                return m_root.setGetHandler(in);
+                return m_root->setGetHandler(in);
             }
             else
             {
-                return m_root.setPostHandler(in);
+                return m_root->setPostHandler(in);
             }
         }
         else
@@ -42,7 +42,7 @@ bool PathTree::registerAPath(const QString &path, const std::function<void(HttpR
             int posBegin=1;
             int posEnd=1;
 
-            PathTreeNode* currentPathTreeNode = &m_root;
+            QWeakPointer<PathTreeNode> currentPathTreeNode = m_root.toWeakRef();
 
             for(posEnd = 1; posEnd < path.length(); ++posEnd)
             {
@@ -58,12 +58,12 @@ bool PathTree::registerAPath(const QString &path, const std::function<void(HttpR
                         return false;
                     }
 
-                    if(!currentPathTreeNode->hasChild(pathName))
+                    if(!currentPathTreeNode.data()->hasChild(pathName))
                     {
-                        currentPathTreeNode->addChild(pathName);
+                        currentPathTreeNode.data()->addChild(pathName);
                     }
 
-                    currentPathTreeNode=currentPathTreeNode->getChild(pathName);
+                    currentPathTreeNode=currentPathTreeNode.data()->getChild(pathName);
 
                     posEnd=posBegin=posEnd+1;
                 }
@@ -71,11 +71,11 @@ bool PathTree::registerAPath(const QString &path, const std::function<void(HttpR
 
             if(verb == PathTreeNode::GET)
             {
-                return currentPathTreeNode->setGetHandler(in);
+                return currentPathTreeNode.data()->setGetHandler(in);
             }
             else
             {
-                return currentPathTreeNode->setPostHandler(in);
+                return currentPathTreeNode.data()->setPostHandler(in);
             }
         }
     }
@@ -92,16 +92,20 @@ const std::function<void(HttpRequest &, HttpResponse &)> & PathTree::getTaskHand
         if(path.length()==1)
         {
             if(type==PathTreeNode::GET)
-                return m_root.getHandler();
+            {
+                return m_root->getHandler();
+            }
             else
-                return m_root.postHandler();
+            {
+                return m_root->postHandler();
+            }
         }
         else
         {
             int posBegin=1;
             int posEnd=1;
 
-            PathTreeNode *currentPathTreeNode = &m_root;
+            QWeakPointer<PathTreeNode> currentPathTreeNode = m_root.toWeakRef();
 
             for(posEnd=1;posEnd<path.count();++posEnd)
             {
@@ -117,9 +121,9 @@ const std::function<void(HttpRequest &, HttpResponse &)> & PathTree::getTaskHand
                         return m_emptyFunc;
                     }
 
-                    if(currentPathTreeNode->hasChild(pathName))
+                    if(currentPathTreeNode.data()->hasChild(pathName))
                     {
-                        currentPathTreeNode=currentPathTreeNode->getChild(pathName);
+                        currentPathTreeNode=currentPathTreeNode.data()->getChild(pathName);
                         posBegin = posEnd = posEnd + 1;
                     }
                     else
@@ -131,11 +135,11 @@ const std::function<void(HttpRequest &, HttpResponse &)> & PathTree::getTaskHand
 
             if(type==PathTreeNode::GET)
             {
-                return currentPathTreeNode->getHandler();
+                return currentPathTreeNode.data()->getHandler();
             }
             else
             {
-                return currentPathTreeNode->postHandler();
+                return currentPathTreeNode.data()->postHandler();
             }
         }
     }

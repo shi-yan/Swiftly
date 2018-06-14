@@ -66,7 +66,7 @@ public:
     * \f]
     */
     bool signup(const QString &email, const QByteArray &password,
-                const QMap<QString, QVariant> &extraFields, QString &errorMessage, QByteArray &activationCode);
+                const QHash<QString, QVariant> &extraFields, QString &errorMessage, QByteArray &activationCode);
 
     //! \brief login a user
     /*!
@@ -80,7 +80,7 @@ public:
     * This function log a user in, it checks the existence of the user and verifies the user's password. If succeeded, the userId and meta data
     * will be returned.
     */
-    bool login(const QString &email, const QByteArray &password, QString &userId, QMap<QString, QVariant> &extraFields, QString &errorMessage);
+    bool login(const QString &email, const QByteArray &password, QString &userId, QHash<QString, QVariant> &extraFields, QString &errorMessage);
 
     /*!
      * \brief reset user's password
@@ -145,7 +145,7 @@ public:
      * Certain operation needs to get user's info. For example, given a session id, we want to obtain the logged in user's information.
      * This is a helper function for that.
      */
-    bool getUser(const QString &email, QMap<QString, QVariant> &fields);
+    bool getUser(const QString &email, QHash<QString, QVariant> &fields);
 
     /*!
      * \brief isValidEmail a helper function to verify email address.

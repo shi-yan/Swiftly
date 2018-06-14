@@ -1,11 +1,13 @@
 #ifndef HTTPHEADER_H
 #define HTTPHEADER_H
 
-#include <QMap>
+#include <QHash>
 #include <QString>
 #include <QObject>
 #include <QStringBuilder>
 #include <QTextStream>
+#include <QSharedPointer>
+#include <QWeakPointer>
 
 /*! \class HttpHeader
  * This class represents the Http Header of a Http request.
@@ -16,7 +18,7 @@ class HttpHeader : public QObject
     Q_OBJECT
 
     // Raw Header in the form of key value pairs
-    QMap<QString, QString> m_headerInfo;
+    QHash<QString, QSharedPointer<QString>> m_headerInfo;
     QString m_fragment;
     // Url queries
     QString m_queryString;
@@ -29,9 +31,9 @@ class HttpHeader : public QObject
     QString m_currentHeaderField;
 
     // Url queries in the form of key value pairs
-    QMap<QString, QString> m_queries;
+    QHash<QString, QSharedPointer<QString>> m_queries;
     // Cookies in the form of key value pairs
-    QMap<QString, QString> m_cookies;
+    QHash<QString, QSharedPointer<QString>> m_cookies;
 
     bool m_hasQueries;
     bool m_hasCookies;
@@ -87,17 +89,17 @@ public:
     void setCurrentHeaderField(const QString &currentHeaderField);
     void processCookie();
 
-    const QMap<QString, QString> &getCookie() const;
+    const QHash<QString, QSharedPointer<QString>> &getCookie() const;
 
-    const QMap<QString,QString> &getHeaderInfo() const;
+    const QHash<QString, QSharedPointer<QString>> &getHeaderInfo() const;
 
-    const QMap<QString, QString> &getQueries() const;
+    const QHash<QString, QSharedPointer<QString>> &getQueries() const;
 
-    QString getHeaderInfo(const QString & headerField) const;
+    QWeakPointer<QString> getHeaderInfo(const QString & headerField) const;
 
     void removeHeaderInfo(const QString &headerField);
 
-    void addHeaderInfo(const QString &headerValue);
+    void addHeaderInfo(const QSharedPointer<QString> &headerValue);
 
     void setFragment(const QString &fragment);
 

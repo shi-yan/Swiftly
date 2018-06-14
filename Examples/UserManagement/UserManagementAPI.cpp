@@ -56,7 +56,7 @@ void UserManagementAPI::handleUserSignupPost(HttpRequest &request, HttpResponse 
             return;
         }
 
-        QMap<QString, QVariant> extraFields;
+        QHash<QString, QVariant> extraFields;
         QString errorMessage;
         QByteArray activationCode;
         if(m_userManager.signup(email, password, extraFields, errorMessage, activationCode))
@@ -107,7 +107,7 @@ void UserManagementAPI::handleUserLoginPost(HttpRequest &request, HttpResponse &
             return;
         }
 
-        QMap<QString, QVariant> extraFields;
+        QHash<QString, QVariant> extraFields;
         QString errorMessage;
         QString userId;
         if(m_userManager.login(email, password, userId, extraFields, errorMessage))
@@ -115,7 +115,7 @@ void UserManagementAPI::handleUserLoginPost(HttpRequest &request, HttpResponse &
             QByteArray sessionId;
             if (m_sessionManager.newSession(userId, email, sessionId))
             {
-                QMap<QString, QString> additionalFields;
+                QHash<QString, QString> additionalFields;
                 additionalFields["session_id"] = sessionId;
                 respond(response, StatusCode::NoError, "Logged in!", 0, additionalFields);
             }
@@ -234,12 +234,12 @@ void UserManagementAPI::handleUserResetPasswordPost(HttpRequest &request, HttpRe
 
 void UserManagementAPI::handleUserActivationGet(HttpRequest &request, HttpResponse &response)
 {
-    const QMap<QString, QString> &queries = request.getHeader().getQueries();
+    const QHash<QString, QSharedPointer<QString>> &queries = request.getHeader().getQueries();
 
     if (queries.contains("activation_code") && queries.contains("email"))
     {
-        QByteArray activationCode = queries["activation_code"].toLatin1();
-        QString email = queries["email"];
+        QByteArray activationCode = (*queries["activation_code"].data()).toLatin1();
+        QString email = (*queries["email"].data());
         QString errorMessage;
 
         if(m_userManager.activate(email, activationCode, errorMessage))
@@ -259,11 +259,11 @@ void UserManagementAPI::handleUserActivationGet(HttpRequest &request, HttpRespon
 
 void UserManagementAPI::handleSendPasswordResetRequestGet(HttpRequest &request, HttpResponse &response)
 {
-    const QMap<QString, QString> &queries = request.getHeader().getQueries();
+    const QHash<QString, QSharedPointer<QString>> &queries = request.getHeader().getQueries();
 
     if (queries.contains("email") && queries.contains("g_recaptcha_response"))
     {
-        QString g_recaptcha_response = queries["g_recaptcha_response"];
+        QString g_recaptcha_response = *queries["g_recaptcha_response"].data();
 
         if (!ReCAPTCHAVerifier::getSingleton().verify(g_recaptcha_response, request.getFromIPAddress()))
         {
@@ -271,9 +271,9 @@ void UserManagementAPI::handleSendPasswordResetRequestGet(HttpRequest &request, 
             return;
         }
 
-        QString email = queries["email"];
+        QString email = *queries["email"].data();
         QByteArray passwordResetCode;
-        QMap<QString, QVariant> fields;
+        QHash<QString, QVariant> fields;
 
         if (!m_userManager.getUser(email, fields))
         {
@@ -312,11 +312,11 @@ void UserManagementAPI::handleSendPasswordResetRequestGet(HttpRequest &request, 
 
 void UserManagementAPI::handleSendActivationCodeGet(HttpRequest &request, HttpResponse &response)
 {
-    const QMap<QString, QString> &queries = request.getHeader().getQueries();
+    const QHash<QString, QSharedPointer<QString>> &queries = request.getHeader().getQueries();
 
     if (queries.contains("email") && queries.contains("g_recaptcha_response"))
     {
-        QString g_recaptcha_response = queries["g_recaptcha_response"];
+        QString g_recaptcha_response = *queries["g_recaptcha_response"].data();
 
         if (!ReCAPTCHAVerifier::getSingleton().verify(g_recaptcha_response, request.getFromIPAddress()))
         {
@@ -324,7 +324,7 @@ void UserManagementAPI::handleSendActivationCodeGet(HttpRequest &request, HttpRe
             return;
         }
 
-        QString email = queries["email"];
+        QString email = *queries["email"].data();
         QByteArray activationCode;
         QString errorMessage;
 
@@ -334,7 +334,7 @@ void UserManagementAPI::handleSendActivationCodeGet(HttpRequest &request, HttpRe
             return;
         }
 
-        QMap<QString, QVariant> fields;
+        QHash<QString, QVariant> fields;
 
         if (!m_userManager.getUser(email, fields))
         {
@@ -419,7 +419,7 @@ void UserManagementAPI::mailSent(QString status)
 
 void UserManagementAPI::handleGitHubRegisterGet(HttpRequest &request, HttpResponse &response)
 {
-    const QMap<QString, QString> &queries = request.getHeader().getQueries();
+    const QHash<QString, QSharedPointer<QString>> &queries = request.getHeader().getQueries();
 
     QString code;
     if (!queries.contains("code"))
@@ -427,7 +427,7 @@ void UserManagementAPI::handleGitHubRegisterGet(HttpRequest &request, HttpRespon
         respond(response, StatusCode::MissingParameters, "no code");
     }
 
-    code = queries["code"];
+    code = *queries["code"].data();
 
     QString client_id = SettingsManager::getSingleton().get("GitHub/client_id").toString();
     QString client_secret = SettingsManager::getSingleton().get("GitHub/client_secret").toString();

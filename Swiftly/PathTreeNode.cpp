@@ -31,7 +31,7 @@ void PathTreeNode::operator=(const PathTreeNode &in)
 
 void PathTreeNode::addChild(const QString &childPathName)
 {
-    PathTreeNode *newNode = new PathTreeNode(childPathName);
+    QSharedPointer<PathTreeNode> newNode(new PathTreeNode(childPathName));
     m_children[childPathName]=newNode;
 }
 
@@ -68,9 +68,5 @@ bool PathTreeNode::setPostHandler(const std::function<void (HttpRequest &, HttpR
 
 PathTreeNode::~PathTreeNode()
 {
-    foreach(PathTreeNode *node, m_children)
-    {
-        delete node;
-    }
     m_children.clear();
 }

@@ -21,7 +21,8 @@ void SimpleSession::handleUserSigninGet(HttpRequest &request,HttpResponse &respo
     generateHashCode(code);
     response.setStatusCode(302);
     response.setSessionId(QString::fromUtf8(code));
-    response.setHeader("Location", "/");
+    QSharedPointer<QString> rootPath(new QString("/"));
+    response.setHeader("Location", rootPath);
     response.finish();
 }
 
@@ -33,9 +34,9 @@ void SimpleSession::handleUserLoggedInGet(HttpRequest &request, HttpResponse &re
 
         response << "logged in ";
 
-        foreach (const QString &var, request.getHeader().getCookie())
+        foreach (const QSharedPointer<QString> &var, request.getHeader().getCookie())
         {
-            response << var << " ";
+            response << (*var.data()) << " ";
         }
     }
     else

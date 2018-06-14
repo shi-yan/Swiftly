@@ -5,7 +5,7 @@
 #include <QDir>
 #include <QFileInfo>
 #include <QString>
-#include <QMap>
+#include <QHash>
 #include <QCache>
 #include <QMutex>
 
@@ -42,7 +42,7 @@ public:
     bool getFileByAbsolutePath(const QString &absolutePath, QByteArray &fileContent, QString &mimeType, FileType fileTypeHint = FileType::UNSPECIFIED) const;
 private:
     FileType guessFileType(const QByteArray &fileContent) const;
-    static QMap<QString, QString> m_mimeTypeMap;
+    static QHash<QString, QString> m_mimeTypeMap;
     static QMutex m_fileCacheMutex;
     static QCache<QString, FileCacheItem> m_fileCache;
 };

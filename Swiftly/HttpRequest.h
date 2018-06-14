@@ -11,7 +11,7 @@ class HttpRequest:public QObject
 
     HttpHeader header;
     QByteArray rawData;
-    QMap<QString,QString> formData;
+    QHash<QString, QSharedPointer<QString>> formData;
     bool hasSetFormData;
 
     unsigned int totalBytes;
@@ -26,7 +26,7 @@ public:
     HttpRequest(const HttpRequest &in);
     void operator=(const HttpRequest &in);
 
-    void setFormData(const QMap<QString,QString> &_formData)
+    void setFormData(const QHash<QString, QSharedPointer<QString>> &_formData)
     {
         formData=_formData;
         hasSetFormData=true;
@@ -39,12 +39,19 @@ public:
 
     QString getFromIPAddress() const;
 
-    QString & getFormData(const QString &fieldName)
+    QWeakPointer<QString> getFormData(const QString &fieldName)
     {
-        return formData[fieldName];
+        if (formData.contains(fieldName))
+        {
+            return formData[fieldName].toWeakRef();
+        }
+        else
+        {
+            return QWeakPointer<QString>();
+        }
     }
 
-    QMap<QString, QString> & getFormData()
+    const QHash<QString, QSharedPointer<QString>> & getFormData() const
     {
         return formData;
     }
