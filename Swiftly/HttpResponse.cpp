@@ -154,3 +154,4 @@ void HttpResponse::redirectTo(QSharedPointer<QString> url)
     setHeader("Location", url);
     finish();
 }
+

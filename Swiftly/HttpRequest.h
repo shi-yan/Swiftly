@@ -9,41 +9,37 @@ class HttpRequest:public QObject
 {
     Q_OBJECT
 
-    HttpHeader header;
-    QByteArray rawData;
-    QHash<QString, QSharedPointer<QString>> formData;
-    bool hasSetFormData;
+    HttpHeader m_header;
+    QByteArray m_rawData;
+    QHash<QString, QSharedPointer<QString>> m_formData;
+    bool m_hasSetFormData;
 
-    unsigned int totalBytes;
-    unsigned int bytesHaveRead;
+    unsigned int m_totalBytes;
+    unsigned int m_bytesHaveRead;
 
-    QString rawHeader;
+    QString m_rawHeader;
 public:
-    TcpSocket *socket;
+    TcpSocket *m_socket;
 
 public:
     HttpRequest(TcpSocket *_socket=0);
     HttpRequest(const HttpRequest &in);
     void operator=(const HttpRequest &in);
 
-    void setFormData(const QHash<QString, QSharedPointer<QString>> &_formData)
-    {
-        formData=_formData;
-        hasSetFormData=true;
-    }
+    void setFormData(const QHash<QString, QSharedPointer<QString>> &formData);
 
     HttpHeader & getHeader()
     {
-        return header;
+        return m_header;
     }
 
     QString getFromIPAddress() const;
 
     QWeakPointer<QString> getFormData(const QString &fieldName)
     {
-        if (formData.contains(fieldName))
+        if (m_formData.contains(fieldName))
         {
-            return formData[fieldName].toWeakRef();
+            return m_formData[fieldName].toWeakRef();
         }
         else
         {
@@ -53,17 +49,17 @@ public:
 
     const QHash<QString, QSharedPointer<QString>> & getFormData() const
     {
-        return formData;
+        return m_formData;
     }
 
     QByteArray & getRawData()
     {
-        return rawData;
+        return m_rawData;
     }
 
     bool hasFormData()
     {
-        return hasSetFormData;
+        return m_hasSetFormData;
     }
 
     void parseFormData();
@@ -78,22 +74,22 @@ public:
 
     QString & getRawHeader()
     {
-        return rawHeader;
+        return m_rawHeader;
     }
 
     unsigned int getTotalBytes()
     {
-        return totalBytes;
+        return m_totalBytes;
     }
 
     unsigned int getBytesHaveRead()
     {
-        return bytesHaveRead;
+        return m_bytesHaveRead;
     }
 
-    void setTotalBytes(unsigned _totalBytes)
+    void setTotalBytes(unsigned int totalBytes)
     {
-        totalBytes=_totalBytes;
+        m_totalBytes=totalBytes;
     }
 };
 

@@ -22,33 +22,31 @@ class WebApp:public QObject
 {
     Q_OBJECT
 
-    const QString pathSpace;
+    const QString m_pathSpace;
 
-    PathTree *pathTree;
+    QSharedPointer<PathTree> m_pathTree;
 
 public:
     WebApp(const QString &_pathSpace="",QObject *parent =0);
-    WebApp(const WebApp &in):QObject(),pathSpace(in.pathSpace){}
+    WebApp(const WebApp &in):QObject(),m_pathSpace(in.m_pathSpace){}
 
     bool addGetHandler(const QString &_path, const std::function<void (HttpRequest &, HttpResponse &)> &in);
     bool addPostHandler(const QString &_path, const std::function<void (HttpRequest &, HttpResponse &)> &in);
 
     virtual ~WebApp(){}
 
-
     const QString & getPathSpace()
     {
-        return pathSpace;
+        return m_pathSpace;
     }
-
 
     virtual void init(){}
 
     virtual void registerPathHandlers()=0;
 
-    void setPathTree(PathTree *pt)
+    void setPathTree(const QSharedPointer<PathTree> pathtree)
     {
-        pathTree=pt;
+        m_pathTree = pathtree;
     }
 
     virtual void Serve404(HttpRequest &, HttpResponse &){};

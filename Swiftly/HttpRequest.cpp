@@ -3,42 +3,42 @@
 #include "HttpRequest.h"
 #include <QHostAddress>
 
-HttpRequest::HttpRequest(TcpSocket *_socket)
+HttpRequest::HttpRequest(TcpSocket *socket)
     :QObject(),
-      header(),
-      rawData(),
-      formData(),
-      hasSetFormData(false),
-      totalBytes(0),
-      bytesHaveRead(0),
-      rawHeader(),
-      socket(_socket)
+      m_header(),
+      m_rawData(),
+      m_formData(),
+      m_hasSetFormData(false),
+      m_totalBytes(0),
+      m_bytesHaveRead(0),
+      m_rawHeader(),
+      m_socket(socket)
 {
 }
 
 HttpRequest::HttpRequest(const HttpRequest &in)
     :QObject(),
-      header(in.header),
-      rawData(in.rawData),
-      formData(in.formData),
-      hasSetFormData(in.hasSetFormData),
-      totalBytes(in.totalBytes),
-      bytesHaveRead(in.bytesHaveRead),
-      rawHeader(in.rawHeader),
-      socket(in.socket)
+      m_header(in.m_header),
+      m_rawData(in.m_rawData),
+      m_formData(in.m_formData),
+      m_hasSetFormData(in.m_hasSetFormData),
+      m_totalBytes(in.m_totalBytes),
+      m_bytesHaveRead(in.m_bytesHaveRead),
+      m_rawHeader(in.m_rawHeader),
+      m_socket(in.m_socket)
 {
 }
 
 void HttpRequest::operator=(const HttpRequest &in)
 {
-    header=in.header;
-    rawData=in.rawData;
-    formData=in.formData;
-    hasSetFormData=in.hasSetFormData;
-    totalBytes=in.totalBytes;
-    bytesHaveRead=in.bytesHaveRead;
-    rawHeader=in.rawHeader;
-    socket=in.socket;
+    m_header=in.m_header;
+    m_rawData=in.m_rawData;
+    m_formData=in.m_formData;
+    m_hasSetFormData=in.m_hasSetFormData;
+    m_totalBytes=in.m_totalBytes;
+    m_bytesHaveRead=in.m_bytesHaveRead;
+    m_rawHeader=in.m_rawHeader;
+    m_socket=in.m_socket;
 }
 
 
@@ -49,35 +49,35 @@ HttpRequest::~HttpRequest()
 
 void HttpRequest::appendData(const char* buffer,unsigned int size)
 {
-    rawData.append(buffer,size);
-    bytesHaveRead+=size;
+    m_rawData.append(buffer,size);
+    m_bytesHaveRead+=size;
 }
 
 void HttpRequest::appendData(const QByteArray &ba)
 {
-    rawData.append(ba);
-    bytesHaveRead+=ba.count();
+    m_rawData.append(ba);
+    m_bytesHaveRead+=ba.count();
 }
 
 void HttpRequest::setRawHeader(const QString &_rh)
 {
-    rawHeader=_rh;
+    m_rawHeader=_rh;
 }
 
 void HttpRequest::processCookies()
 {
-    header.processCookie();
+    m_header.processCookie();
 }
 
 void HttpRequest::parseFormData()
 {
-    QWeakPointer<QString> contentLengthString=header.getHeaderInfo("Content-Length");
+    QWeakPointer<QString> contentLengthString = m_header.getHeaderInfo("Content-Length");
 
     if(!contentLengthString.isNull())
     {
         //int contentLength=contentLengthString.toInt();
 
-        QWeakPointer<QString> contentTypeString=header.getHeaderInfo("Content-Type");
+        QWeakPointer<QString> contentTypeString = m_header.getHeaderInfo("Content-Type");
 
         if(!contentTypeString.isNull())
         {
@@ -103,26 +103,26 @@ void HttpRequest::parseFormData()
                         int linebegin=0;
                         int lineend=0;
 
-                        while(rawData.at(lineend)!='\r' && rawData.at(lineend+1)!='\n')
+                        while(m_rawData.at(lineend)!='\r' && m_rawData.at(lineend+1)!='\n')
                         {
                             ++lineend;
                         }
 
-                        QString boundaryCheck= QByteArray(&rawData.data()[linebegin],lineend-linebegin);
+                        QString boundaryCheck = QByteArray(&m_rawData.data()[linebegin],lineend-linebegin);
 
                         if(boundaryCheck=="--"+boundary)
                         {
                             lineend+=2;
                             linebegin=lineend;
 
-                            while(lineend<rawData.count())
+                            while(lineend < m_rawData.count())
                             {
-                                while(lineend<rawData.count()-1 && rawData.at(lineend)!='\r' && rawData.at(lineend+1)!='\n')
+                                while(lineend < m_rawData.count()-1 && m_rawData.at(lineend)!='\r' && m_rawData.at(lineend+1)!='\n')
                                 {
                                     ++lineend;
                                 }
 
-                                QString fieldCheck= QByteArray(&rawData.data()[linebegin],lineend-linebegin);
+                                QString fieldCheck= QByteArray(&m_rawData.data()[linebegin],lineend-linebegin);
 
                                 if(!(fieldCheck.left(38)=="Content-Disposition: form-data; name=\""))
                                 {
@@ -141,10 +141,10 @@ void HttpRequest::parseFormData()
                                 lineend+=2;
                                 linebegin=lineend;
 
-                                if(lineend>=rawData.count())
+                                if(lineend >= m_rawData.count())
                                     break;
 
-                                while(lineend<rawData.count()-1 && rawData.at(lineend)!='\r' && rawData.at(lineend+1)!='\n')
+                                while(lineend<m_rawData.count()-1 && m_rawData.at(lineend)!='\r' && m_rawData.at(lineend+1)!='\n')
                                 {
                                     ++lineend;
                                 }
@@ -154,14 +154,14 @@ void HttpRequest::parseFormData()
 
                                 QByteArray value;
 
-                                while(lineend<rawData.count())
+                                while(lineend<m_rawData.count())
                                 {
-                                    while(lineend<rawData.count()-1 && rawData.at(lineend)!='\r' && rawData.at(lineend+1)!='\n')
+                                    while(lineend<m_rawData.count()-1 && m_rawData.at(lineend)!='\r' && m_rawData.at(lineend+1)!='\n')
                                     {
                                         ++lineend;
                                     }
 
-                                    QByteArray thisline(&rawData.data()[linebegin],lineend-linebegin);
+                                    QByteArray thisline(&m_rawData.data()[linebegin],lineend-linebegin);
                                     QString aValueLine=thisline;
 
                                     if(aValueLine.left(2+boundary.count())=="--"+boundary)
@@ -194,15 +194,15 @@ void HttpRequest::parseFormData()
 
                 if(success)
                 {
-                    formData=(_formData);
-                    hasSetFormData=true;
+                    m_formData=(_formData);
+                    m_hasSetFormData=true;
                 }
             }
             else if (contentType == "application/x-www-form-urlencoded")
             {
                 QHash<QString, QSharedPointer<QString>> _formData;
 
-                QStringList pairs = QString(rawData).split("&",QString::SkipEmptyParts);
+                QStringList pairs = QString(m_rawData).split("&",QString::SkipEmptyParts);
 
                 for(QStringList::Iterator iter = pairs.begin(); iter != pairs.end(); ++iter)
                 {
@@ -211,14 +211,14 @@ void HttpRequest::parseFormData()
                     if (pair.size() == 2)
                     {
                         _formData.insert(pair[0], QSharedPointer<QString>(new QString(pair[1])));
-                        hasSetFormData=true;
+                        m_hasSetFormData=true;
 
                     }
                 }
 
-                if(hasSetFormData)
+                if(m_hasSetFormData)
                 {
-                    formData=(_formData);
+                    m_formData=(_formData);
 
                 }
             }
@@ -228,9 +228,15 @@ void HttpRequest::parseFormData()
 
 QString HttpRequest::getFromIPAddress() const
 {
-    if (socket)
+    if (m_socket)
     {
-        return socket->peerAddress().toString();
+        return m_socket->peerAddress().toString();
     }
     return QString();
+}
+
+void HttpRequest::setFormData(const QHash<QString, QSharedPointer<QString>> &formData)
+{
+    m_formData=formData;
+    m_hasSetFormData=true;
 }

@@ -10,13 +10,13 @@ class TcpSocket:public QTcpSocket
 {
     Q_OBJECT
 
-    bool isNew;
+    bool m_isNew;
 
-    HttpRequest request;
-    HttpResponse response;
+    HttpRequest m_request;
+    HttpResponse m_response;
 
 public:
-    unsigned int id;
+    unsigned int m_id;
     TcpSocket(QObject *parent=0);
     TcpSocket(const TcpSocket &in);
     void operator=(const TcpSocket &in);
@@ -39,12 +39,12 @@ public:
 
     HttpRequest & getRequest()
     {
-        return request;
+        return m_request;
     }
 
     HttpResponse & getResponse()
     {
-        return response;
+        return m_response;
     }
 };
 

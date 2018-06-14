@@ -18,7 +18,7 @@ class Worker : public QThread
     QString m_name;
     http_parser m_parser;
     QHash<int, WebApp*> m_webAppTable;
-    PathTree m_pathTree;
+    QSharedPointer<PathTree> m_pathTree;
     QSemaphore m_idleSemaphore;
     WorkerSocketWatchDog *m_socketWatchDog;
     IncomingConnectionQueue *m_incomingConnectionQueue;

@@ -165,7 +165,7 @@ void Worker::newSocket(qintptr socket)
     //qDebug() << m_name << " is handling a new request; thread id" << thread()->currentThreadId();
 
     TcpSocket* s = new TcpSocket(this);
-    s->id = rand();
+    s->m_id = rand();
     connect(s, SIGNAL(readyRead()), this, SLOT(readClient()));
     connect(s, SIGNAL(disconnected()), this, SLOT(discardClient()));
     s->setSocketDescriptor(socket);
@@ -271,7 +271,7 @@ void Worker::readClient()
             //qDebug() << "path" << socket->getRequest().getHeader().getPath();
             sLog() << "handle request:" << socket->getRequest().getHeader().getPath();
             qDebug() << "handle request:" << socket->getRequest().getHeader().getPath();
-            const std::function<void (HttpRequest &, HttpResponse &)> &th = m_pathTree.getTaskHandlerByPath(socket->getRequest().getHeader().getPath(), handlerType);
+            const std::function<void (HttpRequest &, HttpResponse &)> &th = m_pathTree->getTaskHandlerByPath(socket->getRequest().getHeader().getPath(), handlerType);
 
             if(th)
             {
@@ -306,7 +306,7 @@ void Worker::registerWebApps(QVector<int> &webAppClassIDs)
 
         m_webAppTable[webAppClassIDs[i]]=app;
 
-        app->setPathTree(&m_pathTree);
+        app->setPathTree(m_pathTree);
 
         app->registerPathHandlers();
 
@@ -319,7 +319,7 @@ void Worker::discardClient()
     TcpSocket* socket = (TcpSocket*)sender();
 
     qDebug() << "thread id" << thread()->currentThreadId();
-    qDebug() << "release socket" << socket << socket->id;
+    qDebug() << "release socket" << socket << socket->m_id;
 
     socket->deleteLater();
     //qDebug() << "finish serving client inside" << m_name;

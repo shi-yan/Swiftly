@@ -3,7 +3,7 @@
 
 WebApp::WebApp(const QString &_pathSpace,QObject *parent )
     :QObject(parent),
-      pathSpace(_pathSpace)
+      m_pathSpace(_pathSpace)
 {
 
 }
@@ -12,10 +12,10 @@ bool WebApp::addGetHandler(const QString &_path, const std::function<void (HttpR
 {
     QString path=_path;
 
-    if(!pathSpace.isEmpty())
-        path='/' + pathSpace + _path;
+    if(!m_pathSpace.isEmpty())
+        path='/' + m_pathSpace + _path;
 
-    return pathTree->registerAPath(path, in ,PathTreeNode::GET);
+    return m_pathTree->registerAPath(path, in ,PathTreeNode::GET);
 }
 
 
@@ -23,8 +23,8 @@ bool WebApp::addPostHandler(const QString &_path, const std::function<void (Http
 {
     QString path=_path;
 
-    if(!pathSpace.isEmpty())
-        path='/' + pathSpace + _path;
+    if(!m_pathSpace.isEmpty())
+        path='/' + m_pathSpace + _path;
 
-    return pathTree->registerAPath(path,in,PathTreeNode::POST);
+    return m_pathTree->registerAPath(path,in,PathTreeNode::POST);
 }
