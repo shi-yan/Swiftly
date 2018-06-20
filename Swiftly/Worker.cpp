@@ -119,10 +119,28 @@ int onHeaderValue(http_parser *parser, const char *p,size_t len)
 }
 
 int onHeadersComplete(http_parser *parser)
-{
-    //potential bug
-    ((TcpSocket*)parser->data)->getHeader().setHost(*((TcpSocket*)parser->data)->getHeader().getHeaderInfo("Host").data());
-    // qDebug()<<"Parse Header Complete";
+{   
+    TcpSocket *socket = (TcpSocket*)parser->data;
+
+    sLog(LogEndpoint::LogLevel::DEBUG) << " === parsed header ====";
+    const QHash<QString, QSharedPointer<QString>> &headers = socket->getHeader().getHeaderInfo();
+
+    QHash<QString, QSharedPointer<QString>>::const_iterator i = headers.constBegin();
+    while (i != headers.constEnd())
+    {
+        sLog(LogEndpoint::LogLevel::DEBUG) << i.key() << *(i.value().data());
+        ++i;
+    }
+    sLog(LogEndpoint::LogLevel::DEBUG) << " === ============= ====";
+    sLogFlush();
+
+    QWeakPointer<QString> host = socket->getHeader().getHeaderInfo("Host");
+
+    if (!host.isNull())
+    {
+        socket->getHeader().setHost(*host.data());
+    }
+
     return 0;
 }
 
