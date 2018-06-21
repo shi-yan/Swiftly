@@ -121,7 +121,7 @@ int onHeaderValue(http_parser *parser, const char *p,size_t len)
 int onHeadersComplete(http_parser *parser)
 {   
     TcpSocket *socket = (TcpSocket*)parser->data;
-
+#ifndef NO_LOG
     sLog(LogEndpoint::LogLevel::DEBUG) << " === parsed header ====";
     const QHash<QString, QSharedPointer<QString>> &headers = socket->getHeader().getHeaderInfo();
 
@@ -133,7 +133,7 @@ int onHeadersComplete(http_parser *parser)
     }
     sLog(LogEndpoint::LogLevel::DEBUG) << " === ============= ====";
     sLogFlush();
-
+#endif
     QWeakPointer<QString> host = socket->getHeader().getHeaderInfo("Host");
 
     if (!host.isNull())
@@ -187,7 +187,9 @@ void Worker::newSocket(qintptr socket)
     connect(s, SIGNAL(readyRead()), this, SLOT(readClient()));
     connect(s, SIGNAL(disconnected()), this, SLOT(discardClient()));
     s->setSocketDescriptor(socket);
+#ifndef NO_LOG
     sLog() << m_name << " receive a new request from ip:" << s->peerAddress().toString();
+#endif
 }
 
 void Worker::readClient()
@@ -287,8 +289,10 @@ void Worker::readClient()
             socket->getRequest().parseFormData();
 
             //qDebug() << "path" << socket->getRequest().getHeader().getPath();
+#ifndef NO_LOG
             sLog() << "handle request:" << socket->getRequest().getHeader().getPath();
             qDebug() << "handle request:" << socket->getRequest().getHeader().getPath();
+#endif
             const std::function<void (HttpRequest &, HttpResponse &)> &th = m_pathTree->getTaskHandlerByPath(socket->getRequest().getHeader().getPath(), handlerType);
 
             if(th)
@@ -298,8 +302,10 @@ void Worker::readClient()
             }
             else
             {
+#ifndef NO_LOG
                 qDebug()<<"empty task handler!" << socket->getRequest().getHeader().getPath() << ";" <<handlerType;
                 sLog()<<"empty task handler!" << socket->getRequest().getHeader().getPath() << ";" <<handlerType;
+#endif
                 socket->getResponse().setStatusCode(404);
                 socket->getResponse().finish();
             }
@@ -335,27 +341,26 @@ void Worker::registerWebApps(QVector<int> &webAppClassIDs)
 void Worker::discardClient()
 {
     TcpSocket* socket = (TcpSocket*)sender();
-
+#ifndef NO_LOG
     qDebug() << "thread id" << thread()->currentThreadId();
     qDebug() << "release socket" << socket << socket->m_id;
-
-    socket->deleteLater();
     //qDebug() << "finish serving client inside" << m_name;
     sLog() << m_name << "finished request.";
     sLogFlush();
+#endif
+    socket->deleteLater();
     m_idleSemaphore.release();
 }
 
 void Worker::run()
 {
+#ifndef NO_LOG
     qDebug() << m_name<<"'s thread id"<<thread()->currentThreadId();
-
     sLog() << m_name << "'s thread id" << thread()->currentThreadId();
-
+#endif
     m_socketWatchDog = new WorkerSocketWatchDog(this);
-    m_socketWatchDog->setPriority(QThread::HighestPriority);
     m_socketWatchDog->start();
-
+    m_socketWatchDog->setPriority(QThread::HighestPriority);
     exec();
 }
 

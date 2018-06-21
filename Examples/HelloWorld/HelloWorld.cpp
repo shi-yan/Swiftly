@@ -7,5 +7,5 @@ void HelloWorld::registerPathHandlers()
 
 void HelloWorld::handleHelloWorldGet(HttpRequest &request, HttpResponse &response)
 {
-    response << "hello world from Swiftly!\n";
+    response << "hello world!";
 }

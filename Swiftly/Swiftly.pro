@@ -14,6 +14,10 @@ CONFIG += staticlib
 CONFIG += c++1z
 # SOURCES += Swiftly.cpp
 
+CONFIG(release, debug|release) {
+    DEFINES += NO_LOG
+}
+
 INCLUDEPATH += ../http-parser \
                /usr/local/include/bsoncxx/v_noabi \
                /usr/local/include/mongocxx/v_noabi \
