@@ -15,6 +15,7 @@ QHash<QString, QString> StaticFileServer::m_mimeTypeMap =
  {"jpg" , "image/jpeg"},
  {"jpeg", "image/jpeg"},
  {"bmp" , "image/bmp"},
+ {"svg" , "image/svg+xml"},
  {"webp", "image/webp"},
  {"midi", "audio/midi"},
  {"mpeg", "audio/mpeg"},
