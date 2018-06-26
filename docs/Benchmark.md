@@ -57,6 +57,7 @@ func main() {
 }
 ```
 
+
 The benchmark tool I used was the apache benchmark. I issued 10000 requests with 250 concurrent threads. I have noticed some fluctuation between runs, especially for the nodejs server for the first few launches. It appears to require some warm-up. so I ran the same command for multiple times to get stable results.
 
 The command line:
@@ -64,7 +65,7 @@ The command line:
 
 The results can be summarized by the following tables:
 
-Requests per sec (#/sec): 
+#### Requests per sec (#/sec): 
 
 | Swiftly        | nodejs           | golang  |
 | :-------------: |:-------------:| :-----:|
@@ -75,7 +76,8 @@ Requests per sec (#/sec):
 
 ![Requests per sec](benchmark_rps.png "Requests per sec (#/sec)")
 
-Time per request (ms):
+
+#### Time per request (ms):
 
 | Swiftly| nodejs | golang |
 | :-------------: |:-------------:| :-----:|
@@ -86,7 +88,8 @@ Time per request (ms):
 
 ![Time per request](benchmark_tpr.png "Time per request (ms)")
 
-Transfer rate (kbyte/sec) :
+
+#### Transfer rate (kbyte/sec) :
 
 | Swiftly | nodejs | golang |
 | :-------------: |:-------------:| :-----:|
@@ -97,11 +100,12 @@ Transfer rate (kbyte/sec) :
 
 ![Transfer rate](benchmark_tr.png "Transfer rate (kbyte/sec)")
 
+
 It might be unfair to launch many Swiftly workers and compare its performance against the nodejs server, as we know that javascript is single-threaded. But who knows if nodejs runtime would launch other threads to help with the event loop? So I think it may be worthwhile to run the same benchmark using just one cpu core:
 
 > taskset -c 0 {server launch command}
 
-Requests per sec (#/sec) [Single thread]:
+#### Requests per sec (#/sec) [Single thread]:
 
 | Swiftly | nodejs | golang |
 | :-------------: |:-------------:| :-----:|
@@ -112,7 +116,8 @@ Requests per sec (#/sec) [Single thread]:
 
 ![Requests per sec](benchmark_single_rps.png "Requests per sec (#/sec) [Single thread]")
 
-Time per request (ms) [Single thread]:
+
+#### Time per request (ms) [Single thread]:
 
 | Swiftly | nodejs | golang|
 | :-------------: |:-------------:| :-----:|
@@ -123,7 +128,8 @@ Time per request (ms) [Single thread]:
 
 ![Time per request](benchmark_single_tpr.png "Time per request (ms) [Single thread]")
 
-Transfer rate (kbyte/sec) [Single thread]:
+
+#### Transfer rate (kbyte/sec) [Single thread]:
 
 | Swiftly | nodejs | golang |
 | :-------------: |:-------------:| :-----:|
