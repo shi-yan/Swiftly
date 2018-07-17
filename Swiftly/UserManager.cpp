@@ -31,6 +31,46 @@ UserManager::UserManager()
 
 }
 
+void UserManager::init()
+{
+    auto client = MongodbManager::getSingleton().getClient();
+
+    mongocxx::database swiftlyDb = (*client)["Swiftly"];
+    mongocxx::collection userCollection = swiftlyDb["User"];
+    mongocxx::collection activationCollection = swiftlyDb["Activation"];
+    mongocxx::collection resetCollection = swiftlyDb["Reset"];
+
+    bsoncxx::builder::stream::document userIndexBuilder;
+    mongocxx::options::index userIndexOptions{};
+    userIndexBuilder << "email" << 1;
+    userIndexOptions.unique(true);
+    userCollection.create_index(userIndexBuilder.view(), userIndexOptions);
+
+    bsoncxx::builder::stream::document activationEmailIndexBuilder;
+    mongocxx::options::index activationEmailOptions{};
+    activationEmailIndexBuilder << "email" << 1;
+    activationEmailOptions.unique(true);
+    activationCollection.create_index(activationEmailIndexBuilder.view(), activationEmailOptions);
+
+    bsoncxx::builder::stream::document activationCodeIndexBuilder;
+    mongocxx::options::index activationCodeOptions{};
+    activationCodeIndexBuilder << "activation_code" << 1;
+    activationCodeOptions.unique(true);
+    activationCollection.create_index(activationCodeIndexBuilder.view(), activationCodeOptions);
+
+    /*bsoncxx::builder::stream::document resetPasswordEmailIndexBuilder;
+    mongocxx::options::index resetPasswordEmailOptions{};
+    resetPasswordEmailIndexBuilder << "email" << 1;
+    resetPasswordEmailOptions.unique(true);
+    resetCollection.create_index(resetPasswordEmailIndexBuilder.view(), resetPasswordEmailOptions);*/
+
+    bsoncxx::builder::stream::document resetPasswordCodeIndexBuilder;
+    mongocxx::options::index resetPasswordCodeOptions{};
+    resetPasswordCodeIndexBuilder << "reset_code" << 1;
+    resetPasswordCodeOptions.unique(true);
+    resetCollection.create_index(resetPasswordCodeIndexBuilder.view(), resetPasswordCodeOptions);
+}
+
 bool UserManager::signup(const QString &email, const QByteArray &password,
                          const QHash<QString, QVariant> &extraFields, QString &errorMessage,
                          QByteArray &activationCode)
@@ -56,24 +96,6 @@ bool UserManager::signup(const QString &email, const QByteArray &password,
     mongocxx::database swiftlyDb = (*client)["Swiftly"];
     mongocxx::collection userCollection = swiftlyDb["User"];
     mongocxx::collection activationCollection = swiftlyDb["Activation"];
-
-    bsoncxx::builder::stream::document userIndexBuilder;
-    mongocxx::options::index userIndexOptions{};
-    userIndexBuilder << "email" << 1;
-    userIndexOptions.unique(true);
-    userCollection.create_index(userIndexBuilder.view(), userIndexOptions);
-
-    bsoncxx::builder::stream::document activationEmailIndexBuilder;
-    mongocxx::options::index activationEmailOptions{};
-    activationEmailIndexBuilder << "email" << 1;
-    activationEmailOptions.unique(true);
-    activationCollection.create_index(activationEmailIndexBuilder.view(), activationEmailOptions);
-
-    bsoncxx::builder::stream::document activationCodeIndexBuilder;
-    mongocxx::options::index activationCodeOptions{};
-    activationCodeIndexBuilder << "activation_code" << 1;
-    activationCodeOptions.unique(true);
-    activationCollection.create_index(activationCodeIndexBuilder.view(), activationCodeOptions);
 
     auto builder = bsoncxx::builder::stream::document{};
     bsoncxx::document::value userAccountDocumentValue = builder
@@ -387,19 +409,8 @@ bool UserManager::generatePasswordResetRequest(const QString &email, QByteArray 
     mongocxx::database swiftlyDb = (*client)["Swiftly"];
     mongocxx::collection resetCollection = swiftlyDb["Reset"];
 
-    /*bsoncxx::builder::stream::document resetPasswordEmailIndexBuilder;
-    mongocxx::options::index resetPasswordEmailOptions{};
-    resetPasswordEmailIndexBuilder << "email" << 1;
-    resetPasswordEmailOptions.unique(true);
-    resetCollection.create_index(resetPasswordEmailIndexBuilder.view(), resetPasswordEmailOptions);*/
-
-    bsoncxx::builder::stream::document resetPasswordCodeIndexBuilder;
-    mongocxx::options::index resetPasswordCodeOptions{};
-    resetPasswordCodeIndexBuilder << "reset_code" << 1;
-    resetPasswordCodeOptions.unique(true);
-    resetCollection.create_index(resetPasswordCodeIndexBuilder.view(), resetPasswordCodeOptions);
-
     generatePasswordResetCode(email, passwordResetCode);
+
     bsoncxx::document::value passwordResetDocumentValue = bsoncxx::builder::stream::document{}
             << "reset_code" << passwordResetCode.toStdString().c_str()
             << "time" << static_cast<std::int64_t>( QDateTime::currentDateTimeUtc().toTime_t())

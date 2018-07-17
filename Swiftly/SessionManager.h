@@ -12,6 +12,8 @@ public:
     bool findSession(const QByteArray &sessionId, QString &email);
     bool logoutSession(const QByteArray &sessionId);
 
+    static void init();
+
 private:
     void generateSessionId(QByteArray &sessionId);
 };

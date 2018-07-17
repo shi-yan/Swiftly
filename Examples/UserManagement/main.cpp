@@ -34,6 +34,9 @@ int main(int argc, char *argv[])
     REGISTER_WEBAPP(UserManagementAPI);
     REGISTER_WEBAPP(UserManagementUI);
 
+    SessionManager::init();
+    UserManager::init();
+
     HttpServer::getSingleton().start(QThread::idealThreadCount(), 8083);
 
     return a.exec();

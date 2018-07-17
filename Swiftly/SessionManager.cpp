@@ -18,7 +18,7 @@ SessionManager::SessionManager()
 
 }
 
-bool SessionManager::newSession(const QString &userId, const QString &email, QByteArray &sessionId)
+void SessionManager::init()
 {
     auto client = MongodbManager::getSingleton().getClient();
 
@@ -30,6 +30,15 @@ bool SessionManager::newSession(const QString &userId, const QString &email, QBy
     sessionIdIndexBuilder << "session_id" << 1;
     sessionIdOptions.unique(true);
     sessionCollection.create_index(sessionIdIndexBuilder.view(), sessionIdOptions);
+
+}
+
+bool SessionManager::newSession(const QString &userId, const QString &email, QByteArray &sessionId)
+{
+    auto client = MongodbManager::getSingleton().getClient();
+
+    mongocxx::database swiftlyDb = (*client)["Swiftly"];
+    mongocxx::collection sessionCollection = swiftlyDb["Session"];
 
     generateSessionId(sessionId);
 

@@ -38,7 +38,7 @@ public:
     {
     }
 
-
+    static void init();
 
     //! \brief signup a user
     /*!
