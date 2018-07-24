@@ -1,5 +1,7 @@
 # Swiftly
 
+[![doctory badge](https://doctory.io/api/badge?ref_id=285b062063fa7a3c16f3bba99535119d66c9298cd94749a8f1a94046c08a060d "Doctory")](https://doctory.io/doc/shi-yan/Swiftly)
+
 Swiftly is an easy to use Qt/C++ web framework I made out of boredom. As a C++ programmer, I sometimes feel left out when it comes to web development. All new languages are showing off their capabilities with some web development frameworks. But there seem to be less choices for C++ web frameworks. The goal of this project is to provide Qt programmers a way to implement web apps with their beloved framework. Swiftly emphasizes the implementation conciseness as well as speed.
 
 ## Installation:
