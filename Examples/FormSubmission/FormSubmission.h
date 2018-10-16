@@ -5,6 +5,7 @@
 class FormData
 {
 public:
+    QString m_fieldName;
     QString m_meta;
     QByteArray m_data;
 
