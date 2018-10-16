@@ -71,7 +71,7 @@ void HttpRequest::processCookies()
     m_header.processCookie();
 }
 
-void HttpRequest::parseFormData()
+bool HttpRequest::parseFormData()
 {
     QWeakPointer<QString> contentLengthString = m_header.getHeaderInfo("Content-Length");
 
@@ -90,52 +90,88 @@ void HttpRequest::parseFormData()
 
             if(match.hasMatch())
             {
-                bool success=false;
                 QString boundary = match.captured(1);
 
-                if (parseFormData(m_rawData, boundary, m_formData))
+                if (internalParseFormData(m_rawData, boundary, m_formData))
                 {
                     m_hasSetFormData = true;
+                    return true;
                 }
                 else
                 {
-
+                    return false;
                 }
             }
             else if (contentType == "application/x-www-form-urlencoded")
             {
-                QHash<QString, QSharedPointer<QString>> _formData;
-
-                QStringList pairs = QString(m_rawData).split("&",QString::SkipEmptyParts);
-
-                for(QStringList::Iterator iter = pairs.begin(); iter != pairs.end(); ++iter)
-                {
-                    QStringList pair = (*iter).split("=",QString::SkipEmptyParts);
-
-                    if (pair.size() == 2)
-                    {
-                        _formData.insert(pair[0], QSharedPointer<QString>(new QString(pair[1])));
-                        m_hasSetFormData=true;
-
-                    }
-                }
-
-                if(m_hasSetFormData)
-                {
-                    m_formData=(_formData);
-
-                }
+                //todo doesn't support urlencoded
+                return false;
             }
+            return false;
         }
+        else
+        {
+            return false;
+        }
+    }
+    else
+    {
+        return false;
     }
 }
 
 bool HttpRequest::FormData::processMeta()
 {
+    QStringList metas = m_meta.split("\r\n", QString::SkipEmptyParts);
 
+    for(int i =0;i<metas.length();++i)
+    {
+        int sep = metas[i].indexOf(": ");
+        if (sep > 0)
+        {
+            QString field = metas[i].left(sep);
+            QString rest = metas[i].mid(sep+2);
+
+            m_fields[field] = QHash<QString, QString>();
+
+            QStringList rests = rest.split("; ", QString::SkipEmptyParts);
+
+            for(int e = 0;e<rests.length();++e)
+            {
+                int k = rests[e].indexOf('=');
+                if (k != -1)
+                {
+                    QString f = rests[e].left(k);
+                    QString v = rests[e].mid(k+1);
+
+                    if (v[0] == '"' && v[v.length()-1] == '"')
+                    {
+                        v = v.mid(1, v.length()-2);
+                    }
+                    m_fields[field][f] = v;
+                }
+                else
+                {
+                    m_fields[field][rests[e]] = rests[e];
+                }
+            }
+        }
+        else
+        {
+            return false;
+        }
+    }
+    if (m_fields.contains("Content-Disposition"))
+    {
+        if (m_fields["Content-Disposition"].contains("name"))
+        {
+            m_fieldName = m_fields["Content-Disposition"]["name"];
+        }
+    }
+    return true;
 }
 
-bool HttpRequest::parseFormData(const QByteArray &rawData, const QString &boundary, QHash<QString, QSharedPointer<FormData>> &realContent)
+bool HttpRequest::internalParseFormData(const QByteArray &rawData, const QString &boundary, QHash<QString, QSharedPointer<FormData>> &realContent)
 {
     QString separator = "\r\n--" % boundary % "\r\n";
     QString ending = "\r\n--" % boundary % "--\r\n";
@@ -198,10 +234,11 @@ bool HttpRequest::parseFormData(const QByteArray &rawData, const QString &bounda
                     if (formData->processMeta() && !formData->m_fieldName.isEmpty())
                     {
                         realContent[formData->m_fieldName] = formData;
-                        return true;
                     }
-
-                    return false;
+                    else
+                    {
+                        return false;
+                    }
                 }
 
                 begin = prevBoundary = end;
@@ -228,10 +265,4 @@ QString HttpRequest::getFromIPAddress() const
         return m_socket->peerAddress().toString();
     }
     return QString();
-}
-
-void HttpRequest::setFormData(const QHash<QString, QSharedPointer<QString>> &formData)
-{
-    m_formData=formData;
-    m_hasSetFormData=true;
 }

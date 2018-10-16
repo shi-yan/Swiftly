@@ -18,11 +18,13 @@ public:
         QString m_meta;
         QByteArray m_data;
         QString m_fieldName;
+        QHash<QString, QHash<QString, QString>> m_fields;
 
         FormData(const QString &meta = "", const QByteArray &data= QByteArray()):
             m_meta(meta),
             m_data(data),
-            m_fieldName(){}
+            m_fieldName(),
+            m_fields(){}
 
         bool processMeta();
     };
@@ -38,7 +40,7 @@ private:
     unsigned int m_bytesHaveRead;
 
     QString m_rawHeader;
-    bool parseFormData(const QByteArray &rawData, const QString &boundary, QHash<QString, QSharedPointer<FormData>> &realContent);
+    bool internalParseFormData(const QByteArray &rawData, const QString &boundary, QHash<QString, QSharedPointer<FormData>> &realContent);
 
     class PatternTracer
     {
@@ -106,8 +108,6 @@ public:
     HttpRequest(const HttpRequest &in);
     void operator=(const HttpRequest &in);
 
-    void setFormData(const QHash<QString, QSharedPointer<QString>> &formData);
-
     HttpHeader & getHeader()
     {
         return m_header;
@@ -115,7 +115,7 @@ public:
 
     QString getFromIPAddress() const;
 
-    QWeakPointer<QString> getFormData(const QString &fieldName)
+    QWeakPointer<FormData> getFormData(const QString &fieldName)
     {
         if (m_formData.contains(fieldName))
         {
@@ -123,7 +123,7 @@ public:
         }
         else
         {
-            return QWeakPointer<QString>();
+            return QWeakPointer<FormData>();
         }
     }
 
@@ -142,7 +142,7 @@ public:
         return m_hasSetFormData;
     }
 
-    void parseFormData();
+    bool parseFormData();
     void processCookies();
 
     ~HttpRequest();
