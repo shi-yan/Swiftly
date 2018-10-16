@@ -15,7 +15,7 @@ private:
 
 public:
     WorkerSocketWatchDog(Worker *m_owner);
-    ~WorkerSocketWatchDog();
+    ~WorkerSocketWatchDog() override;
 
     void run() override;
     void stop();

@@ -125,7 +125,7 @@ void generateHashCode(QByteArray &activationCode)
     const unsigned int activationCodeSize = 256;
     QByteArray buffer;
     buffer.resize(activationCodeSize);
-    randombytes_buf((void *)buffer.data(), activationCodeSize);
+    randombytes_buf(static_cast<void *>(buffer.data()), activationCodeSize);
     QCryptographicHash hash(QCryptographicHash::Sha3_256);
     hash.addData(buffer);
     activationCode = hash.result().toHex();

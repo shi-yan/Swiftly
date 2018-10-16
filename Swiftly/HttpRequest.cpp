@@ -49,14 +49,14 @@ HttpRequest::~HttpRequest()
 
 void HttpRequest::appendData(const char* buffer,unsigned int size)
 {
-    m_rawData.append(buffer,size);
+    m_rawData.append(buffer, static_cast<int>(size));
     m_bytesHaveRead+=size;
 }
 
 void HttpRequest::appendData(const QByteArray &ba)
 {
     m_rawData.append(ba);
-    m_bytesHaveRead+=ba.count();
+    m_bytesHaveRead += static_cast<unsigned int>(ba.count());
 }
 
 void HttpRequest::setRawHeader(const QString &_rh)

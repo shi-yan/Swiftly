@@ -1,13 +1,13 @@
 #include <QCoreApplication>
 #include <QtCore/QThread>
 #include "Swiftly.h"
-#include "HelloWorld.h"
+#include "Uploader.h"
 
 int main(int argc, char *argv[])
 {
-    qDebug() << "Example HelloWorld";
+    qDebug() << "Example Uploader";
     QCoreApplication a(argc, argv);
-    REGISTER_WEBAPP(HelloWorld);
+    REGISTER_WEBAPP(Uploader);
     HttpServer::getSingleton().start(1, 8080);
     return a.exec();
 }

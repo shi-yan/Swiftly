@@ -28,8 +28,8 @@ class HttpServer : public QTcpServer
 
     void incomingConnection(qintptr handle) override;
 public:
-    HttpServer(QObject* parent = 0);
-    virtual ~HttpServer();
+    HttpServer(QObject* parent = nullptr);
+    virtual ~HttpServer() override;
 
     static HttpServer &getSingleton()
     {

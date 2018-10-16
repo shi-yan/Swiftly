@@ -27,7 +27,7 @@ class WebApp:public QObject
     QSharedPointer<PathTree> m_pathTree;
 
 public:
-    WebApp(const QString &_pathSpace="",QObject *parent =0);
+    WebApp(const QString &_pathSpace="",QObject *parent = nullptr);
     WebApp(const WebApp &in):QObject(),m_pathSpace(in.m_pathSpace),m_pathTree(in.m_pathTree){}
 
     bool addGetHandler(const QString &_path, const std::function<void (HttpRequest &, HttpResponse &)> &in);

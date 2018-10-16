@@ -22,7 +22,7 @@ public:
     TcpSocket *m_socket;
 
 public:
-    HttpRequest(TcpSocket *_socket=0);
+    HttpRequest(TcpSocket *_socket = nullptr);
     HttpRequest(const HttpRequest &in);
     void operator=(const HttpRequest &in);
 

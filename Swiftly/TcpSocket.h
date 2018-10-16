@@ -17,7 +17,7 @@ class TcpSocket:public QTcpSocket
 
 public:
     unsigned int m_id;
-    TcpSocket(QObject *parent=0);
+    TcpSocket(QObject *parent = nullptr);
     TcpSocket(const TcpSocket &in);
     void operator=(const TcpSocket &in);
     ~TcpSocket();

@@ -75,7 +75,7 @@ void HttpResponse::finish(const QString &typeOverride )
 {
     if (!m_hasFinished)
     {
-        unsigned int bufferSize = m_buffer.size();
+        unsigned int bufferSize = static_cast<unsigned int>(m_buffer.size());
 
         QString headerString;
 

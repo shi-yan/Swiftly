@@ -22,7 +22,7 @@ class HttpResponse:public QObject
     bool m_hasFinished;
 
 public:
-    HttpResponse(TcpSocket *_socket=0);
+    HttpResponse(TcpSocket *_socket = nullptr);
     HttpResponse(const HttpResponse &in);
     void operator=(const HttpResponse &in);
     ~HttpResponse();

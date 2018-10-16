@@ -23,7 +23,7 @@ int onPath(http_parser *parser, const char *p,size_t len)
     QByteArray buffer(p,len);
     //qDebug()<<"onPath:"<<QString(buffer);
 
-    ((TcpSocket*)parser->data)->getHeader().setPath(QString(buffer));
+    static_cast<TcpSocket*>(parser->data)->getHeader().setPath(QString(buffer));
 
     return 0;
 }
@@ -32,7 +32,7 @@ int onQueryString(http_parser *parser, const char *p,size_t len)
 {
     QByteArray buffer(p,len);
     // qDebug()<<"onQueryString:"<<QString(buffer);
-    ((TcpSocket*)parser->data)->getHeader().setQueryString(QString(buffer));
+    static_cast<TcpSocket*>(parser->data)->getHeader().setQueryString(QString(buffer));
     return 0;
 }
 
@@ -40,9 +40,9 @@ int onUrl(http_parser *parser, const char *p,size_t len)
 {
     QByteArray buffer(p,len);
     //qDebug()<<"onUrl:"<<QString(buffer);
-    ((TcpSocket*)parser->data)->getHeader().setUrl(QString(buffer));
+    static_cast<TcpSocket*>(parser->data)->getHeader().setUrl(QString(buffer));
 
-    http_parser_url *u = (http_parser_url*)malloc(sizeof(http_parser_url));
+    http_parser_url *u = static_cast<http_parser_url*>(malloc(sizeof(http_parser_url)));
     http_parser_parse_url(p,len,1,u);
 
     if (u->field_set & (1 << UF_SCHEMA))
@@ -66,14 +66,14 @@ int onUrl(http_parser *parser, const char *p,size_t len)
     if (u->field_set & (1<<UF_PATH))
     {
         QString string(QByteArray(&p[u->field_data[UF_PATH].off], u->field_data[UF_PATH].len));
-        ((TcpSocket*)parser->data)->getHeader().setPath(string);
+        static_cast<TcpSocket*>(parser->data)->getHeader().setPath(string);
         //qDebug() << "UF_PATH" << string;
     }
 
     if (u->field_set & (1<<UF_QUERY))
     {
         QString string(QByteArray(&p[u->field_data[UF_QUERY].off], u->field_data[UF_QUERY].len));
-        ((TcpSocket*)parser->data)->getHeader().setQueryString(string);
+        static_cast<TcpSocket*>(parser->data)->getHeader().setQueryString(string);
         //qDebug() << "UF_QUERY" << string;
     }
 
@@ -98,7 +98,7 @@ int onFragment(http_parser *parser, const char *p,size_t len)
     QByteArray buffer(p,len);
     //qDebug()<<"onFragment:"<<QString(buffer);
 
-    ((TcpSocket*)parser->data)->getHeader().setFragment(QString(buffer));
+    static_cast<TcpSocket*>(parser->data)->getHeader().setFragment(QString(buffer));
     return 0;
 }
 
@@ -106,7 +106,7 @@ int onHeaderField(http_parser *parser, const char *p,size_t len)
 {
     QByteArray buffer(p,len);
     //qDebug()<<"onHeaderField:"<<QString(buffer);
-    ((TcpSocket*)parser->data)->getHeader().setCurrentHeaderField(QString(buffer));
+    static_cast<TcpSocket*>(parser->data)->getHeader().setCurrentHeaderField(QString(buffer));
     return 0;
 }
 
@@ -114,13 +114,13 @@ int onHeaderValue(http_parser *parser, const char *p,size_t len)
 {
     QByteArray buffer(p,len);
     QSharedPointer<QString> headerValue(new QString(buffer));
-    ((TcpSocket*)parser->data)->getHeader().addHeaderInfo(headerValue);
+    static_cast<TcpSocket*>(parser->data)->getHeader().addHeaderInfo(headerValue);
     return 0;
 }
 
 int onHeadersComplete(http_parser *parser)
 {   
-    TcpSocket *socket = (TcpSocket*)parser->data;
+    TcpSocket *socket = static_cast<TcpSocket*>(parser->data);
 #ifndef NO_LOG
     sLog(LogEndpoint::LogLevel::DEBUG) << " === parsed header ====";
     const QHash<QString, QSharedPointer<QString>> &headers = socket->getHeader().getHeaderInfo();
@@ -148,7 +148,7 @@ int onBody(http_parser *parser, const char *p,size_t len)
 {
      // QByteArray buffer(p,len);
     //  qDebug()<<"onBody:"<<QString(buffer);
-    ((TcpSocket*)parser->data)->appendData(p,len);
+    static_cast<TcpSocket*>(parser->data)->appendData(p, static_cast<unsigned int>(len));
     return 0;
 }
 
@@ -183,7 +183,7 @@ void Worker::newSocket(qintptr socket)
     //qDebug() << m_name << " is handling a new request; thread id" << thread()->currentThreadId();
 
     TcpSocket* s = new TcpSocket(this);
-    s->m_id = rand();
+    s->m_id = static_cast<unsigned int>(rand());
     connect(s, SIGNAL(readyRead()), this, SLOT(readClient()));
     connect(s, SIGNAL(disconnected()), this, SLOT(discardClient()));
     s->setSocketDescriptor(socket);
@@ -200,7 +200,7 @@ void Worker::readClient()
     // This slot is called when the client sent data to the server. The
     // server looks if it was a get request and sends a very simple HTML
     // document back.
-    TcpSocket* socket = (TcpSocket*)sender();
+    TcpSocket* socket = static_cast<TcpSocket*>(sender());
 
     if(socket->bytesAvailable())
     {
@@ -228,7 +228,7 @@ void Worker::readClient()
             {
                 qDebug()<<"upgrade";
             }
-            else if(nparsed!=(size_t)incomingContent.count())
+            else if(nparsed != static_cast<size_t>(incomingContent.count()))
             {
                 qDebug()<<"nparsed:"<<nparsed<<"buffer size:"<<incomingContent.count();
             }
@@ -326,7 +326,7 @@ void Worker::registerWebApps(QVector<int> &webAppClassIDs)
 {
     for(int i=0;i<webAppClassIDs.count();++i)
     {
-        WebApp *app= (WebApp*) QMetaType::create((int)webAppClassIDs[i], (const void *)0);
+        WebApp *app= static_cast<WebApp*> (QMetaType::create(static_cast<int>(webAppClassIDs[i]), nullptr));
 
         m_webAppTable[webAppClassIDs[i]]=app;
 
@@ -340,7 +340,7 @@ void Worker::registerWebApps(QVector<int> &webAppClassIDs)
 
 void Worker::discardClient()
 {
-    TcpSocket* socket = (TcpSocket*)sender();
+    TcpSocket* socket = static_cast<TcpSocket*>(sender());
 #ifndef NO_LOG
     qDebug() << "thread id" << thread()->currentThreadId();
     qDebug() << "release socket" << socket << socket->m_id;

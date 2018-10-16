@@ -205,7 +205,7 @@ bool UserManager::login(const QString &email, const QByteArray &password, QStrin
         passwordHash.resize(crypto_pwhash_STRBYTES);
         passwordHash.clear();
         std::string passwordHashStr = passwordElement.get_utf8().value.to_string();
-        passwordHash.setRawData(passwordHashStr.data(), passwordHashStr.size());
+        passwordHash.setRawData(passwordHashStr.data(), static_cast<unsigned int> (passwordHashStr.size()));
 
         qDebug() << passwordHash;
 
@@ -261,7 +261,7 @@ bool UserManager::resetPassword(const QString &email, const QByteArray &newPassw
             passwordHash.resize(crypto_pwhash_STRBYTES);
             passwordHash.clear();
             std::string passwordHashStr = passwordElement.get_utf8().value.to_string();
-            passwordHash.setRawData(passwordHashStr.data(), passwordHashStr.size());
+            passwordHash.setRawData(passwordHashStr.data(), static_cast<unsigned int>(passwordHashStr.size()));
 
             qDebug() << passwordHash;
 
@@ -618,7 +618,7 @@ bool UserManager::verifyPassword(const QByteArray &hash, const QByteArray &passw
     QString errorMessage = "";
 
     if (crypto_pwhash_str_verify(hash.data(), password.data(),
-                                 password.size()) == 0)
+                                 static_cast<unsigned long long>(password.size())) == 0)
     {
         return true;
     }
@@ -628,7 +628,7 @@ bool UserManager::verifyPassword(const QByteArray &hash, const QByteArray &passw
 void UserManager::hashPassword(const QByteArray &password, QByteArray &hash)
 {
     hash.resize(crypto_pwhash_STRBYTES);
-    if (crypto_pwhash_str(hash.data(), password.data(), password.size(),
+    if (crypto_pwhash_str(hash.data(), password.data(), static_cast<unsigned long long>(password.size()),
          crypto_pwhash_OPSLIMIT_SENSITIVE, crypto_pwhash_MEMLIMIT_SENSITIVE) != 0)
     {
         qDebug() << "out of memory";
@@ -640,8 +640,8 @@ void UserManager::generateActivationCode(const QString &email, QByteArray &activ
     const unsigned int activationCodeSize = 256;
     QByteArray buffer = email.toLatin1();
     buffer.resize(activationCodeSize);
-    unsigned int randomOffset = (email.size() < 32)?email.size():32;
-    randombytes_buf((void *)(buffer.data() + randomOffset), activationCodeSize - randomOffset);
+    unsigned int randomOffset = static_cast<unsigned int>((email.size() < 32)?email.size():32);
+    randombytes_buf(static_cast<void *>(buffer.data() + randomOffset), static_cast<size_t>(activationCodeSize - randomOffset));
     QCryptographicHash hash(QCryptographicHash::Sha3_256);
     hash.addData(buffer);
     activationCode = hash.result().toHex();
@@ -654,8 +654,8 @@ void UserManager::generatePasswordResetCode(const QString &email, QByteArray &re
     const unsigned int resetCodeSize = 256;
     QByteArray buffer = email.toLatin1();
     buffer.resize(resetCodeSize);
-    unsigned int randomOffset = (email.size() < 32)?email.size():32;
-    randombytes_buf((void *)(buffer.data() + randomOffset), resetCodeSize - randomOffset);
+    unsigned int randomOffset = static_cast<unsigned int>((email.size() < 32)?email.size():32);
+    randombytes_buf(static_cast<void *>(buffer.data() + randomOffset), static_cast<size_t>(resetCodeSize - randomOffset));
     QCryptographicHash hash(QCryptographicHash::Sha3_256);
     hash.addData(buffer);
     resetCode = hash.result().toHex();
