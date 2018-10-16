@@ -5,6 +5,7 @@
 #include <QByteArray>
 #include "HttpRequest.h"
 #include "HttpResponse.h"
+#include <QTimer>
 
 class TcpSocket:public QTcpSocket
 {
@@ -14,6 +15,7 @@ class TcpSocket:public QTcpSocket
 
     HttpRequest m_request;
     HttpResponse m_response;
+    QTimer m_suicideTimer;
 
 public:
     unsigned int m_id;
@@ -46,6 +48,11 @@ public:
     {
         return m_response;
     }
+
+    void setTimeout(int msec);
+
+private slots:
+    void disconnectSocket();
 };
 
 #endif // TCPSOCKET_H

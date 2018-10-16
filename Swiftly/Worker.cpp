@@ -187,6 +187,7 @@ void Worker::newSocket(qintptr socket)
     connect(s, SIGNAL(readyRead()), this, SLOT(readClient()));
     connect(s, SIGNAL(disconnected()), this, SLOT(discardClient()));
     s->setSocketDescriptor(socket);
+    s->setTimeout(1000*60*2);
 #ifndef NO_LOG
     sLog() << m_name << " receive a new request from ip:" << s->peerAddress().toString();
 #endif
@@ -264,6 +265,15 @@ void Worker::readClient()
             socket->appendData(incomingContent);
         }
 
+        if (socket->getBytesHaveRead() > (16*1024*1024))
+        {
+            socket->getResponse().setStatusCode(400);
+            socket->getResponse() << "maximum message size above 16mb.";
+            socket->getResponse().finish();
+            socket->waitForBytesWritten();
+            socket->close();
+        }
+        else
         if(socket->isEof())
         {
             PathTreeNode::HttpVerb handlerType;

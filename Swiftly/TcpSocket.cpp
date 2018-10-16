@@ -4,30 +4,47 @@ TcpSocket::TcpSocket(QObject *parent)
     :QTcpSocket(parent),
       m_isNew(true),
       m_request(this),
-      m_response(this)
+      m_response(this),
+      m_suicideTimer(this)
 {
+     connect(&m_suicideTimer, SIGNAL(timeout()), this, SLOT(disconnectSocket()));
 }
 
 TcpSocket::TcpSocket(const TcpSocket &in)
     :QTcpSocket(),
       m_isNew(in.m_isNew),
       m_request(in.m_request),
-      m_response(in.m_response)
+      m_response(in.m_response),
+      m_suicideTimer(this)
 {
-    (*this)=in;
     setSocketDescriptor(in.socketDescriptor());
+    connect(&m_suicideTimer, SIGNAL(timeout()), this, SLOT(disconnectSocket()));
 }
 
 void TcpSocket::operator=(const TcpSocket &in)
 {
-    (*this)=in;
     m_isNew=in.m_isNew;
     m_request=in.m_request;
     m_response=in.m_response;
 }
 
+void TcpSocket::setTimeout(int msec)
+{
+    m_suicideTimer.setSingleShot(true);
+    m_suicideTimer.start(msec);
+}
+
+void TcpSocket::disconnectSocket()
+{
+    disconnectFromHost();
+}
+
 TcpSocket::~TcpSocket()
 {
+    if (m_suicideTimer.isActive())
+    {
+        m_suicideTimer.stop();
+    }
 }
 
 void TcpSocket::appendData(const char* buffer,unsigned int size)
