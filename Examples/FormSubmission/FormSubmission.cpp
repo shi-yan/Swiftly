@@ -47,7 +47,7 @@ void FormSubmission::handleUploadPost(HttpRequest &request, HttpResponse &respon
         response << "form submitted: <br />";
         for (auto iter = request.getFormData().begin();iter != request.getFormData().end();++iter)
         {
-            QString item = iter.key() % " = " % iter.value().data()->m_data % "; <br />";
+            QString item = iter.key() % " = " % iter.value()[0].data()->m_data % "; <br />";
             response << item;
         }
         response.finish();

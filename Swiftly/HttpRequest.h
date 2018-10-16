@@ -33,14 +33,14 @@ private:
 
     HttpHeader m_header;
     QByteArray m_rawData;
-    QHash<QString, QSharedPointer<FormData>> m_formData;
+    QHash<QString, QVector<QSharedPointer<FormData>>> m_formData;
     bool m_hasSetFormData;
 
     unsigned int m_totalBytes;
     unsigned int m_bytesHaveRead;
 
     QString m_rawHeader;
-    bool internalParseFormData(const QByteArray &rawData, const QString &boundary, QHash<QString, QSharedPointer<FormData>> &realContent);
+    bool internalParseFormData(const QByteArray &rawData, const QString &boundary, QHash<QString, QVector<QSharedPointer<FormData>>> &realContent);
 
     class PatternTracer
     {
@@ -115,19 +115,19 @@ public:
 
     QString getFromIPAddress() const;
 
-    QWeakPointer<FormData> getFormData(const QString &fieldName)
+    QVector<QSharedPointer<FormData>> getFormData(const QString &fieldName) const
     {
         if (m_formData.contains(fieldName))
         {
-            return m_formData[fieldName].toWeakRef();
+            return m_formData[fieldName];
         }
         else
         {
-            return QWeakPointer<FormData>();
+            return QVector<QSharedPointer<FormData>>();
         }
     }
 
-    const QHash<QString, QSharedPointer<FormData>> & getFormData() const
+    const QHash<QString, QVector<QSharedPointer<FormData>>> & getFormData() const
     {
         return m_formData;
     }

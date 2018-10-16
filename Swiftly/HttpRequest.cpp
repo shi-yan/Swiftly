@@ -171,7 +171,7 @@ bool HttpRequest::FormData::processMeta()
     return true;
 }
 
-bool HttpRequest::internalParseFormData(const QByteArray &rawData, const QString &boundary, QHash<QString, QSharedPointer<FormData>> &realContent)
+bool HttpRequest::internalParseFormData(const QByteArray &rawData, const QString &boundary, QHash<QString, QVector<QSharedPointer<FormData>>> &realContent)
 {
     QString separator = "\r\n--" % boundary % "\r\n";
     QString ending = "\r\n--" % boundary % "--\r\n";
@@ -211,7 +211,12 @@ bool HttpRequest::internalParseFormData(const QByteArray &rawData, const QString
 
                     if (formData->processMeta() && !formData->m_fieldName.isEmpty())
                     {
-                        realContent[formData->m_fieldName] = formData;
+                        if (!realContent.contains(formData->m_fieldName))
+                        {
+                            realContent[formData->m_fieldName] = QVector<QSharedPointer<FormData>>();
+                        }
+
+                        realContent[formData->m_fieldName].push_back(formData);
                         return true;
                     }
 
@@ -233,7 +238,12 @@ bool HttpRequest::internalParseFormData(const QByteArray &rawData, const QString
 
                     if (formData->processMeta() && !formData->m_fieldName.isEmpty())
                     {
-                        realContent[formData->m_fieldName] = formData;
+                        if (!realContent.contains(formData->m_fieldName))
+                        {
+                            realContent[formData->m_fieldName] = QVector<QSharedPointer<FormData>>();
+                        }
+
+                        realContent[formData->m_fieldName].push_back(formData);
                     }
                     else
                     {
