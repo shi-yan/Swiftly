@@ -8,6 +8,6 @@ int main(int argc, char *argv[])
     qDebug() << "Example Uploader";
     QCoreApplication a(argc, argv);
     REGISTER_WEBAPP(Uploader);
-    HttpServer::getSingleton().start(1, 8080);
+    HttpServer::getSingleton().start(1, 8083);
     return a.exec();
 }

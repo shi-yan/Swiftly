@@ -12,7 +12,7 @@ Uploader::Uploader()
 void Uploader::registerPathHandlers()
 {
     AddGetHandler("/", handleUploadFormGet);
-    AddPostHandler("/upload", handleUploadPost);
+    AddPostHandler("/api/upload", handleUploadPost);
 }
 
 void Uploader::handleUploadFormGet(HttpRequest &request, HttpResponse &response)
@@ -24,8 +24,8 @@ void Uploader::handleUploadFormGet(HttpRequest &request, HttpResponse &response)
                 "</head>"
                 "<body>"
                 "<form enctype='multipart/form-data' method='post' action='/upload'>"
-                "<label for='fileupload'>Choose A File to upload</label><br />"
-                "<input type='file' accept='image/*' name='fileupload' multiple='multiple' value='fileupload' id='fileupload'>"
+                "<label for='file'>Choose A File to upload</label><br />"
+                "<input type='file' accept='image/*' name='file' multiple='multiple' value='file' id='file'>"
                 "</input><br />"
                 "<input type='submit' value='submit' />"
                 "</form>"
@@ -41,7 +41,7 @@ void Uploader::handleUploadPost(HttpRequest &request, HttpResponse &response)
 
     if (request.hasFormData())
     {
-        QVector<QSharedPointer<HttpRequest::FormData>> formData = request.getFormData("fileupload");
+        QVector<QSharedPointer<HttpRequest::FormData>> formData = request.getFormData("file");
         if (formData.size())
         {
             response.setStatusCode(200);

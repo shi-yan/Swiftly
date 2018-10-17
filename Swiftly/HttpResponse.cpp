@@ -86,10 +86,6 @@ void HttpResponse::finish(const QString &typeOverride )
                            "Content-Length: " % QString::number(bufferSize) % "\r\n"
                            "Content-Type: " % typeOverride % "; charset=\"utf-8\"\r\n";
             break;
-        case 404:
-            headerString = "HTTP/1.1 404 Not Found\r\n"
-                           "Content-Type: text/html; charset=\"utf-8\"\r\n";
-            break;
         case 302:
             headerString = "HTTP/1.1 302 Found\r\n"
                            "Connection:keep-alive\r\n";
@@ -101,11 +97,24 @@ void HttpResponse::finish(const QString &typeOverride )
         case 400:
             headerString = "HTTP/1.1 400 Bad Request\r\n";
             break;
+        case 401:
+            headerString = "HTTP/1.1 401 Unauthorized\r\n";
+            break;
+        case 404:
+            headerString = "HTTP/1.1 404 Not Found\r\n"
+                           "Content-Type: text/html; charset=\"utf-8\"\r\n";
+            break;
         case 415:
             headerString = "HTTP/1.1 415 Unsupported Media Type\r\n";
             break;
         case 422:
-            headerString = "HTTP/1.1 422 Unprocessable Entity";
+            headerString = "HTTP/1.1 422 Unprocessable Entity\r\n";
+            break;
+        case 500:
+            headerString = "HTTP/1.1 500 Internal Server Error\r\n";
+            break;
+        case 503:
+            headerString = "HTTP/1.1 503 Service Unavilable\r\n";
             break;
         default:
             qDebug() << "unimplemented http status code";
