@@ -1,6 +1,7 @@
 #include "StaticFileServer.h"
 #include <QFile>
 #include <QDebug>
+#include <unistd.h>
 
 //based on
 //https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types
@@ -26,8 +27,17 @@ QHash<QString, QString> StaticFileServer::m_mimeTypeMap =
  {"xml" , "application/xml"},
  {"pdf" , "application/pdf"}};
 
+unsigned long long getAvailableSystemMemory()
+{
+    long pages = sysconf(_SC_AVPHYS_PAGES);
+    long page_size = sysconf(_SC_PAGE_SIZE);
+    unsigned long long avilableMem = pages * page_size;
+    qDebug() << "Available Memory in MB: " << avilableMem / 1024 / 1024;
+    return avilableMem ;
+}
+
 QMutex StaticFileServer::m_fileCacheMutex;
-QCache<QString, StaticFileServer::FileCacheItem > StaticFileServer::m_fileCache(1024*1024);
+QCache<QString, StaticFileServer::FileCacheItem > StaticFileServer::m_fileCache(getHalfAvailableSystemMemory() / 2048);
 
 StaticFileServer::FileCacheItem::FileCacheItem(const QFileInfo &fileInfo, const QByteArray &fileContent, const FileType fileType, const QString &mimeType)
     :m_fileInfo(fileInfo),
@@ -124,7 +134,7 @@ bool StaticFileServer::getFileByPath(const QString &path, QByteArray &fileConten
             }
 
             FileCacheItem *item = new FileCacheItem(fileInfo, fileContent, StaticFileServer::FileType::UNSPECIFIED, mimeType);
-            qint64 sizeInKB = fileInfo.size() / 1024 / 1024;
+            qint64 sizeInKB = fileInfo.size() / 1024;
 
             if (sizeInKB < 1)
             {
@@ -247,7 +257,7 @@ bool StaticFileServer::getFileByAbsolutePath(const QString &absolutePath, QByteA
             }
 
             FileCacheItem *item = new FileCacheItem(fileInfo, fileContent, StaticFileServer::FileType::UNSPECIFIED, mimeType);
-            qint64 sizeInKB = fileInfo.size() / 1024 / 1024;
+            qint64 sizeInKB = fileInfo.size() / 1024;
 
             if (sizeInKB < 1)
             {
