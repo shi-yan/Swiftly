@@ -94,6 +94,9 @@ void HttpResponse::finish(const QString &typeOverride )
             headerString = "HTTP/1.1 301 Moved Permanently\r\n"
                            "Connection:keep-alive\r\n";
             break;
+        case 304:
+            headerString = "HTTP/1.1 304 Not Modified\r\n";
+            break;
         case 400:
             headerString = "HTTP/1.1 400 Bad Request\r\n";
             break;
