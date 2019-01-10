@@ -3,6 +3,7 @@
 #include <QDebug>
 #include <unistd.h>
 #include <QDataStream>
+#include <QCryptographicHash>
 
 //based on
 //https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types
@@ -134,9 +135,11 @@ StaticFileServer::FileCacheItem::FileCacheItem(const QFileInfo &fileInfo, const 
       m_fileContent(fileContent),
       m_fileGZipContent(),
       m_fileType(fileType),
-      m_mimeType(mimeType)
+      m_mimeType(mimeType),
+      m_md5()
 {
     m_fileGZipContent = compress(fileContent);
+    m_md5 = QCryptographicHash::hash(fileContent, QCryptographicHash::Md5);
 }
 
 unsigned int StaticFileServer::FileCacheItem::sizeInKB()
@@ -164,10 +167,9 @@ StaticFileServer::StaticFileServer(const StaticFileServer &in)
     {
         m_rootDir = QDir(".");
     }
-
 }
 
-bool StaticFileServer::getFileByPath(const QString &path, QByteArray &fileContent, QString &mimeType, FileType fileTypeHint, bool useCache, bool compress) const
+bool StaticFileServer::getFileByPath(const QString &path, QByteArray &fileContent, QString &mimeType, QString &md5, FileType fileTypeHint, bool useCache, bool compress) const
 {
     QString filePath = m_rootDir.absolutePath().append(path);
 
@@ -251,6 +253,8 @@ bool StaticFileServer::getFileByPath(const QString &path, QByteArray &fileConten
             {
                 fileContent = item->m_fileGZipContent;
             }
+
+            md5 = item->m_md5;
         }
         else
         {
@@ -266,6 +270,7 @@ bool StaticFileServer::getFileByPath(const QString &path, QByteArray &fileConten
             }
             mimeType = item->m_mimeType;
             qDebug() << "file" << item->m_fileInfo.absoluteFilePath() << "is from cache";
+            md5 = item->m_md5;
             StaticFileServer::m_fileCacheMutex.unlock();
         }
     }
@@ -308,7 +313,7 @@ bool StaticFileServer::getFileByPath(const QString &path, QByteArray &fileConten
     return true;
 }
 
-bool StaticFileServer::getFileByAbsolutePath(const QString &absolutePath, QByteArray &fileContent, QString &mimeType, FileType fileTypeHint, bool useCache, bool compress) const
+bool StaticFileServer::getFileByAbsolutePath(const QString &absolutePath, QByteArray &fileContent, QString &mimeType, QString &md5, FileType fileTypeHint, bool useCache, bool compress) const
 {
     QFileInfo fileInfo(absolutePath);
 
@@ -385,6 +390,8 @@ bool StaticFileServer::getFileByAbsolutePath(const QString &absolutePath, QByteA
             {
                 fileContent = item->m_fileGZipContent;
             }
+
+            md5 = item->m_md5;
         }
         else
         {
@@ -399,6 +406,7 @@ bool StaticFileServer::getFileByAbsolutePath(const QString &absolutePath, QByteA
                 fileContent = item->m_fileContent;
             }
             mimeType = item->m_mimeType;
+            md5 = item->m_md5;
             qDebug() << "file" << item->m_fileInfo.absoluteFilePath() << "is from cache";
             StaticFileServer::m_fileCacheMutex.unlock();
         }

@@ -31,6 +31,7 @@ public:
         QByteArray m_fileGZipContent;
         FileType m_fileType;
         QString m_mimeType;
+        QString m_md5;
 
     public:
 
@@ -41,8 +42,8 @@ public:
 
     StaticFileServer(const QDir &root = QDir("."));
     StaticFileServer(const StaticFileServer &in);
-    bool getFileByPath(const QString &path, QByteArray &fileContent, QString &mimeType, FileType fileTypeHint = FileType::UNSPECIFIED, bool useCache = true, bool compress = false) const;
-    bool getFileByAbsolutePath(const QString &absolutePath, QByteArray &fileContent, QString &mimeType, FileType fileTypeHint = FileType::UNSPECIFIED, bool useCache = true, bool compress = false) const;
+    bool getFileByPath(const QString &path, QByteArray &fileContent, QString &mimeType, QString &md5, FileType fileTypeHint = FileType::UNSPECIFIED, bool useCache = true, bool compress = false) const;
+    bool getFileByAbsolutePath(const QString &absolutePath, QByteArray &fileContent, QString &mimeType, QString &md5, FileType fileTypeHint = FileType::UNSPECIFIED, bool useCache = true, bool compress = false) const;
 private:
     FileType guessFileType(const QByteArray &fileContent) const;
     static QHash<QString, QString> m_mimeTypeMap;

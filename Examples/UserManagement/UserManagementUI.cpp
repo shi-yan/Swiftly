@@ -27,7 +27,8 @@ void UserManagementUI::handleLoginUIGet(HttpRequest &request, HttpResponse &resp
 {
     QByteArray fileContent;
     QString mimeType;
-    if (m_staticFileServer.getFileByAbsolutePath(m_templatePath % "/login.html", fileContent, mimeType))
+    QString md5;
+    if (m_staticFileServer.getFileByAbsolutePath(m_templatePath % "/login.html", fileContent, mimeType, md5))
     {
         response << fileContent;
         response.finish(mimeType);
@@ -44,7 +45,8 @@ void UserManagementUI::handleSignupUIGet(HttpRequest &request, HttpResponse &res
 {
     QByteArray pageTemplate;
     QString mimeType;
-    if (m_staticFileServer.getFileByAbsolutePath(m_templatePath % "/signup.html", pageTemplate, mimeType))
+    QString md5;
+    if (m_staticFileServer.getFileByAbsolutePath(m_templatePath % "/signup.html", pageTemplate, mimeType, md5))
     {        
         QVariantHash info;
 
@@ -73,7 +75,8 @@ void UserManagementUI::handleRequestPasswordResetCodeUIGet(HttpRequest &request,
 {
     QByteArray fileContent;
     QString mimeType;
-    if (m_staticFileServer.getFileByAbsolutePath(m_templatePath % "/send_resetCode.html", fileContent, mimeType))
+    QString md5;
+    if (m_staticFileServer.getFileByAbsolutePath(m_templatePath % "/send_resetCode.html", fileContent, mimeType, md5))
     {
         response << fileContent;
         response.finish(mimeType);
@@ -91,8 +94,8 @@ void UserManagementUI::handleResendActivationCodeUIGet(HttpRequest &request, Htt
     QByteArray pageTemplate;
     QString mimeType;
     const QHash<QString, QSharedPointer<QString>> &queries = request.getHeader().getQueries();
-
-    if (m_staticFileServer.getFileByAbsolutePath(m_templatePath % "/resend_activation.html", pageTemplate, mimeType))
+    QString md5;
+    if (m_staticFileServer.getFileByAbsolutePath(m_templatePath % "/resend_activation.html", pageTemplate, mimeType, md5))
     {
         QVariantHash info;
 
@@ -125,7 +128,8 @@ void UserManagementUI::handleFileGet(HttpRequest &request,HttpResponse &response
 {
     QByteArray fileContent;
     QString mimeType;
-    if (m_staticFileServer.getFileByPath(request.getHeader().getPath(), fileContent, mimeType))
+    QString md5;
+    if (m_staticFileServer.getFileByPath(request.getHeader().getPath(), fileContent, mimeType, md5))
     {
         response << fileContent;
         response.finish(mimeType);
@@ -167,9 +171,9 @@ void UserManagementUI::handleUserActivationUIGet(HttpRequest &request, HttpRespo
     QByteArray pageTemplate;
     QString mimeType;
     const QHash<QString, QSharedPointer<QString>> &queries = request.getHeader().getQueries();
-
+    QString md5;
     if (queries.contains("email") && queries.contains("activation_code")
-            && m_staticFileServer.getFileByAbsolutePath(m_templatePath % "/activation.html", pageTemplate, mimeType))
+            && m_staticFileServer.getFileByAbsolutePath(m_templatePath % "/activation.html", pageTemplate, mimeType, md5))
     {
         QVariantHash info;
         info["activation_code"] = (*queries["activation_code"].data());
@@ -197,9 +201,9 @@ void UserManagementUI::handleResetPasswordUIGet(HttpRequest &request, HttpRespon
     QByteArray pageTemplate;
     QString mimeType;
     const QHash<QString, QSharedPointer<QString>> &queries = request.getHeader().getQueries();
-
+    QString md5;
     if (queries.contains("email") && queries.contains("reset_code")
-            && m_staticFileServer.getFileByAbsolutePath(m_templatePath % "/reset_password_by_resetCode.html", pageTemplate, mimeType))
+            && m_staticFileServer.getFileByAbsolutePath(m_templatePath % "/reset_password_by_resetCode.html", pageTemplate, mimeType, md5))
     {
         QVariantHash info;
         info["reset_code"] = *queries["reset_code"].data();
@@ -213,7 +217,7 @@ void UserManagementUI::handleResetPasswordUIGet(HttpRequest &request, HttpRespon
         response << content;
         response.finish(mimeType);
     }
-    else if ( m_staticFileServer.getFileByAbsolutePath(m_templatePath % "/reset_password_by_oldPassword.html", pageTemplate, mimeType))
+    else if ( m_staticFileServer.getFileByAbsolutePath(m_templatePath % "/reset_password_by_oldPassword.html", pageTemplate, mimeType, md5))
     {
         QString email = "value=\"\" autofocus";
         if (queries.contains("email"))

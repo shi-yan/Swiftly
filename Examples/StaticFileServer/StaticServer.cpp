@@ -29,7 +29,8 @@ void StaticServer::handleFileGet(HttpRequest &request, HttpResponse &response)
 
     QByteArray fileContent;
     QString mimeType;
-    if (m_staticFileServer.getFileByPath(request.getHeader().getPath(), fileContent, mimeType, StaticFileServer::FileType::UNSPECIFIED, true, compress))
+    QString md5;
+    if (m_staticFileServer.getFileByPath(request.getHeader().getPath(), fileContent, mimeType, md5, StaticFileServer::FileType::UNSPECIFIED, true, compress))
     {
         response << fileContent;
         if (compress)
