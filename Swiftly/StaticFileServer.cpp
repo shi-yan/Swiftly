@@ -4,6 +4,7 @@
 #include <unistd.h>
 #include <QDataStream>
 #include <QCryptographicHash>
+#include <QStringBuilder>
 
 //based on
 //https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types
@@ -139,7 +140,7 @@ StaticFileServer::FileCacheItem::FileCacheItem(const QFileInfo &fileInfo, const 
       m_md5()
 {
     m_fileGZipContent = compress(fileContent);
-    m_md5 = QCryptographicHash::hash(fileContent, QCryptographicHash::Md5);
+    m_md5 = QString("\"") % QCryptographicHash::hash(fileContent, QCryptographicHash::Md5) % "\"";
 }
 
 unsigned int StaticFileServer::FileCacheItem::sizeInKB()
