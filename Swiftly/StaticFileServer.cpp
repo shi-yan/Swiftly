@@ -140,7 +140,7 @@ StaticFileServer::FileCacheItem::FileCacheItem(const QFileInfo &fileInfo, const 
       m_md5()
 {
     m_fileGZipContent = compress(fileContent);
-    m_md5 = QString("\"") % QCryptographicHash::hash(fileContent, QCryptographicHash::Md5) % "\"";
+    m_md5 = QString("\"") % QCryptographicHash::hash(fileContent, QCryptographicHash::Md5).toHex() % "\"";
 }
 
 unsigned int StaticFileServer::FileCacheItem::sizeInKB()
