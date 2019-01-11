@@ -48,7 +48,8 @@ public:
         m_webAppSet.push_back(id);
     }
 
-    void Shutdown();
+public slots:
+    void shutdown();
  };
 
 void urlParameterParser(const QByteArray &parameters, QHash<QString, QString> &parameterList);

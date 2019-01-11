@@ -17,8 +17,16 @@ void WorkerSocketWatchDog::run()
     while(!m_isStopRequested)
     {
         qintptr socketFd = m_owner->getSocket();
-        emit newSocketReceived(socketFd);
-        m_owner->waitForIdle();
+
+        if (socketFd == -1)
+        {
+            m_isStopRequested = true;
+        }
+        else
+        {
+            emit newSocketReceived(socketFd);
+            m_owner->waitForIdle();
+        }
     }
 }
 

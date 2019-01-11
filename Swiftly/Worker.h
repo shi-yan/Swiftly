@@ -22,12 +22,14 @@ class Worker : public QThread
     QSemaphore m_idleSemaphore;
     WorkerSocketWatchDog *m_socketWatchDog;
     IncomingConnectionQueue *m_incomingConnectionQueue;
+    QString m_consolePath;
+    QString m_adminPassHash;
 
     bool parseFormData(const QString &contentTypeString, const QByteArray &_body, QHash<QString,QByteArray> &formData);
 
 public:
     void run();
-    Worker(const QString &name, IncomingConnectionQueue *connectionQueue);
+    Worker(const QString &name, IncomingConnectionQueue *connectionQueue, const QString &consolePath = QString(), const QString &adminPassHash = QString());
     void registerWebApps(QVector<int> &webAppClassIDs);
     void waitForIdle();
     ~Worker();
@@ -37,6 +39,13 @@ public slots:
     void readClient();
     void discardClient();
     void newSocket(qintptr socketid);
+    void watchDogFinished();
+
+signals:
+    void shutdown();
+
+private:
+    void handleConsole(HttpRequest &request, HttpResponse &response);
 };
 
 #endif // WORKER_H

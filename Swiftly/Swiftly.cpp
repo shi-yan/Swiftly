@@ -62,6 +62,16 @@ void HttpServer::start(int numOfWorkers, quint16 port)
         ReCAPTCHAVerifier::getSingleton().init(secret);
     }
 
+    QString adminPassHash;
+    QString consolePath;
+
+    if (SettingsManager::getSingleton().has("admin/pass") && SettingsManager::getSingleton().has("admin/path"))
+    {
+        qDebug() << "request admin console";
+        adminPassHash = QCryptographicHash::hash(SettingsManager::getSingleton().get("admin/pass").toString().toUtf8(), QCryptographicHash::Sha512).toHex();
+        consolePath = SettingsManager::getSingleton().get("admin/path").toString();
+    }
+
     qDebug()<<"Need to create"<<numOfWorkers<<"workers";
 
     if(numOfWorkers<1)
@@ -71,11 +81,12 @@ void HttpServer::start(int numOfWorkers, quint16 port)
 
     for(int i=0;i<numOfWorkers;++i)
     {
-        Worker *aWorker=new Worker(QString("worker %1").arg(i), m_incomingConnectionQueue);
+        Worker *aWorker=new Worker(QString("worker %1").arg(i), m_incomingConnectionQueue, consolePath, adminPassHash);
         aWorker->moveToThread(aWorker);
         aWorker->registerWebApps(m_webAppSet);
         aWorker->start();
         aWorker->setPriority(QThread::HighPriority);
+        connect(aWorker, SIGNAL(shutdown()), this, SLOT(shutdown()));
         m_workerPool.push_back(aWorker);
     }
 
@@ -84,9 +95,23 @@ void HttpServer::start(int numOfWorkers, quint16 port)
     qDebug()<<"Start listening! main ThreadId"<<thread()->currentThreadId();
 }
 
-void HttpServer::Shutdown()
+void HttpServer::shutdown()
 {
+    close();
     m_disabled = true;
+
+    for(int i =0;i<m_workerPool.size()+2;++i)
+    {
+        m_incomingConnectionQueue->addSocket(-1);
+    }
+
+    for(int i =0;i<m_workerPool.size();++i)
+    {
+        m_workerPool[i]->wait();
+    }
+
+    qDebug() << "all worker finished!";
+    QCoreApplication::quit();
 }
 
 void HttpServer::pause()

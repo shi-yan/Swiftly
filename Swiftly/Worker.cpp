@@ -11,6 +11,8 @@
 #include "WorkerSocketWatchDog.h"
 #include "LoggingManager.h"
 #include <QHostAddress>
+#include <QCryptographicHash>
+#include "AdminPageContent.h"
 
 int onMessageBegin(http_parser *)
 {
@@ -158,7 +160,7 @@ int onMessageComplete(http_parser *)
     return 0;
 }
 
-Worker::Worker(const QString &name, IncomingConnectionQueue *connectionQueue)
+Worker::Worker(const QString &name, IncomingConnectionQueue *connectionQueue, const QString &consolePath, const QString &adminPassHash)
     :QThread(),
       m_name(name),
       m_parser(),
@@ -166,7 +168,9 @@ Worker::Worker(const QString &name, IncomingConnectionQueue *connectionQueue)
       m_pathTree(new PathTree()),
       m_idleSemaphore(),
       m_socketWatchDog(nullptr),
-      m_incomingConnectionQueue(connectionQueue)
+      m_incomingConnectionQueue(connectionQueue),
+      m_consolePath(consolePath),
+      m_adminPassHash(adminPassHash)
 {
 }
 
@@ -303,21 +307,29 @@ void Worker::readClient()
             sLog() << "handle request:" << socket->getRequest().getHeader().getPath();
             qDebug() << "handle request:" << socket->getRequest().getHeader().getPath();
 #endif
-            const std::function<void (HttpRequest &, HttpResponse &)> &th = m_pathTree->getTaskHandlerByPath(socket->getRequest().getHeader().getPath(), handlerType);
-
-            if(th)
+            if (!m_consolePath.isEmpty() && m_consolePath == socket->getRequest().getHeader().getPath())
             {
-                th(socket->getRequest(), socket->getResponse());
+                handleConsole(socket->getRequest(), socket->getResponse());
                 socket->getResponse().finish();
             }
             else
             {
+                const std::function<void (HttpRequest &, HttpResponse &)> &th = m_pathTree->getTaskHandlerByPath(socket->getRequest().getHeader().getPath(), handlerType);
+
+                if(th)
+                {
+                    th(socket->getRequest(), socket->getResponse());
+                    socket->getResponse().finish();
+                }
+                else
+                {
 #ifndef NO_LOG
-                qDebug()<<"empty task handler!" << socket->getRequest().getHeader().getPath() << ";" <<handlerType;
-                sLog()<<"empty task handler!" << socket->getRequest().getHeader().getPath() << ";" <<handlerType;
+                    qDebug()<<"empty task handler!" << socket->getRequest().getHeader().getPath() << ";" <<handlerType;
+                    sLog()<<"empty task handler!" << socket->getRequest().getHeader().getPath() << ";" <<handlerType;
 #endif
-                socket->getResponse().setStatusCode(404);
-                socket->getResponse().finish();
+                    socket->getResponse().setStatusCode(404);
+                    socket->getResponse().finish();
+                }
             }
 
             socket->waitForBytesWritten();
@@ -371,6 +383,8 @@ void Worker::run()
     m_socketWatchDog = new WorkerSocketWatchDog(this);
     m_socketWatchDog->start();
     m_socketWatchDog->setPriority(QThread::HighestPriority);
+
+    connect(m_socketWatchDog, SIGNAL(finished()), this, SLOT(watchDogFinished()));
     exec();
 }
 
@@ -384,3 +398,46 @@ qintptr Worker::getSocket()
     return m_incomingConnectionQueue->getSocket();
 }
 
+void Worker::watchDogFinished()
+{
+    quit();
+}
+
+void Worker::handleConsole(HttpRequest &request, HttpResponse &response)
+{
+    if (request.getHeader().getHeaderInfo().contains("swiftly-admin"))
+    {
+        QString pass = *request.getHeader().getHeaderInfo()["swiftly-admin"];
+
+        QByteArray hash = QCryptographicHash::hash(pass.toUtf8(), QCryptographicHash::Sha512);
+
+        if (hash.toHex() == m_adminPassHash)
+        {
+            if (request.getHeader().hasQueries() && request.getHeader().getQueries().contains("cmd"))
+            {
+                QString cmd = *request.getHeader().getQueries()["cmd"];
+
+                if (cmd == "shutdown")
+                {
+                    emit shutdown();
+                }
+
+                response.setStatusCode(200);
+                response << "done!";
+                response.finish();
+            }
+            else
+            {
+                response.setStatusCode(200);
+                response << tem.c_str();
+                response.finish();
+            }
+
+            return;
+        }
+    }
+
+    response.setStatusCode(404);
+    response << "authentication failed";
+    response.finish();
+}

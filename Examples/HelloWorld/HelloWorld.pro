@@ -43,3 +43,7 @@ LIBS += -L/usr/local/lib -lsodium
 LIBS += -L/Users/shiyan/mongodb/mongo-cxx-driver/build/install/lib
 LIBS += -lmongocxx
 LIBS += -lbsoncxx
+
+RESOURCES +=
+
+DISTFILES +=

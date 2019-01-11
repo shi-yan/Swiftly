@@ -43,7 +43,8 @@ HEADERS += Swiftly.h \
     ReCAPTCHAVerifier.h \
     SettingsManager.h \
     SmtpManager.h \
-    NetworkServiceAccessor.h
+    NetworkServiceAccessor.h \
+    AdminPageContent.h
 unix {
     target.path = /usr/lib
     INSTALLS += target
@@ -78,3 +79,7 @@ LIBS += -lbsoncxx
 
 include(../qt-mustache/qt-mustache.pri)
 include(../LoggingManager/LoggingManager/LoggingManager.pri)
+
+DISTFILES +=
+
+RESOURCES +=
