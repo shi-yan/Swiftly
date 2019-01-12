@@ -91,7 +91,7 @@ int onUrl(http_parser *parser, const char *p,size_t len)
         //qDebug() << "UF_USERINFO" << string;
     }
 
-    delete(u);
+    free(u);
     return 0;
 }
 
