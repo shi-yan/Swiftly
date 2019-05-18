@@ -28,7 +28,8 @@ QHash<QString, QString> StaticFileServer::m_mimeTypeMap =
  {"webm", "video/webm"},
  {"ogg" , "audio/ogg"},
  {"xml" , "application/xml"},
- {"pdf" , "application/pdf"}};
+ {"pdf" , "application/pdf"},
+ {"wasm", "application/wasm"}};
 
 unsigned long long getAvailableSystemMemory()
 {
@@ -347,6 +348,7 @@ bool StaticFileServer::getFileByAbsolutePath(const QString &absolutePath, QByteA
             if(m_mimeTypeMap.contains(fileInfo.suffix()))
             {
                 mimeType = m_mimeTypeMap[fileInfo.suffix()];
+                //qDebug() << "surffix: " << fileInfo.suffix() << " type: " << mimeType;
             }
             else
             {
@@ -383,7 +385,7 @@ bool StaticFileServer::getFileByAbsolutePath(const QString &absolutePath, QByteA
             StaticFileServer::m_fileCacheMutex.lock();
 
             StaticFileServer::m_fileCache.insert(fileInfo.absoluteFilePath(), item, (int) sizeInKB);
-            qDebug() << "file" << fileInfo.absoluteFilePath() << "is in cache" << sizeInKB;
+            qDebug() << "file" << fileInfo.absoluteFilePath() << "is in cache" << sizeInKB << "mime type: " << mimeType;
 
             StaticFileServer::m_fileCacheMutex.unlock();
 
@@ -408,7 +410,7 @@ bool StaticFileServer::getFileByAbsolutePath(const QString &absolutePath, QByteA
             }
             mimeType = item->m_mimeType;
             md5 = item->m_md5;
-            qDebug() << "file" << item->m_fileInfo.absoluteFilePath() << "is from cache";
+            qDebug() << "file" << item->m_fileInfo.absoluteFilePath() << "is from cache" << "mime: " << item->m_mimeType;
             StaticFileServer::m_fileCacheMutex.unlock();
         }
     }
