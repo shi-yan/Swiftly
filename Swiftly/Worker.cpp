@@ -16,24 +16,19 @@
 
 int onMessageBegin(http_parser *)
 {
-   // qDebug()<<"Parse Message Begin";
     return 0;
 }
 
 int onPath(http_parser *parser, const char *p,size_t len)
 {
     QByteArray buffer(p,len);
-    //qDebug()<<"onPath:"<<QString(buffer);
-
     static_cast<TcpSocket*>(parser->data)->getHeader().setPath(QString(buffer));
-
     return 0;
 }
 
 int onQueryString(http_parser *parser, const char *p,size_t len)
 {
     QByteArray buffer(p,len);
-    // qDebug()<<"onQueryString:"<<QString(buffer);
     static_cast<TcpSocket*>(parser->data)->getHeader().setQueryString(QString(buffer));
     return 0;
 }
@@ -41,7 +36,6 @@ int onQueryString(http_parser *parser, const char *p,size_t len)
 int onUrl(http_parser *parser, const char *p,size_t len)
 {
     QByteArray buffer(p,len);
-    //qDebug()<<"onUrl:"<<QString(buffer);
     static_cast<TcpSocket*>(parser->data)->getHeader().setUrl(QString(buffer));
 
     http_parser_url *u = static_cast<http_parser_url*>(malloc(sizeof(http_parser_url)));
@@ -50,45 +44,38 @@ int onUrl(http_parser *parser, const char *p,size_t len)
     if (u->field_set & (1 << UF_SCHEMA))
     {
         QString string(QByteArray(&p[u->field_data[UF_SCHEMA].off], u->field_data[UF_SCHEMA].len));
-        //qDebug() << "UF_SCHEMA" << string;
     }
 
     if (u->field_set & (1 << UF_HOST))
     {
         QString string(QByteArray(&p[u->field_data[UF_HOST].off], u->field_data[UF_HOST].len));
-        //qDebug() << "UF_HOST" << string;
     }
 
     if (u->field_set & (1 << UF_PORT))
     {
         QString string(QByteArray(&p[u->field_data[UF_PORT].off], u->field_data[UF_PORT].len));
-        //qDebug() << "UF_PORT" << string;
     }
 
     if (u->field_set & (1<<UF_PATH))
     {
         QString string(QByteArray(&p[u->field_data[UF_PATH].off], u->field_data[UF_PATH].len));
         static_cast<TcpSocket*>(parser->data)->getHeader().setPath(string);
-        //qDebug() << "UF_PATH" << string;
     }
 
     if (u->field_set & (1<<UF_QUERY))
     {
         QString string(QByteArray(&p[u->field_data[UF_QUERY].off], u->field_data[UF_QUERY].len));
         static_cast<TcpSocket*>(parser->data)->getHeader().setQueryString(string);
-        //qDebug() << "UF_QUERY" << string;
     }
 
     if (u->field_set & (1<<UF_FRAGMENT))
     {
         QString string(QByteArray(&p[u->field_data[UF_FRAGMENT].off], u->field_data[UF_FRAGMENT].len));
-        //qDebug() << "UF_FRAGMENT" << string;
     }
 
     if (u->field_set & (1<<UF_USERINFO))
     {
         QString string(QByteArray(&p[u->field_data[UF_USERINFO].off], u->field_data[UF_USERINFO].len));
-        //qDebug() << "UF_USERINFO" << string;
     }
 
     free(u);
@@ -148,15 +135,12 @@ int onHeadersComplete(http_parser *parser)
 
 int onBody(http_parser *parser, const char *p,size_t len)
 {
-     // QByteArray buffer(p,len);
-    //  qDebug()<<"onBody:"<<QString(buffer);
     static_cast<TcpSocket*>(parser->data)->appendData(p, static_cast<unsigned int>(len));
     return 0;
 }
 
 int onMessageComplete(http_parser *)
 {
-    //qDebug()<<"Parse Message Complete";
     return 0;
 }
 
@@ -184,8 +168,6 @@ Worker::~Worker()
 
 void Worker::newSocket(qintptr socket)
 {
-    //qDebug() << m_name << " is handling a new request; thread id" << thread()->currentThreadId();
-
     TcpSocket* s = new TcpSocket(this);
     s->m_id = static_cast<unsigned int>(rand());
     connect(s, SIGNAL(readyRead()), this, SLOT(readClient()));

@@ -13,7 +13,7 @@ private:
 public:
     NetworkServiceAccessor();
 
-    QNetworkReply::NetworkError post(const QNetworkRequest &request, const QByteArray &data, QByteArray &reply) const;
+    QNetworkReply::NetworkError post(const QNetworkRequest &request, const QByteArray &data, QByteArray &reply, bool async = false) const;
     QNetworkReply::NetworkError get(const QNetworkRequest &request, QByteArray &reply, QList<QNetworkReply::RawHeaderPair> &headers) const;
 };
 

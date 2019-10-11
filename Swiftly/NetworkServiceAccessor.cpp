@@ -7,48 +7,78 @@
 #include <QEventLoop>
 #include <QNetworkAccessManager>
 
-NetworkServiceAccessor::NetworkServiceAccessor()
-    :QObject()
-{
+NetworkServiceAccessor::NetworkServiceAccessor() : QObject() {}
 
+QNetworkReply::NetworkError NetworkServiceAccessor::post(const QNetworkRequest &request, const QByteArray &data, QByteArray &replyData, bool async) const
+{
+    if (!async)
+    {
+        QNetworkReply::NetworkError result = QNetworkReply::NoError;
+        QFuture<void> future               = QtConcurrent::run(QThreadPool::globalInstance(), [&]() {
+            QEventLoop loop;
+            QNetworkAccessManager networkAccessManager;
+            QNetworkReply *reply = networkAccessManager.post(request, data);
+
+            connect(reply, SIGNAL(finished()), &loop, SLOT(quit()));
+            LoggingManager::getSingleton().log() << "NetworkService Post: " << request.url().toString();
+            qDebug() << "NetworkService Post: " << request.url().toString();
+            LoggingManager::getSingleton().log() << "Payload: " << QString::fromUtf8(data);
+            qDebug() << "Payload: " << QString::fromUtf8(data);
+            loop.exec();
+
+            result = reply->error();
+
+            if (result != QNetworkReply::NoError)
+            {
+                qDebug() << "Network Service Accessor Error: " << reply->errorString();
+                LoggingManager::getSingleton().log() << "NetworkService: " << reply->errorString();
+            }
+
+            replyData = reply->readAll();
+            qDebug() << replyData;
+            reply->deleteLater();
+        });
+
+        future.waitForFinished();
+
+        return result;
+    }
+    else
+    {
+        QtConcurrent::run(QThreadPool::globalInstance(), [=]() {
+            QEventLoop loop;
+            QNetworkAccessManager networkAccessManager;
+            QNetworkReply *reply = networkAccessManager.post(request, data);
+
+            connect(reply, SIGNAL(finished()), &loop, SLOT(quit()));
+            LoggingManager::getSingleton().log() << "NetworkService Post: " << request.url().toString();
+            qDebug() << "NetworkService Post: " << request.url().toString();
+            LoggingManager::getSingleton().log() << "Payload: " << QString::fromUtf8(data);
+            qDebug() << "Payload: " << QString::fromUtf8(data);
+            loop.exec();
+
+            QNetworkReply::NetworkError result = reply->error();
+
+            if (result != QNetworkReply::NoError)
+            {
+                qDebug() << "Network Service Accessor Error: " << reply->errorString();
+                LoggingManager::getSingleton().log() << "NetworkService: " << reply->errorString();
+            }
+
+            QByteArray replyData = reply->readAll();
+            qDebug() << replyData;
+            reply->deleteLater();
+        });
+    }
+
+    return QNetworkReply::NetworkError::NoError;
 }
 
-QNetworkReply::NetworkError NetworkServiceAccessor::post(const QNetworkRequest &request, const QByteArray &data, QByteArray &replyData) const
+QNetworkReply::NetworkError NetworkServiceAccessor::get(const QNetworkRequest &request, QByteArray &replyData,
+                                                        QList<QNetworkReply::RawHeaderPair> &headers) const
 {
     QNetworkReply::NetworkError result = QNetworkReply::NoError;
-    QFuture<void> future = QtConcurrent::run(QThreadPool::globalInstance(), [&](){
-        QEventLoop loop;
-        QNetworkAccessManager networkAccessManager;
-        QNetworkReply *reply = networkAccessManager.post(request, data);
-
-        connect(reply, SIGNAL(finished()), &loop, SLOT(quit()));
-        LoggingManager::getSingleton().log() << "NetworkService Post: " << request.url().toString();
-        qDebug() << "NetworkService Post: " << request.url().toString();
-        LoggingManager::getSingleton().log() << "Payload: " << QString::fromUtf8(data);
-        qDebug() << "Payload: " << QString::fromUtf8(data);
-        loop.exec();
-
-        result = reply->error();
-
-        if (result != QNetworkReply::NoError)
-        {
-            qDebug() << "Network Service Accessor Error: " << reply->errorString();
-            LoggingManager::getSingleton().log() << "NetworkService: " << reply->errorString();
-        }
-
-        replyData = reply->readAll();
-        qDebug() << replyData;
-        reply->deleteLater();
-    });
-
-    future.waitForFinished();
-    return result;
-}
-
-QNetworkReply::NetworkError NetworkServiceAccessor::get(const QNetworkRequest &request, QByteArray &replyData, QList<QNetworkReply::RawHeaderPair> &headers) const
-{
-    QNetworkReply::NetworkError result = QNetworkReply::NoError;
-    QFuture<void> future = QtConcurrent::run(QThreadPool::globalInstance(), [&](){
+    QFuture<void> future               = QtConcurrent::run(QThreadPool::globalInstance(), [&]() {
         QEventLoop loop;
 
         QNetworkAccessManager networkAccessManager;
@@ -67,10 +97,11 @@ QNetworkReply::NetworkError NetworkServiceAccessor::get(const QNetworkRequest &r
             LoggingManager::getSingleton().log() << "NetworkService: " << reply->errorString();
         }
 
-        headers = reply->rawHeaderPairs();
+        headers   = reply->rawHeaderPairs();
         replyData = reply->readAll();
         qDebug() << replyData;
-        reply->deleteLater();});
+        reply->deleteLater();
+    });
 
     future.waitForFinished();
     return result;
