@@ -24,7 +24,7 @@ class TcpSocket:public QTcpSocket
     QString m_adminPassHash;
     QSharedPointer<PathTree> m_pathTree;
     int m_headerParseCounter = 0;
-    std::string m_buffer;
+    QByteArray m_buffer;
     const int m_timeout = 15*1000;
 
 public:

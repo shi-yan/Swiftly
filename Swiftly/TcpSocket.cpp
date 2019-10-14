@@ -8,21 +8,21 @@ int onMessageBegin(http_parser *) { return 0; }
 
 int onPath(http_parser *parser, const char *p, size_t len)
 {
-    QByteArray buffer(p, len);
+    QByteArray buffer(p, static_cast<int>(len));
     static_cast<TcpSocket *>(parser->data)->getHeader().setPath(QString(buffer));
     return 0;
 }
 
 int onQueryString(http_parser *parser, const char *p, size_t len)
 {
-    QByteArray buffer(p, len);
+    QByteArray buffer(p, static_cast<int>(len));
     static_cast<TcpSocket *>(parser->data)->getHeader().setQueryString(QString(buffer));
     return 0;
 }
 
 int onUrl(http_parser *parser, const char *p, size_t len)
 {
-    QByteArray buffer(p, len);
+    QByteArray buffer(p,static_cast<int>(len));
     static_cast<TcpSocket *>(parser->data)->getHeader().setUrl(QString(buffer));
 
     http_parser_url *u = static_cast<http_parser_url *>(malloc(sizeof(http_parser_url)));
@@ -71,7 +71,7 @@ int onUrl(http_parser *parser, const char *p, size_t len)
 
 int onFragment(http_parser *parser, const char *p, size_t len)
 {
-    QByteArray buffer(p, len);
+    QByteArray buffer(p, static_cast<int>(len));
     // qDebug()<<"onFragment:"<<QString(buffer);
 
     static_cast<TcpSocket *>(parser->data)->getHeader().setFragment(QString(buffer));
@@ -80,7 +80,7 @@ int onFragment(http_parser *parser, const char *p, size_t len)
 
 int onHeaderField(http_parser *parser, const char *p, size_t len)
 {
-    QByteArray buffer(p, len);
+    QByteArray buffer(p, static_cast<int>(len));
     // qDebug()<<"onHeaderField:"<<QString(buffer);
     static_cast<TcpSocket *>(parser->data)->getHeader().setCurrentHeaderField(QString(buffer));
     return 0;
@@ -88,7 +88,7 @@ int onHeaderField(http_parser *parser, const char *p, size_t len)
 
 int onHeaderValue(http_parser *parser, const char *p, size_t len)
 {
-    QByteArray buffer(p, len);
+    QByteArray buffer(p, static_cast<int>(len));
     QSharedPointer<QString> headerValue(new QString(buffer));
     static_cast<TcpSocket *>(parser->data)->getHeader().addHeaderInfo(headerValue);
     return 0;
@@ -136,8 +136,16 @@ static int onMessageComplete(http_parser *parser)
 }
 
 TcpSocket::TcpSocket(QObject *parent, const QString &consolePath, const QString &adminPassHash, const QSharedPointer<PathTree> &pathTree)
-    : QTcpSocket(parent), m_request(), m_response(), m_suicideTimer(this), m_uuid(QUuid::createUuid()), m_consolePath(consolePath),
-      m_adminPassHash(adminPassHash), m_pathTree(pathTree)
+    : QTcpSocket(parent),
+    m_suicideTimer(this),
+    m_consolePath(consolePath),
+    m_adminPassHash(adminPassHash),
+    m_pathTree(pathTree),
+    m_headerParseCounter(0),
+    m_buffer(),
+    m_request(nullptr),
+    m_response(nullptr),
+    m_uuid(QUuid::createUuid())
 {
     connect(&m_suicideTimer, SIGNAL(timeout()), this, SLOT(disconnectSocket()));
     connect(this, SIGNAL(shutdown()), this, SLOT(disconnectSocket()));
@@ -197,7 +205,7 @@ bool TcpSocket::setSocketDescriptor(qintptr socketDescriptor, SocketState state,
     connect(this, SIGNAL(readyRead()), this, SLOT(readClient()));
     connect(this, SIGNAL(disconnected()), this, SLOT(discardClient()));
     setTimeout(m_timeout);
-    m_buffer.resize(1024, 0);
+    m_buffer.resize(1024);
     return ret;
 }
 
@@ -224,9 +232,9 @@ void TcpSocket::readClient()
     m_suicideTimer.stop();
 
     size_t ret = 0;
-    while ((ret = read(&m_buffer[0], m_buffer.size())) > 0)
+    while ((ret = static_cast<size_t>(read(m_buffer.data(), m_buffer.size()))) > 0)
     {
-        size_t nparsed = http_parser_execute(&m_parser, &m_settings, &m_buffer[0], ret);
+        size_t nparsed = http_parser_execute(&m_parser, &m_settings, m_buffer.data(), ret);
         m_headerParseCounter++;
         if (nparsed != ret)
         {

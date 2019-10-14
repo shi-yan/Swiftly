@@ -1,52 +1,39 @@
 #include "HttpResponse.h"
 #include "TcpSocket.h"
 
-
 HttpResponse::HttpResponse()
-    :QObject(),
-      m_buffer(),
-      m_header(),
-      m_statusCode(200),
-      m_cookies(),
-      m_sessionId(),
-      m_hasFinished(false)
+    : QObject(), m_header(), m_statusCode(200), m_cookies(), m_sessionId(), m_hasFinished(false), m_shouldKeepAlive(false), m_headerString(), m_buffer()
 {
 }
 
 HttpResponse::~HttpResponse()
 {
-    //qDebug() << "released";
+    // qDebug() << "released";
 }
 
-void HttpResponse::addCookie(const QString &key, const QVariant &value)
-{
-    m_cookies.insert(key, value);
-}
+void HttpResponse::addCookie(const QString &key, const QVariant &value) { m_cookies.insert(key, value); }
 
-HttpResponse& HttpResponse::operator<<(const QByteArray &in)
+HttpResponse &HttpResponse::operator<<(const QByteArray &in)
 {
     m_buffer.append(in);
     return *this;
 }
 
-HttpResponse& HttpResponse::operator<<(const char *in)
+HttpResponse &HttpResponse::operator<<(const char *in)
 {
     m_buffer.append(in);
     return *this;
 }
 
-HttpResponse& HttpResponse::operator<<(const QString &in)
+HttpResponse &HttpResponse::operator<<(const QString &in)
 {
     m_buffer.append(in);
     return *this;
 }
 
-void HttpResponse::write(const char* in,const size_t size)
-{
-    m_buffer.append(in,size);
-}
+void HttpResponse::write(const char *in, const size_t size) { m_buffer.append(in, static_cast<int>(size)); }
 
-void HttpResponse::finish(const QString &typeOverride )
+void HttpResponse::finish(const QString &typeOverride)
 {
     if (!m_hasFinished)
     {
@@ -55,18 +42,22 @@ void HttpResponse::finish(const QString &typeOverride )
         switch (m_statusCode)
         {
         case 200:
-            m_headerString = "HTTP/1.1 " % QString::number(m_statusCode) % " Ok\r\n"
-                           "Content-Length: " % QString::number(bufferSize) % "\r\n"
-                           "Content-Type: " % typeOverride % "\r\n";
+            m_headerString = "HTTP/1.1 " % QString::number(m_statusCode) %
+                             " Ok\r\n"
+                             "Content-Length: " %
+                             QString::number(bufferSize) %
+                             "\r\n"
+                             "Content-Type: " %
+                             typeOverride % "\r\n";
             m_shouldKeepAlive = true;
             break;
         case 302:
             m_headerString = "HTTP/1.1 302 Found\r\n"
-                           "Connection:keep-alive\r\n";
+                             "Connection:keep-alive\r\n";
             break;
         case 301:
             m_headerString = "HTTP/1.1 301 Moved Permanently\r\n"
-                           "Connection:keep-alive\r\n";
+                             "Connection:keep-alive\r\n";
             break;
         case 304:
             m_headerString = "HTTP/1.1 304 Not Modified\r\n";
@@ -79,7 +70,7 @@ void HttpResponse::finish(const QString &typeOverride )
             break;
         case 404:
             m_headerString = "HTTP/1.1 404 Not Found\r\n"
-                           "Content-Type: text/html; charset=\"utf-8\"\r\n";
+                             "Content-Type: text/html; charset=\"utf-8\"\r\n";
             break;
         case 415:
             m_headerString = "HTTP/1.1 415 Unsupported Media Type\r\n";
@@ -104,18 +95,18 @@ void HttpResponse::finish(const QString &typeOverride )
         if (!m_sessionId.isEmpty())
         {
             cookieString.append("ssid=").append(m_sessionId);
-            for(QHash<QString, QVariant>::Iterator iter = m_cookies.begin(); iter != m_cookies.end(); ++iter)
+            for (QHash<QString, QVariant>::Iterator iter = m_cookies.begin(); iter != m_cookies.end(); ++iter)
             {
                 cookieString.append("&").append(iter.key()).append("=").append(iter.value().toString());
             }
         }
-        else if(m_cookies.count() > 0)
+        else if (m_cookies.count() > 0)
         {
             QHash<QString, QVariant>::Iterator iter = m_cookies.begin();
 
             cookieString.append(iter.key()).append("=").append(iter.value().toString());
 
-            for(++iter; iter != m_cookies.end(); ++iter)
+            for (++iter; iter != m_cookies.end(); ++iter)
             {
                 cookieString.append("&").append(iter.key()).append("=").append(iter.value().toString());
             }
@@ -127,7 +118,7 @@ void HttpResponse::finish(const QString &typeOverride )
         }
 
         m_headerString = m_headerString % "\r\n";
-        m_hasFinished = true;
+        m_hasFinished  = true;
     }
 }
 
@@ -137,4 +128,3 @@ void HttpResponse::redirectTo(QSharedPointer<QString> url)
     setHeader("Location", url);
     finish();
 }
-
