@@ -354,6 +354,9 @@ void TcpSocket::readClient()
             m_request.reset();
             m_response.reset();
             m_headerParseCounter = 0;
+            m_servedCount ++;
+            setTimeout(m_timeout);
+            qDebug() << "Served " << m_servedCount << " requests with the same socket." ;
         }
         else
         {
