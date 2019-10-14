@@ -13,7 +13,7 @@
 #include <QtCore/QDebug>
 #include "Worker.h"
 
-class IncomingConnectionQueue;
+//class IncomingConnectionQueue;
 
 class HttpServer : public QTcpServer
  {
@@ -21,9 +21,10 @@ class HttpServer : public QTcpServer
 
     int m_connectionCount;
     bool m_disabled;
-    IncomingConnectionQueue *m_incomingConnectionQueue;
+    //IncomingConnectionQueue *m_incomingConnectionQueue;
 
     QVector<int> m_webAppSet;
+    int m_count;
     QVector<Worker*> m_workerPool;
 
     void incomingConnection(qintptr handle) override;

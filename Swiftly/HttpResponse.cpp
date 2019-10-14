@@ -2,40 +2,15 @@
 #include "TcpSocket.h"
 
 
-HttpResponse::HttpResponse(TcpSocket *_socket)
+HttpResponse::HttpResponse()
     :QObject(),
       m_buffer(),
-      m_socket(_socket),
       m_header(),
       m_statusCode(200),
       m_cookies(),
       m_sessionId(),
       m_hasFinished(false)
 {
-}
-
-HttpResponse::HttpResponse(const HttpResponse &in)
-    :QObject(),
-      m_buffer(in.m_buffer),
-      m_socket(in.m_socket),
-      m_header(in.m_header),
-      m_statusCode(in.m_statusCode),
-      m_cookies(in.m_cookies),
-      m_sessionId(in.m_sessionId),
-      m_hasFinished(in.m_hasFinished)
-{
-
-}
-
-void HttpResponse::operator=(const HttpResponse &in)
-{
-    m_buffer = in.m_buffer;
-    m_socket = in.m_socket;
-    m_header = in.m_header;
-    m_statusCode = in.m_statusCode;
-    m_sessionId = in.m_sessionId;
-    m_cookies = in.m_cookies;
-    m_hasFinished = in.m_hasFinished;
 }
 
 HttpResponse::~HttpResponse()
@@ -77,53 +52,51 @@ void HttpResponse::finish(const QString &typeOverride )
     {
         unsigned int bufferSize = static_cast<unsigned int>(m_buffer.size());
 
-        QString headerString;
-
         switch (m_statusCode)
         {
         case 200:
-            headerString = "HTTP/1.1 " % QString::number(m_statusCode) % " Ok\r\n"
+            m_headerString = "HTTP/1.1 " % QString::number(m_statusCode) % " Ok\r\n"
                            "Content-Length: " % QString::number(bufferSize) % "\r\n"
                            "Content-Type: " % typeOverride % "\r\n";
             break;
         case 302:
-            headerString = "HTTP/1.1 302 Found\r\n"
+            m_headerString = "HTTP/1.1 302 Found\r\n"
                            "Connection:keep-alive\r\n";
             break;
         case 301:
-            headerString = "HTTP/1.1 301 Moved Permanently\r\n"
+            m_headerString = "HTTP/1.1 301 Moved Permanently\r\n"
                            "Connection:keep-alive\r\n";
             break;
         case 304:
-            headerString = "HTTP/1.1 304 Not Modified\r\n";
+            m_headerString = "HTTP/1.1 304 Not Modified\r\n";
             break;
         case 400:
-            headerString = "HTTP/1.1 400 Bad Request\r\n";
+            m_headerString = "HTTP/1.1 400 Bad Request\r\n";
             break;
         case 401:
-            headerString = "HTTP/1.1 401 Unauthorized\r\n";
+            m_headerString = "HTTP/1.1 401 Unauthorized\r\n";
             break;
         case 404:
-            headerString = "HTTP/1.1 404 Not Found\r\n"
+            m_headerString = "HTTP/1.1 404 Not Found\r\n"
                            "Content-Type: text/html; charset=\"utf-8\"\r\n";
             break;
         case 415:
-            headerString = "HTTP/1.1 415 Unsupported Media Type\r\n";
+            m_headerString = "HTTP/1.1 415 Unsupported Media Type\r\n";
             break;
         case 422:
-            headerString = "HTTP/1.1 422 Unprocessable Entity\r\n";
+            m_headerString = "HTTP/1.1 422 Unprocessable Entity\r\n";
             break;
         case 500:
-            headerString = "HTTP/1.1 500 Internal Server Error\r\n";
+            m_headerString = "HTTP/1.1 500 Internal Server Error\r\n";
             break;
         case 503:
-            headerString = "HTTP/1.1 503 Service Unavilable\r\n";
+            m_headerString = "HTTP/1.1 503 Service Unavilable\r\n";
             break;
         default:
             qDebug() << "unimplemented http status code";
         }
 
-        headerString = headerString % m_header.toString();
+        m_headerString = m_headerString % m_header.toString();
 
         QString cookieString("Set-Cookie: ");
 
@@ -149,13 +122,10 @@ void HttpResponse::finish(const QString &typeOverride )
 
         if ((!m_sessionId.isEmpty()) || (m_cookies.count() > 0))
         {
-            headerString = headerString % cookieString % "; Path=/\r\n";
+            m_headerString = m_headerString % cookieString % "; Path=/\r\n";
         }
 
-        headerString = headerString % "\r\n";
-
-        m_socket->write(headerString.toUtf8());
-        m_socket->write(m_buffer);
+        m_headerString = m_headerString % "\r\n";
         m_hasFinished = true;
     }
 }

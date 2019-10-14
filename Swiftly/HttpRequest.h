@@ -4,8 +4,7 @@
 #include "HttpHeader.h"
 #include <QHash>
 #include <QVector>
-
-class TcpSocket;
+#include <QHostAddress>
 
 class HttpRequest:public QObject
 {
@@ -103,10 +102,10 @@ private:
 
 
 public:
-    TcpSocket *m_socket;
-    HttpRequest(TcpSocket *_socket = nullptr);
-    HttpRequest(const HttpRequest &in);
-    void operator=(const HttpRequest &in);
+    QHostAddress m_peerAddress;
+    HttpRequest(const QHostAddress &peerAddress);
+    HttpRequest(const HttpRequest &in) = delete ;
+    void operator=(const HttpRequest &in) = delete;
 
     HttpHeader & getHeader()
     {

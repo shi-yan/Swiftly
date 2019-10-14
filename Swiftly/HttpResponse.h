@@ -13,18 +13,20 @@ class HttpResponse:public QObject
 {
     Q_OBJECT
 
-    QByteArray m_buffer;
-    TcpSocket *m_socket;
+
     HttpHeader m_header;
     int m_statusCode;
     QHash<QString, QVariant> m_cookies;
     QString m_sessionId;
     bool m_hasFinished;
 
+
 public:
-    HttpResponse(TcpSocket *_socket = nullptr);
-    HttpResponse(const HttpResponse &in);
-    void operator=(const HttpResponse &in);
+    QString m_headerString;
+    QByteArray m_buffer;
+    HttpResponse();
+    HttpResponse(const HttpResponse &in) = delete ;
+    void operator=(const HttpResponse &in) = delete;
     ~HttpResponse();
 
     HttpResponse& operator<<(const QByteArray &in);

@@ -3,9 +3,13 @@
 
 #include <QTcpSocket>
 #include <QByteArray>
+#include <QSharedPointer>
 #include "HttpRequest.h"
 #include "HttpResponse.h"
 #include <QTimer>
+#include "http_parser.h"
+#include <QUuid>
+#include "PathTree.h"
 
 class TcpSocket:public QTcpSocket
 {
@@ -13,15 +17,19 @@ class TcpSocket:public QTcpSocket
 
     bool m_isNew;
 
-    HttpRequest m_request;
-    HttpResponse m_response;
+    QSharedPointer<HttpRequest> m_request;
+    QSharedPointer<HttpResponse> m_response;
     QTimer m_suicideTimer;
+    http_parser m_parser;
+    QString m_consolePath;
+    QString m_adminPassHash;
+    QSharedPointer<PathTree> m_pathTree;
 
 public:
-    unsigned int m_id;
-    TcpSocket(QObject *parent = nullptr);
-    TcpSocket(const TcpSocket &in);
-    void operator=(const TcpSocket &in);
+    QUuid m_uuid;
+    TcpSocket(const QString &consolePath, const QString &adminPassHash, const QSharedPointer<PathTree> &pathTree);
+    TcpSocket(const TcpSocket &in) = delete ;
+    void operator=(const TcpSocket &in)= delete;
     ~TcpSocket();
 
     void setRawHeader(const QString &in);
@@ -39,20 +47,29 @@ public:
     void appendData(const char* buffer,unsigned int size);
     void appendData(const QByteArray &buffer);
 
+    bool setSocketDescriptor(qintptr socketDescriptor, SocketState state = ConnectedState,
+                                 OpenMode openMode = ReadWrite) override;
+    void handleConsole(HttpRequest &request, HttpResponse &response);
     HttpRequest & getRequest()
     {
-        return m_request;
+        return *m_request;
     }
 
     HttpResponse & getResponse()
     {
-        return m_response;
+        return *m_response;
     }
 
     void setTimeout(int msec);
 
 private slots:
     void disconnectSocket();
+    void discardClient();
+    void readClient();
+
+signals:
+    void deleteSocket(const QUuid &);
+    void shutdown();
 };
 
 #endif // TCPSOCKET_H

@@ -3,10 +3,12 @@
 
 #include <QThread>
 #include <QHash>
-#include "http_parser.h"
+
 #include "PathTree.h"
 #include "WebApp.h"
 #include <QSemaphore>
+#include <QHash>
+#include <QUuid>
 
 class WorkerSocketWatchDog;
 class IncomingConnectionQueue;
@@ -16,12 +18,10 @@ class Worker : public QThread
     Q_OBJECT
 
     QString m_name;
-    http_parser m_parser;
+
     QHash<int, WebApp*> m_webAppTable;
     QSharedPointer<PathTree> m_pathTree;
-    QSemaphore m_idleSemaphore;
-    WorkerSocketWatchDog *m_socketWatchDog;
-    IncomingConnectionQueue *m_incomingConnectionQueue;
+    QHash<QUuid, QSharedPointer<TcpSocket>> m_sockets;
     QString m_consolePath;
     QString m_adminPassHash;
 
@@ -29,20 +29,20 @@ class Worker : public QThread
 
 public:
     void run();
-    Worker(const QString &name, IncomingConnectionQueue *connectionQueue, const QString &consolePath = QString(), const QString &adminPassHash = QString());
+    Worker(const QString &name, const QString &consolePath = QString(), const QString &adminPassHash = QString());
     void registerWebApps(QVector<int> &webAppClassIDs);
     void waitForIdle();
     ~Worker();
     qintptr getSocket();
+    void addNewSocket(qintptr socket);
 
 public slots:
-    void readClient();
-    void discardClient();
     void newSocket(qintptr socketid);
-    void watchDogFinished();
+    void deleteSocket(const QUuid &uuid);
 
 signals:
     void shutdown();
+    void receivedNewSocket(qintptr socketId);
 
 private:
     void handleConsole(HttpRequest &request, HttpResponse &response);

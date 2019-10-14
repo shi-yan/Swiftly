@@ -5,7 +5,7 @@
 #include <QRegularExpression>
 #include <QRegularExpressionMatch>
 
-HttpRequest::HttpRequest(TcpSocket *socket)
+HttpRequest::HttpRequest(const QHostAddress &peerAddress)
     :QObject(),
       m_header(),
       m_rawData(),
@@ -14,35 +14,9 @@ HttpRequest::HttpRequest(TcpSocket *socket)
       m_totalBytes(0),
       m_bytesHaveRead(0),
       m_rawHeader(),
-      m_socket(socket)
+      m_peerAddress(peerAddress)
 {
 }
-
-HttpRequest::HttpRequest(const HttpRequest &in)
-    :QObject(),
-      m_header(in.m_header),
-      m_rawData(in.m_rawData),
-      m_formData(in.m_formData),
-      m_hasSetFormData(in.m_hasSetFormData),
-      m_totalBytes(in.m_totalBytes),
-      m_bytesHaveRead(in.m_bytesHaveRead),
-      m_rawHeader(in.m_rawHeader),
-      m_socket(in.m_socket)
-{
-}
-
-void HttpRequest::operator=(const HttpRequest &in)
-{
-    m_header=in.m_header;
-    m_rawData=in.m_rawData;
-    m_formData=in.m_formData;
-    m_hasSetFormData=in.m_hasSetFormData;
-    m_totalBytes=in.m_totalBytes;
-    m_bytesHaveRead=in.m_bytesHaveRead;
-    m_rawHeader=in.m_rawHeader;
-    m_socket=in.m_socket;
-}
-
 
 HttpRequest::~HttpRequest()
 {
@@ -270,9 +244,5 @@ bool HttpRequest::internalParseFormData(const QByteArray &rawData, const QString
 
 QString HttpRequest::getFromIPAddress() const
 {
-    if (m_socket)
-    {
-        return m_socket->peerAddress().toString();
-    }
-    return QString();
+    return m_peerAddress.toString();
 }

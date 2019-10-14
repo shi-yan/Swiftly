@@ -15,17 +15,16 @@ HttpServer::HttpServer(QObject* parent )
     : QTcpServer(parent), 
       m_connectionCount(0),
       m_disabled(false),
-      m_incomingConnectionQueue(nullptr),
-      m_webAppSet()
+      //m_incomingConnectionQueue(nullptr),
+      m_webAppSet(),
+      m_count(0)
 
 {
     qRegisterMetaType<qintptr>("qintptr");
-    qRegisterMetaType<HttpRequest>("HttpRequest");
-    qRegisterMetaType<HttpResponse>("HttpResponse");
+    //qRegisterMetaType<HttpRequest>("HttpRequest");
+    //qRegisterMetaType<HttpResponse>("HttpResponse");
     setMaxPendingConnections(20000);
-
-    m_incomingConnectionQueue = new IncomingConnectionQueue(this);
-
+    //m_incomingConnectionQueue = new IncomingConnectionQueue(this);
 }
 
 HttpServer::~HttpServer()
@@ -34,14 +33,19 @@ HttpServer::~HttpServer()
 
 void HttpServer::incomingConnection(qintptr socket)
 {
+    qDebug() << "sodium problem";
     if (m_disabled)
         return;
 
-    m_incomingConnectionQueue->addSocket(socket);
+    //m_incomingConnectionQueue->addSocket(socket);
+    m_workerPool[m_count]->addNewSocket(socket);
 
     //qDebug()<<"New Connection!" << serverAddress().toString() << socket;
 
     m_connectionCount++;
+    m_count = (m_count+1)%m_workerPool.size();
+
+
 
     //qDebug() << "connection:" << m_connectionCount;
 }
@@ -81,7 +85,7 @@ void HttpServer::start(int numOfWorkers, quint16 port)
 
     for(int i=0;i<numOfWorkers;++i)
     {
-        Worker *aWorker=new Worker(QString("worker %1").arg(i), m_incomingConnectionQueue, consolePath, adminPassHash);
+        Worker *aWorker=new Worker(QString("worker %1").arg(i), consolePath, adminPassHash);
         aWorker->moveToThread(aWorker);
         aWorker->registerWebApps(m_webAppSet);
         aWorker->start();
@@ -91,6 +95,7 @@ void HttpServer::start(int numOfWorkers, quint16 port)
     }
 
     listen(QHostAddress::Any, port);
+    qDebug() << "Port: " << port;
 
     qDebug()<<"Start listening! main ThreadId"<<thread()->currentThreadId();
 }
@@ -99,11 +104,6 @@ void HttpServer::shutdown()
 {
     close();
     m_disabled = true;
-
-    for(int i =0;i<m_workerPool.size()+2;++i)
-    {
-        m_incomingConnectionQueue->addSocket(-1);
-    }
 
     for(int i =0;i<m_workerPool.size();++i)
     {

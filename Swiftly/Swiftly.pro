@@ -36,7 +36,6 @@ HEADERS += Swiftly.h \
     Worker.h \
     StaticFileServer.h \
     IncomingConnectionQueue.h \
-    WorkerSocketWatchDog.h \
     UserManager.h \
     SessionManager.h \
     MongodbManager.h \
@@ -62,8 +61,6 @@ SOURCES += \
     Worker.cpp \
     ../http-parser/http_parser.c \
     StaticFileServer.cpp \
-    IncomingConnectionQueue.cpp \
-    WorkerSocketWatchDog.cpp \
     UserManager.cpp \
     SessionManager.cpp \
     MongodbManager.cpp \
