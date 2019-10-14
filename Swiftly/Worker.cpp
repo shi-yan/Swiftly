@@ -31,11 +31,11 @@ Worker::~Worker()
 
 void Worker::newSocket(qintptr socket)
 {
-    TcpSocket* s = new TcpSocket(m_consolePath, m_adminPassHash, m_pathTree);
+    TcpSocket* s = new TcpSocket(this, m_consolePath, m_adminPassHash, m_pathTree);
 
     s->setSocketDescriptor(socket);
 
-    m_sockets[s->m_uuid] = QSharedPointer<TcpSocket>(s);
+    m_sockets[s->m_uuid] = s;
 
     connect(s, SIGNAL(deleteSocket(const QUuid &)), this, SLOT(deleteSocket(const QUuid &)));
 
@@ -46,7 +46,9 @@ void Worker::newSocket(qintptr socket)
 
 void Worker::deleteSocket(const QUuid &uuid)
 {
+    TcpSocket *s = m_sockets[uuid];
     m_sockets.remove(uuid);
+    s->deleteLater();
 }
 
 void Worker::registerWebApps(QVector<int> &webAppClassIDs)

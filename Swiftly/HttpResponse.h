@@ -22,6 +22,7 @@ class HttpResponse:public QObject
 
 
 public:
+    bool m_shouldKeepAlive = false;
     QString m_headerString;
     QByteArray m_buffer;
     HttpResponse();

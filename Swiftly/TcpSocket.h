@@ -10,27 +10,31 @@
 #include "http_parser.h"
 #include <QUuid>
 #include "PathTree.h"
+#include <string>
 
 class TcpSocket:public QTcpSocket
 {
     Q_OBJECT
 
-    bool m_isNew;
 
-    QSharedPointer<HttpRequest> m_request;
-    QSharedPointer<HttpResponse> m_response;
     QTimer m_suicideTimer;
     http_parser m_parser;
+    http_parser_settings m_settings;
     QString m_consolePath;
     QString m_adminPassHash;
     QSharedPointer<PathTree> m_pathTree;
+    int m_headerParseCounter = 0;
+    std::string m_buffer;
+    const int m_timeout = 15*1000;
 
 public:
+    QSharedPointer<HttpRequest> m_request;
+    QSharedPointer<HttpResponse> m_response;
     QUuid m_uuid;
-    TcpSocket(const QString &consolePath, const QString &adminPassHash, const QSharedPointer<PathTree> &pathTree);
+    TcpSocket(QObject *parent, const QString &consolePath, const QString &adminPassHash, const QSharedPointer<PathTree> &pathTree);
     TcpSocket(const TcpSocket &in) = delete ;
     void operator=(const TcpSocket &in)= delete;
-    ~TcpSocket();
+    ~TcpSocket() override;
 
     void setRawHeader(const QString &in);
     QString & getRawHeader();
@@ -38,10 +42,7 @@ public:
     unsigned int getTotalBytes();
     unsigned int getBytesHaveRead();
     HttpHeader & getHeader();
-    bool isEof();
-    void notNew();
 
-    bool isNewSocket();
     void setTotalBytes(unsigned int _totalBytes);
 
     void appendData(const char* buffer,unsigned int size);

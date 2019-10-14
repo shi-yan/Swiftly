@@ -58,6 +58,7 @@ void HttpResponse::finish(const QString &typeOverride )
             m_headerString = "HTTP/1.1 " % QString::number(m_statusCode) % " Ok\r\n"
                            "Content-Length: " % QString::number(bufferSize) % "\r\n"
                            "Content-Type: " % typeOverride % "\r\n";
+            m_shouldKeepAlive = true;
             break;
         case 302:
             m_headerString = "HTTP/1.1 302 Found\r\n"

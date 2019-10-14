@@ -21,7 +21,7 @@ class Worker : public QThread
 
     QHash<int, WebApp*> m_webAppTable;
     QSharedPointer<PathTree> m_pathTree;
-    QHash<QUuid, QSharedPointer<TcpSocket>> m_sockets;
+    QHash<QUuid, TcpSocket*> m_sockets;
     QString m_consolePath;
     QString m_adminPassHash;
 

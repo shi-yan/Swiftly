@@ -11,6 +11,14 @@ class HttpRequest:public QObject
     Q_OBJECT
 
 public:
+    enum class RequestStatus
+    {
+        Unparsed,
+        HeaderParsed,
+        BodyParsed,
+        Error
+    };
+    RequestStatus m_status = RequestStatus::Unparsed;
     class FormData
     {
     public:
@@ -28,14 +36,17 @@ public:
         bool processMeta();
     };
 
-private:
+public:
 
     HttpHeader m_header;
     QByteArray m_rawData;
     QHash<QString, QVector<QSharedPointer<FormData>>> m_formData;
     bool m_hasSetFormData;
+    bool m_shouldKeepAlive = false;
+    unsigned short m_httpMajor = 0;
+    unsigned short m_httpMinor = 0;
 
-    unsigned int m_totalBytes;
+    int m_totalBytes = -1;
     unsigned int m_bytesHaveRead;
 
     QString m_rawHeader;

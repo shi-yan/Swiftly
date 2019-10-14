@@ -11,6 +11,6 @@ int main(int argc, char *argv[])
     QCoreApplication::setApplicationName("HelloWorld example");
     QCoreApplication a(argc, argv);
     REGISTER_WEBAPP(HelloWorld);
-    HttpServer::getSingleton().start(1, 8080);
+    HttpServer::getSingleton().start(QThread::idealThreadCount(), 8080);
     return a.exec();
 }
