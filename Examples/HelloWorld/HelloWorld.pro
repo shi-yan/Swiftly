@@ -29,7 +29,9 @@ win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../../Swiftly/release/
 else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../../Swiftly/debug/ -lSwiftly
 else:unix: LIBS += -L$$OUT_PWD/../../Swiftly/ -lSwiftly
 
-INCLUDEPATH += $$PWD/../../Swiftly
+INCLUDEPATH += $$PWD/../../Swiftly \
+                $$PWD/../../cpp-slugify
+
 DEPENDPATH += $$PWD/../../Swiftly
 
 win32-g++:CONFIG(release, debug|release): PRE_TARGETDEPS += $$OUT_PWD/../../Swiftly/release/libSwiftly.a

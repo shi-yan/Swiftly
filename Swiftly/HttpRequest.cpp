@@ -11,7 +11,7 @@ HttpRequest::HttpRequest(const QHostAddress &peerAddress)
       m_rawData(),
       m_formData(),
       m_hasSetFormData(false),
-      m_totalBytes(0),
+      m_totalBytes(-1),
       m_bytesHaveRead(0),
       m_rawHeader(),
       m_peerAddress(peerAddress)

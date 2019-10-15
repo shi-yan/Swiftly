@@ -7,3 +7,6 @@
 [submodule "LoggingManager"]
 	path = LoggingManager
 	url = https://github.com/shi-yan/LoggingManager.git
+[submodule "cpp-slugify"]
+	path = cpp-slugify
+	url = https://github.com/thomasbrueggemann/cpp-slugify.git

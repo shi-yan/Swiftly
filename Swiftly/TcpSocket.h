@@ -72,6 +72,7 @@ private slots:
 signals:
     void deleteSocket(const QUuid &);
     void shutdown();
+    void shutdownAll();
 };
 
 #endif // TCPSOCKET_H

@@ -39,6 +39,7 @@ public:
 public slots:
     void newSocket(qintptr socketid);
     void deleteSocket(const QUuid &uuid);
+    void shutdownAll();
 
 signals:
     void shutdown();

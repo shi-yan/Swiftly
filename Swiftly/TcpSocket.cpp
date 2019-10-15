@@ -167,7 +167,7 @@ void TcpSocket::handleConsole(HttpRequest &request, HttpResponse &response)
 
                 if (cmd == "shutdown")
                 {
-                    emit shutdown();
+                    emit shutdownAll();
                 }
 
                 response.setStatusCode(200);

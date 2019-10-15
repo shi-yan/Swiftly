@@ -38,6 +38,7 @@ void Worker::newSocket(qintptr socket)
     m_sockets[s->m_uuid] = s;
 
     connect(s, SIGNAL(deleteSocket(const QUuid &)), this, SLOT(deleteSocket(const QUuid &)));
+    connect(s, SIGNAL(shutdownAll()), this, SLOT(shutdownAll()));
 
 #ifndef NO_LOG
     sLog() << m_name << " receive a new request from ip:" << s->peerAddress().toString();
@@ -49,6 +50,11 @@ void Worker::deleteSocket(const QUuid &uuid)
     TcpSocket *s = m_sockets[uuid];
     m_sockets.remove(uuid);
     s->deleteLater();
+}
+
+void Worker::shutdownAll()
+{
+    emit shutdown();
 }
 
 void Worker::registerWebApps(QVector<int> &webAppClassIDs)
