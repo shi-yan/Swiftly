@@ -3,6 +3,7 @@
 #include "PathTreeNode.h"
 #include <QCryptographicHash>
 #include "AdminPageContent.h"
+#include <QDebug>
 
 int onMessageBegin(http_parser *) { return 0; }
 
@@ -22,7 +23,7 @@ int onQueryString(http_parser *parser, const char *p, size_t len)
 
 int onUrl(http_parser *parser, const char *p, size_t len)
 {
-    QByteArray buffer(p,static_cast<int>(len));
+    QByteArray buffer(p, static_cast<int>(len));
     static_cast<TcpSocket *>(parser->data)->getHeader().setUrl(QString(buffer));
 
     http_parser_url *u = static_cast<http_parser_url *>(malloc(sizeof(http_parser_url)));
@@ -128,24 +129,16 @@ int onBody(http_parser *parser, const char *p, size_t len)
 
 static int onMessageComplete(http_parser *parser)
 {
-    static_cast<TcpSocket *>(parser->data)->m_request->m_httpMajor = parser->http_major;
-    static_cast<TcpSocket *>(parser->data)->m_request->m_httpMinor = parser->http_minor;
+    static_cast<TcpSocket *>(parser->data)->m_request->m_httpMajor       = parser->http_major;
+    static_cast<TcpSocket *>(parser->data)->m_request->m_httpMinor       = parser->http_minor;
     static_cast<TcpSocket *>(parser->data)->m_request->m_shouldKeepAlive = http_should_keep_alive(parser);
-    static_cast<TcpSocket *>(parser->data)->m_request->m_status = HttpRequest::RequestStatus::BodyParsed;
+    static_cast<TcpSocket *>(parser->data)->m_request->m_status          = HttpRequest::RequestStatus::BodyParsed;
     return 0;
 }
 
 TcpSocket::TcpSocket(QObject *parent, const QString &consolePath, const QString &adminPassHash, const QSharedPointer<PathTree> &pathTree)
-    : QTcpSocket(parent),
-    m_suicideTimer(this),
-    m_consolePath(consolePath),
-    m_adminPassHash(adminPassHash),
-    m_pathTree(pathTree),
-    m_headerParseCounter(0),
-    m_buffer(),
-    m_request(nullptr),
-    m_response(nullptr),
-    m_uuid(QUuid::createUuid())
+    : QTcpSocket(parent), m_suicideTimer(this), m_consolePath(consolePath), m_adminPassHash(adminPassHash), m_pathTree(pathTree), m_headerParseCounter(0),
+      m_buffer(), m_request(nullptr), m_response(nullptr), m_uuid(QUuid::createUuid())
 {
     connect(&m_suicideTimer, SIGNAL(timeout()), this, SLOT(disconnectSocket()));
     connect(this, SIGNAL(shutdown()), this, SLOT(disconnectSocket()));
@@ -228,22 +221,34 @@ void TcpSocket::readClient()
         m_response.reset(new HttpResponse);
         m_headerParseCounter = 0;
     }
+    else
+    {
+        if (m_request->m_status == HttpRequest::RequestStatus::Unparsed)
+        {
+            m_headerParseCounter++;
+            if (m_headerParseCounter > 10)
+            {
+                // very long header, malicious
+                if (m_suicideTimer.isActive())
+                {
+                    m_suicideTimer.stop();
+                }
+                emit shutdown();
+                return;
+            }
+        }
+    }
 
     m_suicideTimer.stop();
 
     size_t ret = 0;
+
     while ((ret = static_cast<size_t>(read(m_buffer.data(), m_buffer.size()))) > 0)
     {
         size_t nparsed = http_parser_execute(&m_parser, &m_settings, m_buffer.data(), ret);
-        m_headerParseCounter++;
+
         if (nparsed != ret)
         {
-            emit shutdown();
-            return;
-        }
-        else if (m_headerParseCounter > 10)
-        {
-            // very long header, malicious
             emit shutdown();
             return;
         }
@@ -307,7 +312,6 @@ void TcpSocket::readClient()
         }
         else
         {
-            qDebug() << "not get and post" << atEnd() << bytesAvailable() << ConnectedState;
             getResponse().setStatusCode(400);
             getResponse() << "Unsupported HTTP verb.";
             getResponse().finish();
@@ -354,9 +358,9 @@ void TcpSocket::readClient()
             m_request.reset();
             m_response.reset();
             m_headerParseCounter = 0;
-            m_servedCount ++;
+            m_servedCount++;
             setTimeout(m_timeout);
-            qDebug() << "Served " << m_servedCount << " requests with the same socket." ;
+            qDebug() << "Served " << m_servedCount << " requests with the same socket.";
         }
         else
         {
