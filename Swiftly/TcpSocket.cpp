@@ -117,6 +117,7 @@ int onHeadersComplete(http_parser *parser)
     {
         socket->getHeader().setHost(*host.data());
     }
+    static_cast<TcpSocket *>(parser->data)->m_request->m_status          = HttpRequest::RequestStatus::HeaderParsed;
 
     return 0;
 }
@@ -233,6 +234,8 @@ void TcpSocket::readClient()
                 {
                     m_suicideTimer.stop();
                 }
+                sLog() << "Shutdown connection due to very long header.";
+                sLogFlush();
                 emit shutdown();
                 return;
             }
@@ -249,6 +252,8 @@ void TcpSocket::readClient()
 
         if (nparsed != ret)
         {
+            sLog() << "Shutdown connection because unable to parse header.";
+            sLogFlush();
             emit shutdown();
             return;
         }
@@ -286,6 +291,8 @@ void TcpSocket::readClient()
         getResponse().setStatusCode(400);
         getResponse() << "maximum message size above 16mb.";
         getResponse().finish();
+        sLog() << "Shutdown connection due to very large data.";
+        sLogFlush();
         emit shutdown();
         return;
     }
@@ -294,6 +301,8 @@ void TcpSocket::readClient()
         size_t nparsed = http_parser_execute(&m_parser, &m_settings, nullptr, 0);
         if (nparsed != 0)
         {
+            sLog() << "Shutdown connection due unable to reset header parser.";
+            sLogFlush();
             emit shutdown();
             return;
         }
@@ -315,6 +324,8 @@ void TcpSocket::readClient()
             getResponse().setStatusCode(400);
             getResponse() << "Unsupported HTTP verb.";
             getResponse().finish();
+            sLog() << "Shutdown connection due unsupported http verb.";
+            sLogFlush();
             emit shutdown();
             return;
         }
