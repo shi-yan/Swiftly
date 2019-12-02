@@ -324,6 +324,8 @@ void TcpSocket::readClient()
             getResponse().setStatusCode(400);
             getResponse() << "Unsupported HTTP verb.";
             getResponse().finish();
+            write(getResponse().m_headerString.toUtf8());
+            write(getResponse().m_buffer);
             sLog() << "Shutdown connection due unsupported http verb.";
             sLogFlush();
             emit shutdown();
@@ -358,7 +360,12 @@ void TcpSocket::readClient()
                 sLog() << "empty task handler!" << getRequest().getHeader().getPath() << ";" << handlerType;
 #endif
                 getResponse().setStatusCode(404);
+                getResponse() << "Unsupported HTTP request.";
                 getResponse().finish();
+                write(getResponse().m_headerString.toUtf8());
+                write(getResponse().m_buffer);
+                emit shutdown();
+                return;
             }
         }
         write(getResponse().m_headerString.toUtf8());
@@ -370,8 +377,15 @@ void TcpSocket::readClient()
             m_response.reset();
             m_headerParseCounter = 0;
             m_servedCount++;
-            setTimeout(m_timeout);
             qDebug() << "Served " << m_servedCount << " requests with the same socket.";
+            if (m_servedCount > 20)
+            {
+                emit shutdown();
+            }
+            else
+            {
+                setTimeout(m_timeout);
+            }
         }
         else
         {

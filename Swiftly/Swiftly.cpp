@@ -33,7 +33,7 @@ HttpServer::~HttpServer()
 
 void HttpServer::incomingConnection(qintptr socket)
 {
-    qDebug() << "sodium problem";
+    qDebug() << "New Socket";
     if (m_disabled)
         return;
 
@@ -44,8 +44,6 @@ void HttpServer::incomingConnection(qintptr socket)
 
     m_connectionCount++;
     m_count = (m_count+1)%m_workerPool.size();
-
-
 
     //qDebug() << "connection:" << m_connectionCount;
 }
